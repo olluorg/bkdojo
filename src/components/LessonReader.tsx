@@ -1,0 +1,157 @@
+import { useEffect, useRef, type ReactNode } from 'react';
+import type { Lesson } from '../domain/models/lesson';
+import type { LessonStatus } from '../domain/progress/lessonStatus';
+
+interface RelatedLink {
+  id: string;
+  title: string;
+}
+
+const STATUS_BADGE: Partial<Record<LessonStatus, { label: string; className: string }>> = {
+  passed: { label: '✓ Пройдено', className: 'lesson-badge lesson-badge--passed' },
+  'needs-work': { label: 'Нужно доработать', className: 'lesson-badge lesson-badge--todo' },
+};
+
+interface Props {
+  lesson: Lesson;
+  related: RelatedLink[];
+  /** Previous lesson in the same section, or `null` at the section start. */
+  prev: { title: string } | null;
+  /** Next lesson in the same section, or `null` at the section end. */
+  next: { title: string } | null;
+  /** Whether the learner has marked this lesson as read. */
+  read: boolean;
+  /** Completion state: drives the "needs work" / "passed" badge. */
+  status?: LessonStatus;
+  onBack: () => void;
+  onPrev: () => void;
+  onNext: () => void;
+  /** Sets the read/completed state (auto on reaching the end, or manual toggle). */
+  onSetRead: (read: boolean) => void;
+  onPractice: () => void;
+  onOpenRelated: (id: string) => void;
+  /** Extra content rendered below the lesson actions (e.g. the comment panel). */
+  extra?: ReactNode;
+}
+
+export function LessonReader({
+  lesson,
+  related,
+  prev,
+  next,
+  read,
+  status,
+  onBack,
+  onPrev,
+  onNext,
+  onSetRead,
+  onPractice,
+  onOpenRelated,
+  extra,
+}: Props) {
+  // Auto-mark the lesson read once its end scrolls into view — unless the learner
+  // already touched the toggle (we never override an explicit choice).
+  const endRef = useRef<HTMLDivElement | null>(null);
+  const settledRef = useRef(false); // true after an auto-mark OR a manual toggle
+  const readRef = useRef(read);
+  readRef.current = read;
+  const onSetReadRef = useRef(onSetRead);
+  onSetReadRef.current = onSetRead;
+
+  useEffect(() => {
+    window.scrollTo({ top: 0 });
+    settledRef.current = false; // re-arm auto-mark for the newly opened lesson
+  }, [lesson.id]);
+
+  useEffect(() => {
+    const el = endRef.current;
+    if (!el || typeof IntersectionObserver === 'undefined') return;
+    const observer = new IntersectionObserver(
+      (entries) => {
+        for (const entry of entries) {
+          if (entry.isIntersecting && !settledRef.current && !readRef.current) {
+            settledRef.current = true;
+            onSetReadRef.current(true);
+          }
+        }
+      },
+      { rootMargin: '0px 0px -10% 0px' },
+    );
+    observer.observe(el);
+    return () => observer.disconnect();
+  }, [lesson.id]);
+
+  const handleToggleRead = () => {
+    settledRef.current = true; // a manual choice disables auto-mark for this view
+    onSetRead(!read);
+  };
+
+  return (
+    <section>
+      <button className="link-back" onClick={onBack}>
+        ← К урокам
+      </button>
+      <h1 className="screen__title">{lesson.title}</h1>
+      {status && STATUS_BADGE[status] && (
+        <span className={STATUS_BADGE[status]!.className}>{STATUS_BADGE[status]!.label}</span>
+      )}
+      <p className="screen__note">{lesson.summary}</p>
+
+      {lesson.sections.map((section, i) => (
+        <div key={i} className="lesson-section">
+          <h3 className="lesson-section__h">{section.heading}</h3>
+          {section.paragraphs.map((paragraph, j) => (
+            <p key={j} className="lesson-section__p">
+              {paragraph}
+            </p>
+          ))}
+          {section.code && <pre className="lesson-code">{section.code}</pre>}
+        </div>
+      ))}
+
+      {/* Marker for "reached the end of the lesson" → auto-mark as read. */}
+      <div ref={endRef} aria-hidden className="lesson-end" />
+
+      <div className="lesson-actions">
+        <button className="btn" onClick={() => onPractice()}>
+          Пройти тест по теме
+        </button>
+        <button
+          className={read ? 'btn btn--done' : 'btn btn--ghost lesson-read-btn'}
+          onClick={handleToggleRead}
+          aria-pressed={read}
+        >
+          {read ? '✓ Прочитано' : 'Отметить как прочитанный'}
+        </button>
+      </div>
+
+      {extra}
+
+      <nav className="pager">
+        <button className="pager__btn" onClick={onPrev}>
+          <span className="pager__dir">← {prev ? 'Предыдущий урок' : 'К разделу'}</span>
+          {prev && <span className="pager__title">{prev.title}</span>}
+        </button>
+        <button className="pager__btn pager__btn--next" onClick={onNext}>
+          <span className="pager__dir">{next ? 'Следующий урок' : 'К разделу'} →</span>
+          {next && <span className="pager__title">{next.title}</span>}
+        </button>
+      </nav>
+
+      {related.length > 0 && (
+        <div className="related">
+          <h4 className="guide__sub">См. также</h4>
+          <ul className="related-list">
+            {related.map((link) => (
+              <li key={link.id}>
+                <button className="related-link" onClick={() => onOpenRelated(link.id)}>
+                  {link.title} →
+                </button>
+              </li>
+            ))}
+          </ul>
+        </div>
+      )}
+    </section>
+  );
+}

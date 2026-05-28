@@ -1,0 +1,71 @@
+import type { OutcomeSource } from './answer';
+import type { Domain } from './common';
+import type { AiAvailability, ConceptResult, Verdict } from './evaluation';
+import type { PetState } from './pet';
+import type { OverrideCredits } from '../progress/overrideCredits';
+import type { Settings } from './settings';
+
+export interface DomainSkill {
+  domain: Domain;
+  ability: number; // ~1..5 (fractional)
+  answered: number;
+  correct: number;
+}
+
+export interface AnswerRecord {
+  questionId: string;
+  domain: Domain;
+  tags: string[];
+  score: number; // 0..1
+  verdict: Verdict;
+  conceptCoverage?: ConceptResult[]; // enables concept-level weak spots (open)
+  evaluatedBy: OutcomeSource;
+  /** The learner's raw text answer (open questions) — persisted for analysis/comments. */
+  answer?: string;
+  /** The learner's selected option ids (choice questions) — persisted for analysis. */
+  selectedOptionIds?: string[];
+  /** True when the learner overrode the AI verdict via a self-override credit. */
+  selfOverride?: boolean;
+  answeredAt: string; // ISO
+  nextReviewAt?: string; // ISO, for spaced repetition
+}
+
+/**
+ * A cached AI lesson comment. `fingerprint` captures the answers it was built
+ * from; while it matches the current answers the comment is reused instead of
+ * spending another LLM request.
+ */
+export interface CachedLessonComment {
+  fingerprint: string;
+  text: string;
+  source: 'chrome-prompt' | 'server';
+  generatedAt: string; // ISO
+}
+
+/** Per-term spaced-repetition state for the glossary trainer. */
+export interface TermProgress {
+  termId: string;
+  streak: number; // consecutive correct
+  seen: number;
+  correct: number;
+  lastAnsweredAt?: string; // ISO
+  nextReviewAt?: string; // ISO
+}
+
+export interface UserProgress {
+  version: number;
+  skills: Record<Domain, DomainSkill>;
+  history: AnswerRecord[];
+  placementDone: boolean;
+  streakDays: number;
+  lastPracticeDate?: string; // ISO date
+  lastAiAvailability?: AiAvailability; // UX hint for next visit
+  terms?: Record<string, TermProgress>; // optional for backward-compatible load
+  lessonsRead?: Record<string, string>; // lessonId → ISO read-at; optional for backward-compatible load
+  lessonComments?: Record<string, CachedLessonComment>; // lessonId → cached AI comment; optional for backward-compatible load
+  activity?: Record<string, string>; // activity kind → last-done ISO; distinguishes practice/review/interview
+  pet?: PetState; // optional for backward-compatible load
+  settings?: Settings; // optional for backward-compatible load
+  /** Self-override credits ("я считаю, что ответил верно"); optional for backward-compatible load. */
+  overrideCredits?: OverrideCredits;
+}

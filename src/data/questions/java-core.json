@@ -1,0 +1,5138 @@
+[
+  {
+    "id": "jc-001",
+    "domain": "java-core",
+    "difficulty": 1,
+    "type": "single",
+    "mode": "definition",
+    "prompt": "Какие четыре принципа ООП?",
+    "tags": [
+      "oop",
+      "basics"
+    ],
+    "options": [
+      {
+        "id": "a",
+        "text": "Наследование, многопоточность, абстракция, рефлексия"
+      },
+      {
+        "id": "b",
+        "text": "Инкапсуляция, наследование, полиморфизм, абстракция"
+      },
+      {
+        "id": "c",
+        "text": "Инкапсуляция, рекурсия, полиморфизм, сериализация"
+      },
+      {
+        "id": "d",
+        "text": "Полиморфизм, иммутабельность, инкапсуляция, дженерики"
+      }
+    ],
+    "correctOptionIds": [
+      "b"
+    ],
+    "answerGuide": {
+      "short": "ООП — парадигма вокруг объектов; 4 принципа: инкапсуляция, наследование, полиморфизм, абстракция.",
+      "normal": "Назови 4 принципа и дай по одному короткому примеру: инкапсуляция (private поля + геттеры), наследование (extends), полиморфизм (переопределение метода и вызов по ссылке базового типа), абстракция (interface).",
+      "traps": [
+        "Путать абстракцию и инкапсуляцию.",
+        "Сводить полиморфизм только к перегрузке (overloading) вместо переопределения (overriding)."
+      ],
+      "followUps": [
+        "Чем абстрактный класс отличается от интерфейса?",
+        "Почему composition часто предпочтительнее inheritance?"
+      ]
+    },
+    "meta": {
+      "verified": true,
+      "source": "seed",
+      "lastReviewedAt": "2026-05-21",
+      "reviewer": "seed"
+    }
+  },
+  {
+    "id": "jc-002",
+    "domain": "java-core",
+    "difficulty": 2,
+    "type": "single",
+    "mode": "scenario",
+    "prompt": "Что вернут сравнения для new String(\"a\") и new String(\"a\") через == и через equals()?",
+    "tags": [
+      "string",
+      "equals",
+      "identity"
+    ],
+    "options": [
+      {
+        "id": "a",
+        "text": "== вернёт true, equals() вернёт true"
+      },
+      {
+        "id": "b",
+        "text": "== вернёт false, equals() вернёт true"
+      },
+      {
+        "id": "c",
+        "text": "== вернёт false, equals() вернёт false"
+      },
+      {
+        "id": "d",
+        "text": "== вернёт true, equals() вернёт false"
+      }
+    ],
+    "correctOptionIds": [
+      "b"
+    ],
+    "answerGuide": {
+      "short": "== сравнивает ссылки, equals() у String — содержимое. Два new String — разные объекты.",
+      "normal": "new String(...) всегда создаёт новый объект в куче, поэтому == даёт false. String.equals() сравнивает посимвольно — true. Литералы же из string pool могут давать == true.",
+      "traps": [
+        "Считать, что == всегда сравнивает содержимое.",
+        "Забывать про string pool для литералов."
+      ],
+      "followUps": [
+        "Что такое string pool и как работает intern()?",
+        "Как связаны equals() и hashCode()?"
+      ]
+    },
+    "meta": {
+      "verified": true,
+      "source": "seed",
+      "lastReviewedAt": "2026-05-21",
+      "reviewer": "seed"
+    }
+  },
+  {
+    "id": "jc-003",
+    "domain": "java-core",
+    "difficulty": 4,
+    "type": "single",
+    "mode": "comparison",
+    "prompt": "Чем ArrayList отличается от LinkedList и что брать по умолчанию?",
+    "tags": [
+      "collections",
+      "list",
+      "performance"
+    ],
+    "options": [
+      {
+        "id": "a",
+        "text": "ArrayList — массив (индекс O(1)), берут по умолчанию; LinkedList — двусвязный список (индекс O(n)), почти всегда хуже из-за кэша"
+      },
+      {
+        "id": "b",
+        "text": "LinkedList быстрее во всём, его и берут по умолчанию"
+      },
+      {
+        "id": "c",
+        "text": "ArrayList не умеет расти, LinkedList — динамический"
+      },
+      {
+        "id": "d",
+        "text": "Они одинаковы по производительности"
+      }
+    ],
+    "correctOptionIds": [
+      "a"
+    ],
+    "answerGuide": {
+      "short": "ArrayList — массив (O(1) доступ), LinkedList — двусвязный список (O(1) вставка при итераторе). По умолчанию бери ArrayList.",
+      "normal": "Сравни по доступу (O(1) vs O(n)), вставке, памяти и cache locality. На практике LinkedList почти всегда проигрывает; реальная причина выбора LinkedList — использование как Deque/очередь.",
+      "traps": [
+        "Утверждать, что вставка в LinkedList всегда O(1) — поиск позиции остаётся O(n).",
+        "Игнорировать cache locality."
+      ],
+      "followUps": [
+        "Как растёт ArrayList при добавлении?",
+        "Когда LinkedList реально оправдан?"
+      ]
+    },
+    "meta": {
+      "verified": true,
+      "source": "seed",
+      "lastReviewedAt": "2026-05-21",
+      "reviewer": "seed"
+    }
+  },
+  {
+    "id": "jc-004",
+    "domain": "java-core",
+    "difficulty": 3,
+    "type": "single",
+    "mode": "comparison",
+    "prompt": "Чем checked-исключения отличаются от unchecked?",
+    "tags": [
+      "exceptions",
+      "errors"
+    ],
+    "options": [
+      {
+        "id": "a",
+        "text": "Checked нельзя поймать, unchecked можно"
+      },
+      {
+        "id": "b",
+        "text": "Unchecked обязательно объявлять в throws"
+      },
+      {
+        "id": "c",
+        "text": "Checked проверяются компилятором (нужен throws/catch), unchecked (RuntimeException/Error) — нет"
+      },
+      {
+        "id": "d",
+        "text": "Это одно и то же"
+      }
+    ],
+    "correctOptionIds": [
+      "c"
+    ],
+    "answerGuide": {
+      "short": "Checked проверяются компилятором (Exception), unchecked — нет (RuntimeException/Error).",
+      "normal": "Объясни иерархию: Throwable → Exception/Error; RuntimeException — unchecked. Checked заставляют объявлять/ловить, unchecked — нет. Приведи примеры (IOException vs NullPointerException).",
+      "traps": [
+        "Считать Error разновидностью checked.",
+        "Глотать исключения пустым catch."
+      ],
+      "followUps": [
+        "Что такое try-with-resources?",
+        "Когда оправдан собственный тип исключения?"
+      ]
+    },
+    "meta": {
+      "verified": true,
+      "source": "seed",
+      "lastReviewedAt": "2026-05-22",
+      "reviewer": "seed"
+    }
+  },
+  {
+    "id": "jc-005",
+    "domain": "java-core",
+    "difficulty": 2,
+    "type": "single",
+    "mode": "scenario",
+    "prompt": "Integer a=127, b=127, c=128, d=128. Что вернут a==b и c==d?",
+    "tags": [
+      "autoboxing",
+      "integer-cache"
+    ],
+    "options": [
+      {
+        "id": "a",
+        "text": "Оба true"
+      },
+      {
+        "id": "b",
+        "text": "a==b → true, c==d → false"
+      },
+      {
+        "id": "c",
+        "text": "Оба false"
+      },
+      {
+        "id": "d",
+        "text": "a==b → false, c==d → true"
+      }
+    ],
+    "correctOptionIds": [
+      "b"
+    ],
+    "answerGuide": {
+      "short": "Integer кэширует значения -128..127, поэтому 127==127 true, а 128==128 — разные объекты, false.",
+      "normal": "Автоупаковка через Integer.valueOf() использует кэш для диапазона -128..127, поэтому ссылки совпадают. Для 128 создаются новые объекты — == даёт false. Сравнивать значения нужно через equals().",
+      "traps": [
+        "Сравнивать обёртки через ==.",
+        "Думать, что кэш бесконечен."
+      ],
+      "followUps": [
+        "Зачем нужен Integer cache?",
+        "Чем отличается int от Integer при сравнении?"
+      ]
+    },
+    "meta": {
+      "verified": true,
+      "source": "seed",
+      "lastReviewedAt": "2026-05-22",
+      "reviewer": "seed"
+    }
+  },
+  {
+    "id": "jc-006",
+    "domain": "java-core",
+    "difficulty": 3,
+    "type": "single",
+    "mode": "definition",
+    "prompt": "Какое правило связывает equals() и hashCode()?",
+    "tags": [
+      "equals",
+      "hashcode",
+      "collections"
+    ],
+    "options": [
+      {
+        "id": "a",
+        "text": "Равные по equals объекты обязаны иметь равный hashCode (обратное не требуется — коллизии допустимы)"
+      },
+      {
+        "id": "b",
+        "text": "Равный hashCode гарантирует равенство по equals"
+      },
+      {
+        "id": "c",
+        "text": "hashCode обязан быть уникален у каждого объекта"
+      },
+      {
+        "id": "d",
+        "text": "equals и hashCode независимы друг от друга"
+      }
+    ],
+    "correctOptionIds": [
+      "a"
+    ],
+    "answerGuide": {
+      "short": "Равные по equals объекты должны давать равный hashCode, иначе ломаются хеш-коллекции.",
+      "normal": "Опиши свойства equals (рефлексивность/симметрия/транзитивность/согласованность) и главное правило: equals → одинаковый hashCode. Объясни, почему иначе HashMap не найдёт элемент.",
+      "traps": [
+        "Переопределить equals и забыть hashCode.",
+        "Делать hashCode на основе изменяемого состояния ключа."
+      ],
+      "followUps": [
+        "Как HashMap обрабатывает коллизии?",
+        "Почему ключи HashMap лучше делать неизменяемыми?"
+      ]
+    },
+    "meta": {
+      "verified": true,
+      "source": "seed",
+      "lastReviewedAt": "2026-05-22",
+      "reviewer": "seed"
+    }
+  },
+  {
+    "id": "jc-007",
+    "domain": "java-core",
+    "difficulty": 5,
+    "type": "open",
+    "mode": "architecture",
+    "prompt": "Как устроен ConcurrentHashMap в Java 8+ и почему он эффективнее synchronized Map?",
+    "tags": [
+      "concurrency",
+      "collections",
+      "internals"
+    ],
+    "rubric": [
+      {
+        "id": "structure",
+        "title": "Структура",
+        "description": "Массив корзин (bins); при коллизиях — связный список, при пороге — дерево (treeify).",
+        "required": true,
+        "weight": 1,
+        "keywords": [
+          "корзин",
+          "bin",
+          "дерево",
+          "treeify",
+          "массив"
+        ]
+      },
+      {
+        "id": "fine-locking",
+        "title": "Тонкая синхронизация",
+        "description": "CAS для вставки в пустую корзину; synchronized на голове корзины при коллизии — блокируется только корзина, не вся карта.",
+        "required": true,
+        "weight": 2,
+        "keywords": [
+          "cas",
+          "synchronized",
+          "корзин",
+          "bin",
+          "lock"
+        ]
+      },
+      {
+        "id": "no-segments",
+        "title": "Без сегментов",
+        "description": "С Java 8 нет сегментного блока (как было раньше); параллелизм на уровне корзин.",
+        "required": false,
+        "weight": 1,
+        "keywords": [
+          "segment",
+          "сегмент",
+          "java 8"
+        ]
+      }
+    ],
+    "answerGuide": {
+      "short": "Массив корзин + CAS на пустую корзину и synchronized на голову корзины при коллизии — блокируется только корзина.",
+      "normal": "Опиши: вставка в пустой bin через CAS (без блокировок), при коллизии — synchronized на узле-голове; рост в дерево при длинной цепочке. Отсюда высокая конкурентность чтения и записи.",
+      "traps": [
+        "Говорить про сегменты как про актуальную реализацию.",
+        "Считать, что блокируется вся карта."
+      ],
+      "followUps": [
+        "Почему null-ключи/значения запрещены?",
+        "Что такое weakly consistent iterator?"
+      ]
+    },
+    "meta": {
+      "verified": true,
+      "source": "seed",
+      "lastReviewedAt": "2026-05-22",
+      "reviewer": "seed"
+    }
+  },
+  {
+    "id": "jc-008",
+    "domain": "java-core",
+    "difficulty": 4,
+    "type": "single",
+    "mode": "definition",
+    "prompt": "Что гарантирует ключевое слово volatile для переменной?",
+    "tags": [
+      "concurrency",
+      "volatile",
+      "jmm"
+    ],
+    "options": [
+      {
+        "id": "a",
+        "text": "Атомарность составных операций, например i++"
+      },
+      {
+        "id": "b",
+        "text": "Видимость изменений между потоками и запрет переупорядочивания, но не атомарность составных операций"
+      },
+      {
+        "id": "c",
+        "text": "Полную потокобезопасность любого кода с этой переменной"
+      },
+      {
+        "id": "d",
+        "text": "Хранение значения в регистре потока для скорости"
+      }
+    ],
+    "correctOptionIds": [
+      "b"
+    ],
+    "answerGuide": {
+      "short": "volatile даёт видимость и запрет переупорядочивания, но не атомарность i++.",
+      "normal": "Чтение/запись volatile видны всем потокам и образуют happens-before. Но составные операции (read-modify-write) не атомарны — для них нужны atomic-классы или synchronized.",
+      "traps": [
+        "Использовать volatile для счётчиков.",
+        "Думать, что volatile заменяет блокировку."
+      ],
+      "followUps": [
+        "Что такое happens-before?",
+        "Когда брать AtomicInteger вместо volatile?"
+      ]
+    },
+    "meta": {
+      "verified": true,
+      "source": "seed",
+      "lastReviewedAt": "2026-05-22",
+      "reviewer": "seed"
+    }
+  },
+  {
+    "id": "jc-009",
+    "domain": "java-core",
+    "difficulty": 3,
+    "type": "single",
+    "mode": "definition",
+    "prompt": "Почему String в Java неизменяемый?",
+    "tags": [
+      "string",
+      "immutability"
+    ],
+    "options": [
+      {
+        "id": "a",
+        "text": "Чтобы строки можно было менять из разных потоков"
+      },
+      {
+        "id": "b",
+        "text": "Это ограничение JVM без причины"
+      },
+      {
+        "id": "c",
+        "text": "Чтобы экономить память изменением на месте"
+      },
+      {
+        "id": "d",
+        "text": "Ради безопасности, кэширования hashCode, потокобезопасности и шаринга через пул"
+      }
+    ],
+    "correctOptionIds": [
+      "d"
+    ],
+    "answerGuide": {
+      "short": "Неизменяемость даёт string pool, потокобезопасность, кэш hashCode и безопасность.",
+      "normal": "String нельзя изменить после создания: литералы переиспользуются из пула, строку безопасно шарить между потоками, hashCode кэшируется. Любая «модификация» создаёт новый объект — поэтому для конкатенации в цикле берут StringBuilder.",
+      "traps": [
+        "Думать, что методы String меняют строку на месте.",
+        "Конкатенировать строки через + в цикле."
+      ],
+      "followUps": [
+        "Что делает intern()?",
+        "Чем StringBuilder отличается от StringBuffer?"
+      ]
+    },
+    "meta": {
+      "verified": true,
+      "source": "seed",
+      "lastReviewedAt": "2026-05-22",
+      "reviewer": "seed"
+    }
+  },
+  {
+    "id": "jc-010",
+    "domain": "java-core",
+    "difficulty": 3,
+    "type": "single",
+    "mode": "comparison",
+    "prompt": "Что верно про различие интерфейса и абстрактного класса в Java 8+?",
+    "tags": [
+      "oop",
+      "interface"
+    ],
+    "options": [
+      {
+        "id": "a",
+        "text": "Класс может наследовать несколько абстрактных классов"
+      },
+      {
+        "id": "b",
+        "text": "Класс реализует несколько интерфейсов, но наследует только один класс"
+      },
+      {
+        "id": "c",
+        "text": "Интерфейс не может содержать реализацию методов"
+      },
+      {
+        "id": "d",
+        "text": "Абстрактный класс не может иметь конструктор"
+      }
+    ],
+    "correctOptionIds": [
+      "b"
+    ],
+    "answerGuide": {
+      "short": "Интерфейсов можно реализовать много, класс наследуется один; интерфейсы умеют default-методы.",
+      "normal": "С Java 8 интерфейсы имеют default- и static-методы, поэтому «нет реализации» уже неверно. Главное различие: множественная реализация интерфейсов против одиночного наследования класса. Абстрактный класс хранит состояние и имеет конструктор.",
+      "traps": [
+        "Считать, что интерфейсы не имеют реализации (есть default-методы).",
+        "Думать про множественное наследование классов."
+      ],
+      "followUps": [
+        "Что такое default-метод и проблема ромба?",
+        "Когда выбрать абстрактный класс, а не интерфейс?"
+      ]
+    },
+    "meta": {
+      "verified": true,
+      "source": "seed",
+      "lastReviewedAt": "2026-05-22",
+      "reviewer": "seed"
+    }
+  },
+  {
+    "id": "jc-011",
+    "domain": "java-core",
+    "difficulty": 3,
+    "type": "single",
+    "mode": "definition",
+    "prompt": "Что такое type erasure в дженериках?",
+    "tags": [
+      "generics",
+      "java-core"
+    ],
+    "options": [
+      {
+        "id": "a",
+        "text": "Типы сохраняются в байткоде и полностью доступны в рантайме"
+      },
+      {
+        "id": "b",
+        "text": "Параметры типов проверяются на компиляции и стираются — в рантайме их нет"
+      },
+      {
+        "id": "c",
+        "text": "Дженерики существуют только в рантайме"
+      },
+      {
+        "id": "d",
+        "text": "Erasure удаляет неиспользуемые классы при сборке"
+      }
+    ],
+    "correctOptionIds": [
+      "b"
+    ],
+    "answerGuide": {
+      "short": "Generics — типобезопасность на компиляции; type erasure — типы стираются и в рантайме их нет.",
+      "normal": "Объясни, что дженерики ловят ошибки типов до запуска и убирают касты. Из-за erasure нельзя, например, сделать new T() или instanceof List<String>. Упомяни bounded types и wildcards.",
+      "traps": [
+        "Ожидать тип-параметр в рантайме.",
+        "Путать List<?> и List<Object>."
+      ],
+      "followUps": [
+        "Что такое PECS?",
+        "Почему нельзя new T[]?"
+      ]
+    },
+    "meta": {
+      "verified": true,
+      "source": "seed",
+      "lastReviewedAt": "2026-05-22",
+      "reviewer": "seed"
+    }
+  },
+  {
+    "id": "jc-012",
+    "domain": "java-core",
+    "difficulty": 4,
+    "type": "single",
+    "mode": "definition",
+    "prompt": "Чем промежуточные операции Stream отличаются от терминальных?",
+    "tags": [
+      "java8",
+      "streams"
+    ],
+    "options": [
+      {
+        "id": "a",
+        "text": "Промежуточные сразу выполняются, терминальные ленивы"
+      },
+      {
+        "id": "b",
+        "text": "Терминальных операций может быть несколько подряд"
+      },
+      {
+        "id": "c",
+        "text": "Промежуточные ленивы и возвращают Stream; терминальная запускает обработку и даёт результат"
+      },
+      {
+        "id": "d",
+        "text": "Без промежуточных операций стрим не запускается"
+      }
+    ],
+    "correctOptionIds": [
+      "c"
+    ],
+    "answerGuide": {
+      "short": "Stream — ленивый конвейер; промежуточные операции откладываются до терминальной.",
+      "normal": "Опиши конвейер: источник, цепочка ленивых операций и одна терминальная, которая всё запускает. Без терминальной операции map/filter не выполнятся. Стрим одноразовый и не мутирует источник.",
+      "traps": [
+        "Переиспользовать уже использованный стрим.",
+        "Делать побочные эффекты в map."
+      ],
+      "followUps": [
+        "Чем отличается map от flatMap?",
+        "Когда parallel stream вредит?"
+      ]
+    },
+    "meta": {
+      "verified": true,
+      "source": "seed",
+      "lastReviewedAt": "2026-05-22",
+      "reviewer": "seed"
+    }
+  },
+  {
+    "id": "jc-013",
+    "domain": "java-core",
+    "difficulty": 2,
+    "type": "single",
+    "mode": "definition",
+    "prompt": "Для чего предназначен Optional?",
+    "tags": [
+      "java8",
+      "optional"
+    ],
+    "options": [
+      {
+        "id": "a",
+        "text": "Ускорить работу с коллекциями"
+      },
+      {
+        "id": "b",
+        "text": "Явно выразить возможное отсутствие значения и снизить риск NPE"
+      },
+      {
+        "id": "c",
+        "text": "Полностью заменить исключения"
+      },
+      {
+        "id": "d",
+        "text": "Сделать поля потокобезопасными"
+      }
+    ],
+    "correctOptionIds": [
+      "b"
+    ],
+    "answerGuide": {
+      "short": "Optional явно сообщает о возможном отсутствии значения и помогает избегать NPE.",
+      "normal": "Optional — контейнер, который либо содержит значение, либо пуст. Его возвращают, чтобы вызывающий явно обработал отсутствие (map/orElse/ifPresent), а не ловил NPE.",
+      "traps": [
+        "Вызывать get() без проверки.",
+        "Использовать Optional как поле сущности."
+      ],
+      "followUps": [
+        "Чем orElse отличается от orElseGet?",
+        "Почему Optional не сериализуют?"
+      ]
+    },
+    "meta": {
+      "verified": true,
+      "source": "seed",
+      "lastReviewedAt": "2026-05-22",
+      "reviewer": "seed"
+    }
+  },
+  {
+    "id": "jc-014",
+    "domain": "java-core",
+    "difficulty": 2,
+    "type": "single",
+    "mode": "definition",
+    "prompt": "Что означает final для переменной-ссылки?",
+    "tags": [
+      "java-core",
+      "final",
+      "keywords"
+    ],
+    "options": [
+      {
+        "id": "a",
+        "text": "Объект, на который указывает ссылка, нельзя изменять"
+      },
+      {
+        "id": "b",
+        "text": "Ссылку нельзя переназначить, но сам объект может меняться"
+      },
+      {
+        "id": "c",
+        "text": "Переменная становится статической"
+      },
+      {
+        "id": "d",
+        "text": "Значение вычисляется лениво при первом доступе"
+      }
+    ],
+    "correctOptionIds": [
+      "b"
+    ],
+    "answerGuide": {
+      "short": "final фиксирует ссылку (нельзя переназначить), но не делает объект неизменяемым.",
+      "normal": "final у переменной запрещает повторное присваивание. Если это ссылка на изменяемый объект (например, список), сам объект менять можно. Для неизменяемости нужен immutable-тип.",
+      "traps": [
+        "Считать, что final List нельзя дополнять — можно, нельзя только переназначить ссылку."
+      ],
+      "followUps": [
+        "Что означает final для метода и класса?",
+        "Зачем final-поля в многопоточности?"
+      ]
+    },
+    "meta": {
+      "verified": true,
+      "source": "seed",
+      "lastReviewedAt": "2026-05-22",
+      "reviewer": "seed"
+    }
+  },
+  {
+    "id": "jc-015",
+    "domain": "java-core",
+    "difficulty": 4,
+    "type": "open",
+    "mode": "architecture",
+    "prompt": "Из каких основных областей состоит память JVM и что где хранится?",
+    "tags": [
+      "jvm",
+      "memory"
+    ],
+    "rubric": [
+      {
+        "id": "heap",
+        "title": "Heap",
+        "description": "Общая для всех потоков куча, где живут объекты; ею управляет сборщик мусора.",
+        "required": true,
+        "weight": 2,
+        "keywords": [
+          "heap",
+          "куча",
+          "объекты",
+          "gc"
+        ]
+      },
+      {
+        "id": "stack",
+        "title": "Stack",
+        "description": "У каждого потока свой стек: кадры методов с локальными примитивами и ссылками.",
+        "required": true,
+        "weight": 2,
+        "keywords": [
+          "stack",
+          "стек",
+          "кадр",
+          "локальн",
+          "поток"
+        ]
+      },
+      {
+        "id": "metaspace",
+        "title": "Metaspace",
+        "description": "Метаданные классов вне кучи (с Java 8 вместо PermGen).",
+        "required": false,
+        "weight": 1,
+        "keywords": [
+          "metaspace",
+          "метаданные",
+          "permgen",
+          "класс"
+        ]
+      }
+    ],
+    "answerGuide": {
+      "short": "Heap — объекты (общая), stack — кадры методов на поток, metaspace — метаданные классов.",
+      "normal": "Объясни три области: в куче живут объекты (там работает GC), у каждого потока свой стек с локальными переменными и ссылками, метаданные классов — в metaspace.",
+      "traps": [
+        "Говорить, что объекты лежат в стеке.",
+        "Путать metaspace со старым PermGen без оговорки."
+      ],
+      "followUps": [
+        "Что такое поколения в куче?",
+        "Где живут статические поля?"
+      ]
+    },
+    "meta": {
+      "verified": true,
+      "source": "seed",
+      "lastReviewedAt": "2026-05-22",
+      "reviewer": "seed"
+    }
+  },
+  {
+    "id": "jc-016",
+    "domain": "java-core",
+    "difficulty": 3,
+    "type": "single",
+    "mode": "scenario",
+    "prompt": "Где хранятся локальные переменные-примитивы и сами объекты?",
+    "tags": [
+      "jvm",
+      "memory"
+    ],
+    "options": [
+      {
+        "id": "a",
+        "text": "И примитивы, и объекты — в куче"
+      },
+      {
+        "id": "b",
+        "text": "Примитивы и ссылки — в стеке потока, объекты — в куче"
+      },
+      {
+        "id": "c",
+        "text": "Всё хранится в стеке"
+      },
+      {
+        "id": "d",
+        "text": "Объекты в стеке, примитивы в куче"
+      }
+    ],
+    "correctOptionIds": [
+      "b"
+    ],
+    "answerGuide": {
+      "short": "Локальные примитивы и ссылки — в кадре стека; объекты — в куче.",
+      "normal": "Локальные переменные метода (примитивы и ссылки на объекты) лежат в кадре стека потока, а сами объекты создаются в общей куче. По ссылке из стека и происходит доступ к объекту.",
+      "traps": [
+        "Считать, что объект целиком в стеке.",
+        "Забывать, что ссылка и объект — это разные вещи."
+      ],
+      "followUps": [
+        "Что происходит со ссылкой при выходе из метода?",
+        "Что такое escape analysis?"
+      ]
+    },
+    "meta": {
+      "verified": true,
+      "source": "seed",
+      "lastReviewedAt": "2026-05-22",
+      "reviewer": "seed"
+    }
+  },
+  {
+    "id": "jc-017",
+    "domain": "java-core",
+    "difficulty": 4,
+    "type": "single",
+    "mode": "definition",
+    "prompt": "Какие объекты освобождает сборщик мусора?",
+    "tags": [
+      "jvm",
+      "gc"
+    ],
+    "options": [
+      {
+        "id": "a",
+        "text": "Все объекты по таймеру независимо от ссылок"
+      },
+      {
+        "id": "b",
+        "text": "Недостижимые объекты, на которые не осталось ссылок от корней"
+      },
+      {
+        "id": "c",
+        "text": "Только помеченные @Deprecated"
+      },
+      {
+        "id": "d",
+        "text": "Объекты, явно удалённые оператором delete"
+      }
+    ],
+    "correctOptionIds": [
+      "b"
+    ],
+    "answerGuide": {
+      "short": "GC собирает недостижимые объекты — те, до которых нет ссылок от GC-корней.",
+      "normal": "Сборщик освобождает объекты, ставшие недостижимыми от корней (стеки потоков, статические поля и т.п.). В Java нет delete; память управляется автоматически.",
+      "traps": [
+        "Думать, что есть ручное удаление объектов.",
+        "Считать, что GC ловит логические утечки."
+      ],
+      "followUps": [
+        "Что такое GC roots?",
+        "Чем мягкая ссылка отличается от слабой?"
+      ]
+    },
+    "meta": {
+      "verified": true,
+      "source": "seed",
+      "lastReviewedAt": "2026-05-22",
+      "reviewer": "seed"
+    }
+  },
+  {
+    "id": "jc-018",
+    "domain": "java-core",
+    "difficulty": 2,
+    "type": "single",
+    "mode": "comparison",
+    "prompt": "Чем отличаются JDK, JRE и JVM?",
+    "tags": [
+      "jvm",
+      "jdk",
+      "jre",
+      "basics"
+    ],
+    "options": [
+      {
+        "id": "a",
+        "text": "JVM исполняет байткод; JRE = JVM + библиотеки для запуска; JDK = JRE + инструменты разработки (компилятор)"
+      },
+      {
+        "id": "b",
+        "text": "JDK только запускает, JRE компилирует"
+      },
+      {
+        "id": "c",
+        "text": "Это три названия одного и того же"
+      },
+      {
+        "id": "d",
+        "text": "JVM включает в себя JDK"
+      }
+    ],
+    "correctOptionIds": [
+      "a"
+    ],
+    "answerGuide": {
+      "short": "JVM исполняет байткод, JRE запускает приложения, JDK нужен для разработки и включает JRE.",
+      "normal": "Разложи как вложенность: JVM — движок исполнения байткода; JRE — JVM и библиотеки для запуска; JDK — JRE плюс компилятор и инструменты разработчика.",
+      "traps": [
+        "Говорить, что JRE компилирует код.",
+        "Путать JVM как спецификацию/реализацию с полным JDK."
+      ],
+      "followUps": [
+        "Что такое байткод?",
+        "Почему один байткод может запускаться на разных ОС?"
+      ]
+    },
+    "meta": {
+      "verified": true,
+      "source": "enhorse/java-interview topics, paraphrased",
+      "lastReviewedAt": "2026-05-22",
+      "reviewer": "codex"
+    }
+  },
+  {
+    "id": "jc-019",
+    "domain": "java-core",
+    "difficulty": 3,
+    "type": "multiple",
+    "mode": "definition",
+    "prompt": "Что верно про модификатор final в Java?",
+    "tags": [
+      "final",
+      "language-basics"
+    ],
+    "options": [
+      {
+        "id": "a",
+        "text": "final-класс нельзя наследовать"
+      },
+      {
+        "id": "b",
+        "text": "final-метод нельзя переопределить в подклассе"
+      },
+      {
+        "id": "c",
+        "text": "final-ссылка запрещает менять состояние объекта, на который она указывает"
+      },
+      {
+        "id": "d",
+        "text": "final-поле должно быть инициализировано ровно один раз"
+      }
+    ],
+    "correctOptionIds": [
+      "a",
+      "b",
+      "d"
+    ],
+    "answerGuide": {
+      "short": "final запрещает наследование класса, override метода и повторное присваивание переменной/поля.",
+      "normal": "Для класса final означает запрет наследования, для метода — запрет переопределения, для переменной/поля — однократное присваивание. Если final-ссылка указывает на изменяемый объект, сам объект всё ещё можно менять.",
+      "traps": [
+        "Считать final аналогом immutable.",
+        "Думать, что final-метод нельзя перегрузить."
+      ],
+      "followUps": [
+        "Чем final отличается от immutable?",
+        "Можно ли final-поле инициализировать в конструкторе?"
+      ]
+    },
+    "meta": {
+      "verified": true,
+      "source": "enhorse/java-interview topics, paraphrased",
+      "lastReviewedAt": "2026-05-22",
+      "reviewer": "codex"
+    }
+  },
+  {
+    "id": "jc-020",
+    "domain": "java-core",
+    "difficulty": 4,
+    "type": "single",
+    "mode": "comparison",
+    "prompt": "Чем HashMap отличается от Hashtable и ConcurrentHashMap?",
+    "tags": [
+      "collections",
+      "hashmap",
+      "concurrency"
+    ],
+    "options": [
+      {
+        "id": "a",
+        "text": "Все три потокобезопасны одинаково"
+      },
+      {
+        "id": "b",
+        "text": "HashMap синхронизирован, Hashtable — нет"
+      },
+      {
+        "id": "c",
+        "text": "ConcurrentHashMap медленнее Hashtable"
+      },
+      {
+        "id": "d",
+        "text": "HashMap не синхронизирован (1 поток); Hashtable — легаси с глобальным замком; ConcurrentHashMap — потокобезопасен с блокировкой по бакетам"
+      }
+    ],
+    "correctOptionIds": [
+      "d"
+    ],
+    "answerGuide": {
+      "short": "HashMap — обычная карта; Hashtable — legacy synchronized; ConcurrentHashMap — современная потокобезопасная карта.",
+      "normal": "Сравни потокобезопасность, null и практический выбор: HashMap для однопоточного/внешне синхронизированного доступа, ConcurrentHashMap для конкурентного доступа, Hashtable почти не нужен в новом коде.",
+      "traps": [
+        "Использовать HashMap из нескольких потоков без синхронизации.",
+        "Выбирать Hashtable как современный concurrent-вариант."
+      ],
+      "followUps": [
+        "Что такое fail-fast iterator?",
+        "Почему ConcurrentHashMap запрещает null?"
+      ]
+    },
+    "meta": {
+      "verified": true,
+      "source": "enhorse/java-interview topics, paraphrased",
+      "lastReviewedAt": "2026-05-22",
+      "reviewer": "codex"
+    }
+  },
+  {
+    "id": "jc-021",
+    "domain": "java-core",
+    "difficulty": 4,
+    "type": "open",
+    "mode": "definition",
+    "prompt": "Что происходит в HashMap при коллизии ключей?",
+    "tags": [
+      "collections",
+      "hashmap",
+      "hashcode"
+    ],
+    "rubric": [
+      {
+        "id": "bucket",
+        "title": "Bucket",
+        "description": "По hashCode выбирается bucket; разные ключи могут попасть в один bucket.",
+        "required": true,
+        "weight": 1,
+        "keywords": [
+          "bucket",
+          "hashcode",
+          "корзина",
+          "индекс"
+        ]
+      },
+      {
+        "id": "equals",
+        "title": "Проверка equals",
+        "description": "Внутри bucket ключи различаются через equals; равный ключ заменяет значение.",
+        "required": true,
+        "weight": 2,
+        "keywords": [
+          "equals",
+          "замен",
+          "ключ"
+        ]
+      },
+      {
+        "id": "treeify",
+        "title": "Tree bins",
+        "description": "В Java 8+ длинная цепочка может превращаться в красно-чёрное дерево при достаточном размере таблицы.",
+        "required": false,
+        "weight": 1,
+        "keywords": [
+          "treeify",
+          "дерево",
+          "java 8",
+          "red-black"
+        ]
+      }
+    ],
+    "answerGuide": {
+      "short": "Коллизии кладутся в один bucket; HashMap ищет нужный ключ через equals, а длинные цепочки может treeify.",
+      "normal": "HashMap считает hash, выбирает bucket и сравнивает ключи внутри bucket через equals. Если ключ равен существующему — значение обновляется; если нет — добавляется новая запись. В Java 8+ длинные цепочки могут стать деревом.",
+      "traps": [
+        "Думать, что одинаковый hashCode означает равные объекты.",
+        "Забывать про equals при поиске внутри bucket."
+      ],
+      "followUps": [
+        "Как связаны equals и hashCode?",
+        "Когда происходит resize HashMap?"
+      ]
+    },
+    "meta": {
+      "verified": true,
+      "source": "enhorse/java-interview topics, paraphrased",
+      "lastReviewedAt": "2026-05-22",
+      "reviewer": "codex"
+    }
+  },
+  {
+    "id": "jc-022",
+    "domain": "java-core",
+    "difficulty": 3,
+    "type": "single",
+    "mode": "scenario",
+    "prompt": "Какой порядок catch-блоков корректен для FileNotFoundException и IOException?",
+    "tags": [
+      "exceptions",
+      "catch"
+    ],
+    "options": [
+      {
+        "id": "a",
+        "text": "Сначала IOException, затем FileNotFoundException"
+      },
+      {
+        "id": "b",
+        "text": "Сначала FileNotFoundException, затем IOException"
+      },
+      {
+        "id": "c",
+        "text": "Порядок не важен"
+      },
+      {
+        "id": "d",
+        "text": "Оба исключения нельзя ловить в одном try"
+      }
+    ],
+    "correctOptionIds": [
+      "b"
+    ],
+    "answerGuide": {
+      "short": "Сначала более конкретный FileNotFoundException, затем общий IOException.",
+      "normal": "catch проверяются сверху вниз. Если поставить IOException первым, catch для FileNotFoundException станет недостижимым, потому что FileNotFoundException наследуется от IOException.",
+      "traps": [
+        "Ставить общий тип исключения раньше частного.",
+        "Думать, что выполнятся оба catch-блока."
+      ],
+      "followUps": [
+        "Как работает multi-catch?",
+        "Когда finally не выполнится?"
+      ]
+    },
+    "meta": {
+      "verified": true,
+      "source": "enhorse/java-interview topics, paraphrased",
+      "lastReviewedAt": "2026-05-22",
+      "reviewer": "codex"
+    }
+  },
+  {
+    "id": "jc-023",
+    "domain": "java-core",
+    "difficulty": 3,
+    "type": "single",
+    "mode": "definition",
+    "prompt": "Что требуется от ресурса, чтобы работать в try-with-resources?",
+    "tags": [
+      "exceptions",
+      "resources",
+      "autocloseable"
+    ],
+    "options": [
+      {
+        "id": "a",
+        "text": "Реализовать Serializable"
+      },
+      {
+        "id": "b",
+        "text": "Реализовать AutoCloseable — тогда close() вызовется автоматически (в обратном порядке)"
+      },
+      {
+        "id": "c",
+        "text": "Быть статическим полем класса"
+      },
+      {
+        "id": "d",
+        "text": "Ничего — закрывается любой объект"
+      }
+    ],
+    "correctOptionIds": [
+      "b"
+    ],
+    "answerGuide": {
+      "short": "try-with-resources сам закрывает AutoCloseable/Closeable ресурсы.",
+      "normal": "Используется для потоков, соединений и других ресурсов. Ресурсы объявляются в скобках try и закрываются в обратном порядке после блока, даже при исключении.",
+      "traps": [
+        "Забывать, что ресурс должен реализовывать AutoCloseable.",
+        "Закрывать ресурс вручную второй раз без необходимости."
+      ],
+      "followUps": [
+        "Чем Closeable отличается от AutoCloseable?",
+        "В каком порядке закрываются несколько ресурсов?"
+      ]
+    },
+    "meta": {
+      "verified": true,
+      "source": "enhorse/java-interview topics, paraphrased",
+      "lastReviewedAt": "2026-05-22",
+      "reviewer": "codex"
+    }
+  },
+  {
+    "id": "jc-024",
+    "domain": "java-core",
+    "difficulty": 4,
+    "type": "open",
+    "mode": "definition",
+    "prompt": "Что такое generics в Java и зачем нужен wildcard ? extends / ? super?",
+    "tags": [
+      "generics",
+      "types"
+    ],
+    "rubric": [
+      {
+        "id": "generics",
+        "title": "Generics",
+        "description": "Параметризация типов для compile-time проверки и уменьшения явных cast.",
+        "required": true,
+        "weight": 1,
+        "keywords": [
+          "generics",
+          "дженерик",
+          "тип",
+          "compile"
+        ]
+      },
+      {
+        "id": "extends",
+        "title": "? extends",
+        "description": "Producer: можно безопасно читать как верхний тип, но нельзя добавлять произвольные элементы.",
+        "required": true,
+        "weight": 2,
+        "keywords": [
+          "extends",
+          "producer",
+          "читать",
+          "ковариант"
+        ]
+      },
+      {
+        "id": "super",
+        "title": "? super",
+        "description": "Consumer: можно безопасно добавлять значения заданного типа и его наследников.",
+        "required": true,
+        "weight": 2,
+        "keywords": [
+          "super",
+          "consumer",
+          "добавлять",
+          "контравариант"
+        ]
+      }
+    ],
+    "answerGuide": {
+      "short": "Generics дают типобезопасность; ? extends — читать producer, ? super — писать consumer.",
+      "normal": "Объясни PECS: Producer Extends, Consumer Super. List<? extends Number> удобно читать как Number, но нельзя добавлять Integer; List<? super Integer> принимает Integer, но читать можно только как Object.",
+      "traps": [
+        "Пытаться добавлять элементы в ? extends.",
+        "Ждать доступности T.class из-за стирания типов."
+      ],
+      "followUps": [
+        "Что такое type erasure?",
+        "Почему List<String> не является подтипом List<Object>?"
+      ]
+    },
+    "meta": {
+      "verified": true,
+      "source": "enhorse/java-interview topics, paraphrased",
+      "lastReviewedAt": "2026-05-22",
+      "reviewer": "codex"
+    }
+  },
+  {
+    "id": "jc-025",
+    "domain": "java-core",
+    "difficulty": 4,
+    "type": "single",
+    "mode": "comparison",
+    "prompt": "Чем volatile отличается от synchronized?",
+    "tags": [
+      "concurrency",
+      "volatile",
+      "synchronized",
+      "jmm"
+    ],
+    "options": [
+      {
+        "id": "a",
+        "text": "volatile делает составные операции атомарными, synchronized — нет"
+      },
+      {
+        "id": "b",
+        "text": "Это синонимы"
+      },
+      {
+        "id": "c",
+        "text": "volatile даёт видимость/упорядочивание для одной переменной, но НЕ атомарность; synchronized — взаимное исключение + видимость"
+      },
+      {
+        "id": "d",
+        "text": "synchronized работает только с примитивами"
+      }
+    ],
+    "correctOptionIds": [
+      "c"
+    ],
+    "answerGuide": {
+      "short": "volatile — видимость без блокировки; synchronized — видимость плюс взаимное исключение.",
+      "normal": "volatile подходит для флагов состояния и публикации ссылки, но не защищает инварианты из нескольких действий. synchronized блокирует критическую секцию, делает операции атомарными относительно других synchronized-блоков на том же мониторе и задаёт happens-before.",
+      "traps": [
+        "Использовать volatile для increment.",
+        "Синхронизироваться на разных мониторах и ждать общей защиты."
+      ],
+      "followUps": [
+        "Что такое happens-before?",
+        "Когда выбрать AtomicInteger?"
+      ]
+    },
+    "meta": {
+      "verified": true,
+      "source": "enhorse/java-interview topics, paraphrased",
+      "lastReviewedAt": "2026-05-22",
+      "reviewer": "codex"
+    }
+  },
+  {
+    "id": "jc-026",
+    "domain": "java-core",
+    "difficulty": 5,
+    "type": "single",
+    "mode": "comparison",
+    "prompt": "Чем Thread, Runnable и Callable отличаются?",
+    "tags": [
+      "concurrency",
+      "thread",
+      "callable"
+    ],
+    "options": [
+      {
+        "id": "a",
+        "text": "Runnable — задача без результата (run); Callable — задача с результатом и исключением (call); Thread — сам поток выполнения"
+      },
+      {
+        "id": "b",
+        "text": "Callable не возвращает результат, а Runnable возвращает"
+      },
+      {
+        "id": "c",
+        "text": "Все три — это потоки выполнения"
+      },
+      {
+        "id": "d",
+        "text": "Thread нельзя запустить без Callable"
+      }
+    ],
+    "correctOptionIds": [
+      "a"
+    ],
+    "answerGuide": {
+      "short": "Thread — поток, Runnable — задача без результата, Callable — задача с результатом/исключением.",
+      "normal": "Thread управляет выполнением; Runnable удобно передавать в Thread или executor, но run() возвращает void. Callable<V> возвращает V и может бросать Exception, результат получают через Future.",
+      "traps": [
+        "Вызывать run() вместо start() и ждать новый поток.",
+        "Создавать неограниченное число Thread вручную."
+      ],
+      "followUps": [
+        "Зачем нужен ExecutorService?",
+        "Чем Future отличается от CompletableFuture?"
+      ]
+    },
+    "meta": {
+      "verified": true,
+      "source": "enhorse/java-interview topics, paraphrased",
+      "lastReviewedAt": "2026-05-22",
+      "reviewer": "codex"
+    }
+  },
+  {
+    "id": "jc-027",
+    "domain": "java-core",
+    "difficulty": 3,
+    "type": "single",
+    "mode": "comparison",
+    "prompt": "Чем интерфейс отличается от абстрактного класса?",
+    "tags": [
+      "oop",
+      "interface",
+      "abstract-class"
+    ],
+    "options": [
+      {
+        "id": "a",
+        "text": "Интерфейс может хранить состояние-поля, абстрактный класс — нет"
+      },
+      {
+        "id": "b",
+        "text": "Абстрактный класс реализуют во множественном числе, интерфейс — один"
+      },
+      {
+        "id": "c",
+        "text": "В Java 8+ между ними нет разницы"
+      },
+      {
+        "id": "d",
+        "text": "Интерфейс — контракт без состояния (реализуется много); абстрактный класс — частичная реализация с состоянием (наследуется один)"
+      }
+    ],
+    "correctOptionIds": [
+      "d"
+    ],
+    "answerGuide": {
+      "short": "Интерфейс — контракт и множественная реализация; абстрактный класс — общая база с состоянием и кодом.",
+      "normal": "Выбирай интерфейс, когда нужен контракт для разных иерархий. Абстрактный класс уместен, когда есть общий код, состояние или конструкторная логика для родственных классов.",
+      "traps": [
+        "Говорить, что интерфейс вообще не может иметь реализации.",
+        "Использовать наследование там, где достаточно композиции."
+      ],
+      "followUps": [
+        "Что такое default method conflict?",
+        "Почему композиция часто лучше наследования?"
+      ]
+    },
+    "meta": {
+      "verified": true,
+      "source": "enhorse/java-interview topics, paraphrased",
+      "lastReviewedAt": "2026-05-22",
+      "reviewer": "codex"
+    }
+  },
+  {
+    "id": "jc-028",
+    "domain": "java-core",
+    "difficulty": 3,
+    "type": "single",
+    "mode": "definition",
+    "prompt": "Что такое перегрузка метода (overloading)?",
+    "tags": [
+      "oop",
+      "methods",
+      "overloading"
+    ],
+    "options": [
+      {
+        "id": "a",
+        "text": "Несколько методов с одним именем, но разными параметрами"
+      },
+      {
+        "id": "b",
+        "text": "Замена реализации метода родителя в подклассе"
+      },
+      {
+        "id": "c",
+        "text": "Запрет вызова метода из другого пакета"
+      },
+      {
+        "id": "d",
+        "text": "Автоматический выбор конструктора JVM после выполнения"
+      }
+    ],
+    "correctOptionIds": [
+      "a"
+    ],
+    "answerGuide": {
+      "short": "Overloading — одно имя метода, разные списки параметров; выбор происходит на компиляции.",
+      "normal": "Перегрузка отличается от переопределения: overloading выбирается по сигнатуре на этапе компиляции, overriding — динамически по реальному типу объекта.",
+      "traps": [
+        "Считать, что перегрузку можно сделать только разным return type.",
+        "Путать overloading и overriding."
+      ],
+      "followUps": [
+        "Что входит в сигнатуру метода?",
+        "Как varargs влияет на выбор перегрузки?"
+      ]
+    },
+    "meta": {
+      "verified": true,
+      "source": "enhorse/java-interview topics, paraphrased",
+      "lastReviewedAt": "2026-05-22",
+      "reviewer": "codex"
+    }
+  },
+  {
+    "id": "jc-029",
+    "domain": "java-core",
+    "difficulty": 4,
+    "type": "open",
+    "mode": "definition",
+    "prompt": "Что такое immutable object и как его сделать в Java?",
+    "tags": [
+      "immutability",
+      "oop",
+      "concurrency"
+    ],
+    "rubric": [
+      {
+        "id": "no-change",
+        "title": "Неизменяемость",
+        "description": "Состояние объекта нельзя изменить после конструирования.",
+        "required": true,
+        "weight": 1,
+        "keywords": [
+          "immutable",
+          "неизмен",
+          "после создания"
+        ]
+      },
+      {
+        "id": "construction",
+        "title": "Правила реализации",
+        "description": "final class/fields, private поля, без сеттеров, defensive copies для mutable зависимостей.",
+        "required": true,
+        "weight": 2,
+        "keywords": [
+          "final",
+          "private",
+          "без сеттер",
+          "defensive copy"
+        ]
+      },
+      {
+        "id": "benefits",
+        "title": "Польза",
+        "description": "Проще reasoning, безопаснее для потоков и ключей HashMap.",
+        "required": true,
+        "weight": 1,
+        "keywords": [
+          "потокобезопас",
+          "hashmap",
+          "thread-safe"
+        ]
+      }
+    ],
+    "answerGuide": {
+      "short": "Immutable объект не меняет состояние после создания: final/private поля, без сеттеров, копии mutable данных. Польза — потокобезопасность и безопасные ключи HashMap.",
+      "normal": "Класс делают final или аккуратно запрещают наследование, поля private final, всё состояние задают в конструкторе, наружу не отдают изменяемые внутренние объекты без копии. Такой объект потокобезопасен без синхронизации и безопасно работает ключом HashMap.",
+      "traps": [
+        "Считать final-ссылку полной неизменяемостью объекта.",
+        "Возвращать внутренний mutable List напрямую."
+      ],
+      "followUps": [
+        "Почему String immutable?",
+        "Что такое safe publication?"
+      ]
+    },
+    "meta": {
+      "verified": true,
+      "source": "enhorse/java-interview topics, paraphrased",
+      "lastReviewedAt": "2026-05-22",
+      "reviewer": "codex"
+    }
+  },
+  {
+    "id": "jc-030",
+    "domain": "java-core",
+    "difficulty": 3,
+    "type": "single",
+    "mode": "comparison",
+    "prompt": "Чем String, StringBuilder и StringBuffer отличаются?",
+    "tags": [
+      "string",
+      "stringbuilder",
+      "performance"
+    ],
+    "options": [
+      {
+        "id": "a",
+        "text": "StringBuilder неизменяем, а String изменяем"
+      },
+      {
+        "id": "b",
+        "text": "String неизменяем; StringBuilder — изменяемый буфер (быстрый, несинхронизированный); StringBuffer — синхронизированный аналог"
+      },
+      {
+        "id": "c",
+        "text": "StringBuffer быстрее StringBuilder в одном потоке"
+      },
+      {
+        "id": "d",
+        "text": "Все три неизменяемы"
+      }
+    ],
+    "correctOptionIds": [
+      "b"
+    ],
+    "answerGuide": {
+      "short": "String immutable; StringBuilder mutable и быстрый; StringBuffer mutable и синхронизированный.",
+      "normal": "Для циклической сборки строк обычно выбирают StringBuilder. StringBuffer нужен редко, когда один буфер реально разделяется между потоками.",
+      "traps": [
+        "Собирать большие строки в цикле через +=.",
+        "Думать, что StringBuilder потокобезопасен."
+      ],
+      "followUps": [
+        "Что такое string pool?",
+        "Как работает intern()?"
+      ]
+    },
+    "meta": {
+      "verified": true,
+      "source": "enhorse/java-interview topics, paraphrased",
+      "lastReviewedAt": "2026-05-22",
+      "reviewer": "codex"
+    }
+  },
+  {
+    "id": "jc-031",
+    "domain": "java-core",
+    "difficulty": 4,
+    "type": "single",
+    "mode": "comparison",
+    "prompt": "Чем Comparable отличается от Comparator?",
+    "tags": [
+      "collections",
+      "sorting",
+      "comparable",
+      "comparator"
+    ],
+    "options": [
+      {
+        "id": "a",
+        "text": "Comparator реализуют внутри класса, Comparable — снаружи"
+      },
+      {
+        "id": "b",
+        "text": "Comparable сравнивает строки, Comparator — числа"
+      },
+      {
+        "id": "c",
+        "text": "Comparable задаёт естественный порядок внутри класса (compareTo); Comparator — внешний порядок (compare), их может быть много"
+      },
+      {
+        "id": "d",
+        "text": "Это одно и то же"
+      }
+    ],
+    "correctOptionIds": [
+      "c"
+    ],
+    "answerGuide": {
+      "short": "Comparable — естественный порядок в классе; Comparator — внешний и сменный порядок.",
+      "normal": "Comparable реализует сам тип, например User implements Comparable<User>. Comparator передают в sort/TreeSet/stream.sorted, когда нужны разные сортировки или нельзя менять класс.",
+      "traps": [
+        "Возвращать только -1/1 и забывать 0.",
+        "Вычитать int поля и получать overflow."
+      ],
+      "followUps": [
+        "Как безопасно сравнивать int?",
+        "Что значит comparator consistent with equals?"
+      ]
+    },
+    "meta": {
+      "verified": true,
+      "source": "enhorse/java-interview topics, paraphrased",
+      "lastReviewedAt": "2026-05-22",
+      "reviewer": "codex"
+    }
+  },
+  {
+    "id": "jc-032",
+    "domain": "java-core",
+    "difficulty": 4,
+    "type": "single",
+    "mode": "comparison",
+    "prompt": "Чем HashSet, LinkedHashSet и TreeSet отличаются?",
+    "tags": [
+      "collections",
+      "set",
+      "hashset",
+      "treeset"
+    ],
+    "options": [
+      {
+        "id": "a",
+        "text": "HashSet без порядка (O(1)); LinkedHashSet хранит порядок вставки; TreeSet отсортирован (O(log n))"
+      },
+      {
+        "id": "b",
+        "text": "TreeSet без порядка, HashSet отсортирован"
+      },
+      {
+        "id": "c",
+        "text": "Все три сохраняют порядок вставки"
+      },
+      {
+        "id": "d",
+        "text": "LinkedHashSet всегда отсортирован по значению"
+      }
+    ],
+    "correctOptionIds": [
+      "a"
+    ],
+    "answerGuide": {
+      "short": "HashSet быстрый без порядка, LinkedHashSet хранит порядок вставки, TreeSet сортирует.",
+      "normal": "Выбирай HashSet по умолчанию, LinkedHashSet — когда нужен стабильный порядок обхода, TreeSet — когда нужны sorted/range операции.",
+      "traps": [
+        "Ожидать сортировку от HashSet.",
+        "Забывать, что TreeSet использует compare, а не только equals."
+      ],
+      "followUps": [
+        "На чём основан HashSet?",
+        "Почему mutable элементы опасны в HashSet?"
+      ]
+    },
+    "meta": {
+      "verified": true,
+      "source": "enhorse/java-interview topics, paraphrased",
+      "lastReviewedAt": "2026-05-22",
+      "reviewer": "codex"
+    }
+  },
+  {
+    "id": "jc-033",
+    "domain": "java-core",
+    "difficulty": 4,
+    "type": "single",
+    "mode": "definition",
+    "prompt": "Какое свойство LinkedHashMap отличает его от HashMap?",
+    "tags": [
+      "collections",
+      "map",
+      "linkedhashmap"
+    ],
+    "options": [
+      {
+        "id": "a",
+        "text": "Он всегда сортирует ключи по возрастанию"
+      },
+      {
+        "id": "b",
+        "text": "Он сохраняет порядок вставки или порядок доступа"
+      },
+      {
+        "id": "c",
+        "text": "Он запрещает любые null-значения"
+      },
+      {
+        "id": "d",
+        "text": "Он потокобезопасен без внешней синхронизации"
+      }
+    ],
+    "correctOptionIds": [
+      "b"
+    ],
+    "answerGuide": {
+      "short": "LinkedHashMap хранит связный порядок entries: insertion-order или access-order.",
+      "normal": "HashMap не гарантирует порядок обхода. LinkedHashMap добавляет связный список и может использоваться для LRU-кэша через accessOrder и removeEldestEntry.",
+      "traps": [
+        "Путать LinkedHashMap с TreeMap.",
+        "Считать порядок HashMap стабильным контрактом."
+      ],
+      "followUps": [
+        "Как сделать простой LRU cache?",
+        "Чем TreeMap отличается от LinkedHashMap?"
+      ]
+    },
+    "meta": {
+      "verified": true,
+      "source": "enhorse/java-interview topics, paraphrased",
+      "lastReviewedAt": "2026-05-22",
+      "reviewer": "codex"
+    }
+  },
+  {
+    "id": "jc-034",
+    "domain": "java-core",
+    "difficulty": 5,
+    "type": "single",
+    "mode": "definition",
+    "prompt": "Чем fail-fast итератор отличается от weakly consistent?",
+    "tags": [
+      "collections",
+      "iterator",
+      "concurrency"
+    ],
+    "options": [
+      {
+        "id": "a",
+        "text": "weakly consistent всегда бросает ConcurrentModificationException"
+      },
+      {
+        "id": "b",
+        "text": "fail-fast потокобезопасен"
+      },
+      {
+        "id": "c",
+        "text": "Они идентичны"
+      },
+      {
+        "id": "d",
+        "text": "fail-fast бросает CME при структурном изменении во время обхода; weakly consistent (concurrent-коллекции) не бросает и переживает изменения"
+      }
+    ],
+    "correctOptionIds": [
+      "d"
+    ],
+    "answerGuide": {
+      "short": "Fail-fast пытается быстро упасть при конкурентном изменении; weakly consistent не падает и видит срез/часть изменений.",
+      "normal": "ArrayList/HashMap итераторы отслеживают modCount и при внешнем изменении обычно бросают ConcurrentModificationException. ConcurrentHashMap даёт weakly consistent итератор, который можно использовать во время изменений.",
+      "traps": [
+        "Ловить ConcurrentModificationException как нормальную логику.",
+        "Удалять из коллекции напрямую вместо iterator.remove()."
+      ],
+      "followUps": [
+        "Как безопасно удалить элемент при обходе?",
+        "Что делает CopyOnWriteArrayList?"
+      ]
+    },
+    "meta": {
+      "verified": true,
+      "source": "enhorse/java-interview topics, paraphrased",
+      "lastReviewedAt": "2026-05-22",
+      "reviewer": "codex"
+    }
+  },
+  {
+    "id": "jc-035",
+    "domain": "java-core",
+    "difficulty": 4,
+    "type": "single",
+    "mode": "comparison",
+    "prompt": "Чем IO отличается от NIO?",
+    "tags": [
+      "io",
+      "nio",
+      "channels"
+    ],
+    "options": [
+      {
+        "id": "a",
+        "text": "NIO всегда медленнее IO"
+      },
+      {
+        "id": "b",
+        "text": "IO поток-ориентирован и блокирующий; NIO буфер-ориентирован (Channel/Buffer) и умеет неблокирующий режим с Selector"
+      },
+      {
+        "id": "c",
+        "text": "IO использует каналы и буферы, а NIO — потоки"
+      },
+      {
+        "id": "d",
+        "text": "NIO не поддерживает работу с файлами"
+      }
+    ],
+    "correctOptionIds": [
+      "b"
+    ],
+    "answerGuide": {
+      "short": "IO — stream-oriented и обычно blocking; NIO — buffer/channel/selector и неблокирующая multiplexing-модель.",
+      "normal": "В IO читают из InputStream/Reader и пишут в OutputStream/Writer. В NIO данные идут через Buffer и Channel, а Selector позволяет одному потоку обслуживать несколько каналов.",
+      "traps": [
+        "Считать NIO всегда быстрее для любого файла.",
+        "Путать java.nio.file с неблокирующим сетевым NIO."
+      ],
+      "followUps": [
+        "Что такое Channel?",
+        "Зачем нужен Selector?"
+      ]
+    },
+    "meta": {
+      "verified": true,
+      "source": "enhorse/java-interview topics, paraphrased",
+      "lastReviewedAt": "2026-05-22",
+      "reviewer": "codex"
+    }
+  },
+  {
+    "id": "jc-036",
+    "domain": "java-core",
+    "difficulty": 3,
+    "type": "single",
+    "mode": "definition",
+    "prompt": "Какая пара классов преобразует байтовые потоки в символьные и обратно?",
+    "tags": [
+      "io",
+      "reader",
+      "writer",
+      "charset"
+    ],
+    "options": [
+      {
+        "id": "a",
+        "text": "InputStreamReader и OutputStreamWriter"
+      },
+      {
+        "id": "b",
+        "text": "BufferedInputStream и BufferedOutputStream"
+      },
+      {
+        "id": "c",
+        "text": "DataInputStream и DataOutputStream"
+      },
+      {
+        "id": "d",
+        "text": "File и Path"
+      }
+    ],
+    "correctOptionIds": [
+      "a"
+    ],
+    "answerGuide": {
+      "short": "InputStreamReader декодирует байты в символы, OutputStreamWriter кодирует символы в байты.",
+      "normal": "Важно явно указывать Charset, иначе кодировка по умолчанию окружения может дать разные результаты на разных машинах.",
+      "traps": [
+        "Путать буферизацию с преобразованием кодировки.",
+        "Не указывать charset при чтении текста."
+      ],
+      "followUps": [
+        "Чем Reader отличается от InputStream?",
+        "Зачем нужен BufferedReader?"
+      ]
+    },
+    "meta": {
+      "verified": true,
+      "source": "enhorse/java-interview topics, paraphrased",
+      "lastReviewedAt": "2026-05-22",
+      "reviewer": "codex"
+    }
+  },
+  {
+    "id": "jc-037",
+    "domain": "java-core",
+    "difficulty": 3,
+    "type": "single",
+    "mode": "definition",
+    "prompt": "Зачем нужен serialVersionUID?",
+    "tags": [
+      "serialization",
+      "serialversionuid"
+    ],
+    "options": [
+      {
+        "id": "a",
+        "text": "Это уникальный идентификатор объекта"
+      },
+      {
+        "id": "b",
+        "text": "Он шифрует сериализованные данные"
+      },
+      {
+        "id": "c",
+        "text": "Это версия класса; при несовпадении с потоком — InvalidClassException, поэтому его задают явно для контроля совместимости"
+      },
+      {
+        "id": "d",
+        "text": "Без него сериализация не работает вовсе"
+      }
+    ],
+    "correctOptionIds": [
+      "c"
+    ],
+    "answerGuide": {
+      "short": "Сериализация превращает объект в байты; serialVersionUID проверяет совместимость версии класса.",
+      "normal": "Если serialVersionUID у потока и локального класса не совпадает, десериализация падает InvalidClassException. transient исключает поле из стандартной сериализации.",
+      "traps": [
+        "Десериализовать непроверенные данные.",
+        "Думать, что static поля сериализуются как состояние объекта."
+      ],
+      "followUps": [
+        "Что делает transient?",
+        "Чем Externalizable отличается от Serializable?"
+      ]
+    },
+    "meta": {
+      "verified": true,
+      "source": "enhorse/java-interview topics, paraphrased",
+      "lastReviewedAt": "2026-05-22",
+      "reviewer": "codex"
+    }
+  },
+  {
+    "id": "jc-038",
+    "domain": "java-core",
+    "difficulty": 4,
+    "type": "single",
+    "mode": "definition",
+    "prompt": "Как правильно использовать Optional?",
+    "tags": [
+      "java8",
+      "optional",
+      "null-safety"
+    ],
+    "options": [
+      {
+        "id": "a",
+        "text": "Как тип результата «значение или его нет»; распаковывать через map/orElseGet/orElseThrow, а не get() без проверки"
+      },
+      {
+        "id": "b",
+        "text": "Как поле класса и параметр метода повсюду"
+      },
+      {
+        "id": "c",
+        "text": "Всегда вызывать get() сразу после создания"
+      },
+      {
+        "id": "d",
+        "text": "Оборачивать в Optional любые коллекции"
+      }
+    ],
+    "correctOptionIds": [
+      "a"
+    ],
+    "answerGuide": {
+      "short": "Optional — контейнер для возможного отсутствия результата, чаще всего в return type.",
+      "normal": "Используй Optional как явный сигнал вызывающему коду: значение может отсутствовать. Предпочитай map/flatMap/orElseGet/orElseThrow вместо isPresent()+get().",
+      "traps": [
+        "Класть Optional в entity fields.",
+        "Вызывать optional.get() без проверки."
+      ],
+      "followUps": [
+        "Чем orElse отличается от orElseGet?",
+        "Почему Optional не заменяет валидацию входных параметров?"
+      ]
+    },
+    "meta": {
+      "verified": true,
+      "source": "enhorse/java-interview topics, paraphrased",
+      "lastReviewedAt": "2026-05-22",
+      "reviewer": "codex"
+    }
+  },
+  {
+    "id": "jc-039",
+    "domain": "java-core",
+    "difficulty": 4,
+    "type": "open",
+    "mode": "comparison",
+    "prompt": "Чем map, flatMap и filter отличаются в Stream API?",
+    "tags": [
+      "java8",
+      "streams",
+      "functional"
+    ],
+    "rubric": [
+      {
+        "id": "map",
+        "title": "map",
+        "description": "Преобразует каждый элемент один-к-одному.",
+        "required": true,
+        "weight": 1,
+        "keywords": [
+          "map",
+          "преобраз"
+        ]
+      },
+      {
+        "id": "flatmap",
+        "title": "flatMap",
+        "description": "Преобразует элемент в поток и разворачивает вложенные потоки в один.",
+        "required": true,
+        "weight": 1,
+        "keywords": [
+          "flatmap",
+          "разворач",
+          "stream"
+        ]
+      },
+      {
+        "id": "filter",
+        "title": "filter",
+        "description": "Оставляет элементы, удовлетворяющие Predicate.",
+        "required": true,
+        "weight": 1,
+        "keywords": [
+          "filter",
+          "predicate",
+          "отбор"
+        ]
+      }
+    ],
+    "answerGuide": {
+      "short": "map преобразует, flatMap преобразует и разворачивает, filter отбирает.",
+      "normal": "map(User::email) делает Stream<Email>, flatMap(user -> user.roles().stream()) делает один Stream<Role> из вложенных коллекций, filter(User::active) оставляет только подходящих.",
+      "traps": [
+        "Получить Stream<Stream<T>> там, где нужен flatMap.",
+        "Делать побочные эффекты внутри map/filter."
+      ],
+      "followUps": [
+        "Почему stream операции ленивые?",
+        "Чем collect отличается от reduce?"
+      ]
+    },
+    "meta": {
+      "verified": true,
+      "source": "enhorse/java-interview topics, paraphrased",
+      "lastReviewedAt": "2026-05-22",
+      "reviewer": "codex"
+    }
+  },
+  {
+    "id": "jc-040",
+    "domain": "java-core",
+    "difficulty": 4,
+    "type": "single",
+    "mode": "comparison",
+    "prompt": "Чем LocalDateTime отличается от ZonedDateTime?",
+    "tags": [
+      "java8",
+      "date-time",
+      "time-zone"
+    ],
+    "options": [
+      {
+        "id": "a",
+        "text": "LocalDateTime хранит часовой пояс, ZonedDateTime — нет"
+      },
+      {
+        "id": "b",
+        "text": "LocalDateTime — дата-время без зоны; ZonedDateTime — с часовым поясом (учитывает смещение и переход на летнее время)"
+      },
+      {
+        "id": "c",
+        "text": "Оба хранят момент в UTC одинаково"
+      },
+      {
+        "id": "d",
+        "text": "ZonedDateTime не учитывает часовые пояса"
+      }
+    ],
+    "correctOptionIds": [
+      "b"
+    ],
+    "answerGuide": {
+      "short": "LocalDateTime — локальные дата/время без зоны; ZonedDateTime — дата/время с ZoneId.",
+      "normal": "LocalDateTime подходит для расписаний вроде 'каждый день в 09:00'. Для реального момента события нужен Instant или ZonedDateTime, иначе непонятно, какой это момент в UTC.",
+      "traps": [
+        "Хранить глобальные timestamps в LocalDateTime без зоны.",
+        "Игнорировать переходы DST."
+      ],
+      "followUps": [
+        "Когда использовать OffsetDateTime?",
+        "Как хранить время в БД?"
+      ]
+    },
+    "meta": {
+      "verified": true,
+      "source": "enhorse/java-interview topics, paraphrased",
+      "lastReviewedAt": "2026-05-22",
+      "reviewer": "codex"
+    }
+  },
+  {
+    "id": "jc-041",
+    "domain": "java-core",
+    "difficulty": 5,
+    "type": "open",
+    "mode": "comparison",
+    "prompt": "Чем ReentrantLock отличается от synchronized?",
+    "tags": [
+      "concurrency",
+      "lock",
+      "synchronized"
+    ],
+    "rubric": [
+      {
+        "id": "synchronized",
+        "title": "synchronized",
+        "description": "Встроенный монитор, автоматический release при выходе из блока.",
+        "required": true,
+        "weight": 1,
+        "keywords": [
+          "synchronized",
+          "monitor",
+          "автомат"
+        ]
+      },
+      {
+        "id": "lock",
+        "title": "ReentrantLock",
+        "description": "Явный lock/unlock, tryLock, interruptible lock, fair mode и Conditions.",
+        "required": true,
+        "weight": 2,
+        "keywords": [
+          "reentrantlock",
+          "trylock",
+          "condition",
+          "fair"
+        ]
+      },
+      {
+        "id": "finally",
+        "title": "finally",
+        "description": "unlock должен быть в finally, иначе можно навсегда удержать блокировку.",
+        "required": true,
+        "weight": 1,
+        "keywords": [
+          "finally",
+          "unlock"
+        ]
+      }
+    ],
+    "answerGuide": {
+      "short": "synchronized проще и автоматический; ReentrantLock гибче, но требует unlock в finally.",
+      "normal": "ReentrantLock выбирают, когда нужны tryLock, ожидание с прерыванием, fairness или несколько Condition. Для простых критических секций synchronized читается лучше.",
+      "traps": [
+        "Забыть unlock при исключении.",
+        "Использовать ReentrantLock без реальной потребности в его возможностях."
+      ],
+      "followUps": [
+        "Что такое Condition?",
+        "Что значит reentrant lock?"
+      ]
+    },
+    "meta": {
+      "verified": true,
+      "source": "enhorse/java-interview topics, paraphrased",
+      "lastReviewedAt": "2026-05-22",
+      "reviewer": "codex"
+    }
+  },
+  {
+    "id": "jc-042",
+    "domain": "java-core",
+    "difficulty": 5,
+    "type": "single",
+    "mode": "definition",
+    "prompt": "В чём опасность ThreadLocal в пуле потоков?",
+    "tags": [
+      "concurrency",
+      "threadlocal"
+    ],
+    "options": [
+      {
+        "id": "a",
+        "text": "ThreadLocal вообще не работает в пулах"
+      },
+      {
+        "id": "b",
+        "text": "Значение очищается автоматически после задачи"
+      },
+      {
+        "id": "c",
+        "text": "ThreadLocal замедляет поток"
+      },
+      {
+        "id": "d",
+        "text": "Поток переиспользуется, поэтому значение «протекает» в следующую задачу и течёт память — нужен remove() в finally"
+      }
+    ],
+    "correctOptionIds": [
+      "d"
+    ],
+    "answerGuide": {
+      "short": "ThreadLocal даёт значение на поток; в пулах потоков его надо очищать через remove().",
+      "normal": "Он полезен для контекста, связанного с текущим потоком выполнения, но в серверных пулах поток переиспользуется между запросами. Неочищенный ThreadLocal может протащить чужой контекст и удерживать память.",
+      "traps": [
+        "Использовать ThreadLocal как глобальное состояние.",
+        "Не чистить ThreadLocal в finally."
+      ],
+      "followUps": [
+        "Как Spring хранит transaction context?",
+        "Почему MDC логгера чистят после запроса?"
+      ]
+    },
+    "meta": {
+      "verified": true,
+      "source": "enhorse/java-interview topics, paraphrased",
+      "lastReviewedAt": "2026-05-22",
+      "reviewer": "codex"
+    }
+  },
+  {
+    "id": "jc-043",
+    "domain": "java-core",
+    "difficulty": 5,
+    "type": "open",
+    "mode": "definition",
+    "prompt": "Что такое deadlock и как его предотвращать?",
+    "tags": [
+      "concurrency",
+      "deadlock",
+      "locks"
+    ],
+    "rubric": [
+      {
+        "id": "definition",
+        "title": "Definition",
+        "description": "Потоки навсегда ждут ресурсы друг друга, образуя цикл ожидания.",
+        "required": true,
+        "weight": 2,
+        "keywords": [
+          "deadlock",
+          "цикл",
+          "ждут"
+        ]
+      },
+      {
+        "id": "conditions",
+        "title": "Условия",
+        "description": "Mutual exclusion, hold-and-wait, no preemption, circular wait.",
+        "required": false,
+        "weight": 1,
+        "keywords": [
+          "mutual exclusion",
+          "hold",
+          "circular"
+        ]
+      },
+      {
+        "id": "prevention",
+        "title": "Профилактика",
+        "description": "Единый порядок захвата locks, timeout/tryLock, минимизация критических секций.",
+        "required": true,
+        "weight": 2,
+        "keywords": [
+          "порядок",
+          "trylock",
+          "timeout",
+          "критичес"
+        ]
+      }
+    ],
+    "answerGuide": {
+      "short": "Deadlock — цикл ожидания locks; предотвращают единым порядком захвата и timeout/tryLock.",
+      "normal": "Если поток A держит lock1 и ждёт lock2, а поток B держит lock2 и ждёт lock1, оба застрянут. Решение — глобальный порядок locks, короткие критические секции, tryLock с откатом.",
+      "traps": [
+        "Захватывать locks в разном порядке.",
+        "Держать lock во время внешнего IO/сетевого вызова."
+      ],
+      "followUps": [
+        "Как получить thread dump?",
+        "Чем deadlock отличается от livelock?"
+      ]
+    },
+    "meta": {
+      "verified": true,
+      "source": "enhorse/java-interview topics, paraphrased",
+      "lastReviewedAt": "2026-05-22",
+      "reviewer": "codex"
+    }
+  },
+  {
+    "id": "jc-044",
+    "domain": "java-core",
+    "difficulty": 5,
+    "type": "single",
+    "mode": "comparison",
+    "prompt": "Чем CountDownLatch отличается от CyclicBarrier?",
+    "tags": [
+      "concurrency",
+      "countdownlatch",
+      "cyclicbarrier"
+    ],
+    "options": [
+      {
+        "id": "a",
+        "text": "CountDownLatch одноразовый (дождаться N событий); CyclicBarrier переиспользуемый рандеву группы потоков"
+      },
+      {
+        "id": "b",
+        "text": "CyclicBarrier одноразовый, а CountDownLatch — нет"
+      },
+      {
+        "id": "c",
+        "text": "Оба ограничивают доступ к ресурсу, как семафор"
+      },
+      {
+        "id": "d",
+        "text": "Они полностью идентичны"
+      }
+    ],
+    "correctOptionIds": [
+      "a"
+    ],
+    "answerGuide": {
+      "short": "CountDownLatch одноразово ждёт счётчик; CyclicBarrier собирает группу потоков на переиспользуемом барьере.",
+      "normal": "Latch часто используют, чтобы основной поток дождался N worker-ов. Barrier — когда N потоков должны встретиться на границе фазы и затем продолжить вместе.",
+      "traps": [
+        "Пытаться сбросить CountDownLatch.",
+        "Забывать, что сломанный barrier может выбросить BrokenBarrierException."
+      ],
+      "followUps": [
+        "Что такое Semaphore?",
+        "Когда нужен Phaser?"
+      ]
+    },
+    "meta": {
+      "verified": true,
+      "source": "enhorse/java-interview topics, paraphrased",
+      "lastReviewedAt": "2026-05-22",
+      "reviewer": "codex"
+    }
+  },
+  {
+    "id": "jc-045",
+    "domain": "java-core",
+    "difficulty": 5,
+    "type": "single",
+    "mode": "definition",
+    "prompt": "Зачем нужен пул потоков (ExecutorService)?",
+    "tags": [
+      "concurrency",
+      "executorservice",
+      "thread-pool"
+    ],
+    "options": [
+      {
+        "id": "a",
+        "text": "Чтобы каждый запрос создавал новый поток"
+      },
+      {
+        "id": "b",
+        "text": "Чтобы ускорить CPU-bound код в разы"
+      },
+      {
+        "id": "c",
+        "text": "Переиспользовать ограниченное число потоков и не плодить new Thread на каждую задачу (защита ресурсов)"
+      },
+      {
+        "id": "d",
+        "text": "Чтобы полностью заменить синхронизацию"
+      }
+    ],
+    "correctOptionIds": [
+      "c"
+    ],
+    "answerGuide": {
+      "short": "ExecutorService запускает задачи в управляемом пуле потоков вместо ручного new Thread.",
+      "normal": "Пул ограничивает параллелизм, переиспользует потоки и даёт очередь задач. submit возвращает Future, execute просто отправляет Runnable.",
+      "traps": [
+        "Создавать cached pool без лимитов под неограниченную нагрузку.",
+        "Не вызывать shutdown()."
+      ],
+      "followUps": [
+        "Чем submit отличается от execute?",
+        "Как подобрать размер пула?"
+      ]
+    },
+    "meta": {
+      "verified": true,
+      "source": "enhorse/java-interview topics, paraphrased",
+      "lastReviewedAt": "2026-05-22",
+      "reviewer": "codex"
+    }
+  },
+  {
+    "id": "jc-046",
+    "domain": "java-core",
+    "difficulty": 5,
+    "type": "open",
+    "mode": "definition",
+    "prompt": "Что такое Fork/Join framework и work stealing?",
+    "tags": [
+      "concurrency",
+      "forkjoin",
+      "parallelism"
+    ],
+    "rubric": [
+      {
+        "id": "forkjoin",
+        "title": "Fork/Join",
+        "description": "Фреймворк для рекурсивного разбиения задачи на подзадачи и объединения результатов.",
+        "required": true,
+        "weight": 2,
+        "keywords": [
+          "fork",
+          "join",
+          "recursive",
+          "подзадач"
+        ]
+      },
+      {
+        "id": "work-stealing",
+        "title": "Work stealing",
+        "description": "Свободные worker-потоки забирают задачи из очередей занятых worker-ов.",
+        "required": true,
+        "weight": 2,
+        "keywords": [
+          "work stealing",
+          "steal",
+          "очеред"
+        ]
+      },
+      {
+        "id": "use",
+        "title": "Use case",
+        "description": "Лучше подходит для CPU-bound divide-and-conquer задач, а не для блокирующего IO.",
+        "required": false,
+        "weight": 1,
+        "keywords": [
+          "cpu",
+          "divide",
+          "blocking"
+        ]
+      }
+    ],
+    "answerGuide": {
+      "short": "Fork/Join делит задачу на подзадачи; work stealing балансирует их между worker-потоками.",
+      "normal": "RecursiveTask возвращает результат, RecursiveAction не возвращает. Подходит для независимых CPU-bound задач, которые можно рекурсивно разделить.",
+      "traps": [
+        "Запускать долгий blocking IO в common ForkJoinPool.",
+        "Делить задачу слишком мелко и тратить время на overhead."
+      ],
+      "followUps": [
+        "Как parallelStream связан с ForkJoinPool?",
+        "Когда parallelStream вреден?"
+      ]
+    },
+    "meta": {
+      "verified": true,
+      "source": "enhorse/java-interview topics, paraphrased",
+      "lastReviewedAt": "2026-05-22",
+      "reviewer": "codex"
+    }
+  },
+  {
+    "id": "jc-047",
+    "domain": "java-core",
+    "difficulty": 4,
+    "type": "open",
+    "mode": "definition",
+    "prompt": "Что такое class loader и как работает делегирование загрузки классов?",
+    "tags": [
+      "jvm",
+      "classloader"
+    ],
+    "rubric": [
+      {
+        "id": "loader",
+        "title": "Class loader",
+        "description": "Загружает байткод класса, создаёт Class-метаданные и связывает класс с JVM.",
+        "required": true,
+        "weight": 1,
+        "keywords": [
+          "classloader",
+          "байткод",
+          "class"
+        ]
+      },
+      {
+        "id": "delegation",
+        "title": "Delegation",
+        "description": "Обычно сначала делегирует родителю, чтобы базовые классы грузились доверенным loader-ом.",
+        "required": true,
+        "weight": 2,
+        "keywords": [
+          "parent",
+          "delegation",
+          "делег"
+        ]
+      },
+      {
+        "id": "identity",
+        "title": "Identity",
+        "description": "Идентичность класса определяется именем плюс class loader; один FQN в разных loader-ах может быть разными классами.",
+        "required": false,
+        "weight": 1,
+        "keywords": [
+          "identity",
+          "loader",
+          "fqn"
+        ]
+      }
+    ],
+    "answerGuide": {
+      "short": "ClassLoader загружает классы; parent delegation сначала спрашивает родителя.",
+      "normal": "Bootstrap грузит базовые классы, platform/application loaders — платформенные и classpath/modulepath классы. Делегирование защищает ядро Java от подмены и даёт предсказуемость.",
+      "traps": [
+        "Думать, что класс определяется только package+name.",
+        "Не учитывать classloader leaks в контейнерах."
+      ],
+      "followUps": [
+        "Что такое metaspace?",
+        "Почему два одинаковых класса из разных classloader несовместимы?"
+      ]
+    },
+    "meta": {
+      "verified": true,
+      "source": "enhorse/java-interview topics, paraphrased",
+      "lastReviewedAt": "2026-05-22",
+      "reviewer": "codex"
+    }
+  },
+  {
+    "id": "jc-048",
+    "domain": "java-core",
+    "difficulty": 5,
+    "type": "open",
+    "mode": "definition",
+    "prompt": "Что такое паттерн Singleton и как сделать его потокобезопасным?",
+    "tags": [
+      "patterns",
+      "singleton",
+      "concurrency"
+    ],
+    "rubric": [
+      {
+        "id": "purpose",
+        "title": "Назначение",
+        "description": "Гарантирует один экземпляр класса и глобальную точку доступа.",
+        "required": true,
+        "weight": 1,
+        "keywords": [
+          "singleton",
+          "один экземпляр"
+        ]
+      },
+      {
+        "id": "safe",
+        "title": "Thread-safe варианты",
+        "description": "Enum singleton, static holder или корректный double-checked locking с volatile.",
+        "required": true,
+        "weight": 2,
+        "keywords": [
+          "enum",
+          "holder",
+          "volatile",
+          "double checked"
+        ]
+      },
+      {
+        "id": "tradeoff",
+        "title": "Минусы",
+        "description": "Глобальное состояние ухудшает тестируемость и связывает код.",
+        "required": false,
+        "weight": 1,
+        "keywords": [
+          "глобаль",
+          "тест",
+          "связыв"
+        ]
+      }
+    ],
+    "answerGuide": {
+      "short": "Singleton даёт один экземпляр; безопаснее всего enum или static holder, DCL требует volatile.",
+      "normal": "Enum singleton прост и устойчив к сериализации/рефлексии лучше обычного приватного конструктора. Static holder ленив и потокобезопасен за счёт инициализации класса.",
+      "traps": [
+        "Писать double-checked locking без volatile.",
+        "Использовать singleton как контейнер глобального mutable состояния."
+      ],
+      "followUps": [
+        "Почему singleton мешает тестам?",
+        "Как DI-контейнер решает singleton scope?"
+      ]
+    },
+    "meta": {
+      "verified": true,
+      "source": "enhorse/java-interview topics, paraphrased",
+      "lastReviewedAt": "2026-05-22",
+      "reviewer": "codex"
+    }
+  },
+  {
+    "id": "jc-049",
+    "domain": "java-core",
+    "difficulty": 4,
+    "type": "single",
+    "mode": "comparison",
+    "prompt": "Чем unit-тест отличается от integration-теста?",
+    "tags": [
+      "testing",
+      "unit-test",
+      "integration-test"
+    ],
+    "options": [
+      {
+        "id": "a",
+        "text": "Unit-тесты медленнее integration-тестов"
+      },
+      {
+        "id": "b",
+        "text": "Unit проверяет единицу кода изолированно (быстро, с моками); integration — взаимодействие компонентов и реальных зависимостей"
+      },
+      {
+        "id": "c",
+        "text": "Integration-тесты никогда не используют реальную БД"
+      },
+      {
+        "id": "d",
+        "text": "Это одно и то же"
+      }
+    ],
+    "correctOptionIds": [
+      "b"
+    ],
+    "answerGuide": {
+      "short": "Unit тестирует кусок логики изолированно; integration проверяет связку компонентов.",
+      "normal": "Unit-тесты быстрые и их много. Интеграционные тесты дороже, но нужны для репозиториев, миграций, HTTP-контрактов, сериализации и брокеров.",
+      "traps": [
+        "Мокать всё подряд и не проверить реальный контракт.",
+        "Поднимать весь Spring context для каждого простого unit-теста."
+      ],
+      "followUps": [
+        "Что такое test pyramid?",
+        "Когда использовать Testcontainers?"
+      ]
+    },
+    "meta": {
+      "verified": true,
+      "source": "enhorse/java-interview topics, paraphrased",
+      "lastReviewedAt": "2026-05-22",
+      "reviewer": "codex"
+    }
+  },
+  {
+    "id": "jc-050",
+    "domain": "java-core",
+    "difficulty": 4,
+    "type": "single",
+    "mode": "definition",
+    "prompt": "Что описывают уровни логирования TRACE/DEBUG/INFO/WARN/ERROR?",
+    "tags": [
+      "logging",
+      "observability"
+    ],
+    "options": [
+      {
+        "id": "a",
+        "text": "Скорость записи лога"
+      },
+      {
+        "id": "b",
+        "text": "Размер сообщения"
+      },
+      {
+        "id": "c",
+        "text": "Приоритет потока, пишущего лог"
+      },
+      {
+        "id": "d",
+        "text": "Возрастающую важность: от подробной диагностики (TRACE/DEBUG) к событиям (INFO) и проблемам (WARN/ERROR)"
+      }
+    ],
+    "correctOptionIds": [
+      "d"
+    ],
+    "answerGuide": {
+      "short": "TRACE/DEBUG — диагностика, INFO — нормальные важные события, WARN — подозрительно, ERROR — ошибка.",
+      "normal": "Логи должны помогать эксплуатации: не логировать секреты, добавлять request/correlation id, не писать stacktrace на ожидаемый бизнес-сценарий.",
+      "traps": [
+        "Логировать пароли/токены.",
+        "Писать всё в ERROR и ломать алерты."
+      ],
+      "followUps": [
+        "Что такое MDC?",
+        "Чем лог отличается от метрики?"
+      ]
+    },
+    "meta": {
+      "verified": true,
+      "source": "enhorse/java-interview topics, paraphrased",
+      "lastReviewedAt": "2026-05-22",
+      "reviewer": "codex"
+    }
+  },
+  {
+    "id": "jc-051",
+    "domain": "java-core",
+    "difficulty": 3,
+    "type": "single",
+    "mode": "definition",
+    "prompt": "Что такое record и когда его использовать?",
+    "tags": [
+      "records",
+      "modern-java",
+      "immutability"
+    ],
+    "options": [
+      {
+        "id": "a",
+        "text": "Компактный неизменяемый носитель данных (автогенерит final-поля, конструктор, equals/hashCode/toString) — для DTO/value-объектов"
+      },
+      {
+        "id": "b",
+        "text": "Изменяемая сущность с identity для JPA"
+      },
+      {
+        "id": "c",
+        "text": "Способ объявить интерфейс"
+      },
+      {
+        "id": "d",
+        "text": "Аналог enum с фиксированным набором значений"
+      }
+    ],
+    "correctOptionIds": [
+      "a"
+    ],
+    "answerGuide": {
+      "short": "Record — компактный immutable carrier для данных с готовыми equals/hashCode/toString.",
+      "normal": "Используй record для DTO и value-like объектов без сложной identity/lifecycle логики. Если поле указывает на mutable коллекцию, нужна defensive copy.",
+      "traps": [
+        "Считать record глубоко immutable автоматически.",
+        "Использовать record для JPA entity со сложным lifecycle."
+      ],
+      "followUps": [
+        "Чем record отличается от class?",
+        "Что такое compact constructor?"
+      ]
+    },
+    "meta": {
+      "verified": true,
+      "source": "codex",
+      "lastReviewedAt": "2026-05-22",
+      "reviewer": "codex"
+    }
+  },
+  {
+    "id": "jc-052",
+    "domain": "java-core",
+    "difficulty": 4,
+    "type": "single",
+    "mode": "definition",
+    "prompt": "Что такое sealed class/interface?",
+    "tags": [
+      "sealed",
+      "modern-java",
+      "oop"
+    ],
+    "options": [
+      {
+        "id": "a",
+        "text": "Класс, который нельзя инстанцировать"
+      },
+      {
+        "id": "b",
+        "text": "Синоним final-класса"
+      },
+      {
+        "id": "c",
+        "text": "Тип, ограничивающий список наследников через permits — закрытая иерархия с проверкой исчерпываемости"
+      },
+      {
+        "id": "d",
+        "text": "Класс без полей и методов"
+      }
+    ],
+    "correctOptionIds": [
+      "c"
+    ],
+    "answerGuide": {
+      "short": "Sealed type явно ограничивает, кто может его наследовать.",
+      "normal": "Это удобно для закрытых иерархий вроде PaymentResult или Command. Компилятор лучше понимает все варианты, а модель домена становится явнее.",
+      "traps": [
+        "Путать sealed с final: final запрещает всех наследников, sealed разрешает конкретных.",
+        "Открывать иерархию через non-sealed без причины."
+      ],
+      "followUps": [
+        "Чем sealed полезен для switch?",
+        "Когда sealed ухудшит расширяемость?"
+      ]
+    },
+    "meta": {
+      "verified": true,
+      "source": "codex",
+      "lastReviewedAt": "2026-05-22",
+      "reviewer": "codex"
+    }
+  },
+  {
+    "id": "jc-053",
+    "domain": "java-core",
+    "difficulty": 5,
+    "type": "open",
+    "mode": "comparison",
+    "prompt": "Чем virtual threads отличаются от platform threads?",
+    "tags": [
+      "virtual-threads",
+      "concurrency",
+      "performance"
+    ],
+    "rubric": [
+      {
+        "id": "platform",
+        "title": "Platform threads",
+        "description": "Тяжёлые потоки ОС, ограничены памятью/планировщиком и дороже в большом количестве.",
+        "required": true,
+        "weight": 1,
+        "keywords": [
+          "platform",
+          "os thread",
+          "тяж"
+        ]
+      },
+      {
+        "id": "virtual",
+        "title": "Virtual threads",
+        "description": "Лёгкие JVM-managed потоки, хорошо подходят для множества blocking IO задач.",
+        "required": true,
+        "weight": 2,
+        "keywords": [
+          "virtual",
+          "lightweight",
+          "blocking io"
+        ]
+      },
+      {
+        "id": "limits",
+        "title": "Ограничения",
+        "description": "Не ускоряют CPU-bound задачи и не увеличивают лимиты БД/API сами по себе.",
+        "required": true,
+        "weight": 1,
+        "keywords": [
+          "cpu",
+          "connection pool",
+          "limit"
+        ]
+      }
+    ],
+    "answerGuide": {
+      "short": "Platform threads — тяжёлые OS-потоки, дорогие в большом числе. Virtual threads — лёгкие JVM-managed, хороши для множества blocking IO задач; CPU быстрее от них не станет.",
+      "normal": "Platform-поток — это thin-wrapper над тяжёлым OS thread, поэтому их держат сотни-тысячи максимум. Virtual thread — JVM-managed, в момент блокировки JVM «снимает» его с носителя, поэтому миллионы их живут спокойно. Модель «thread per task» становится практичной, но внешние ресурсы всё равно нужно ограничивать: connection pools, semaphores, rate limits.",
+      "traps": [
+        "Использовать virtual threads как замену backpressure.",
+        "Ждать ускорения CPU-bound расчётов."
+      ],
+      "followUps": [
+        "Что такое pinning?",
+        "Как virtual threads влияют на Spring MVC?"
+      ]
+    },
+    "meta": {
+      "verified": true,
+      "source": "codex",
+      "lastReviewedAt": "2026-05-22",
+      "reviewer": "codex"
+    }
+  },
+  {
+    "id": "jc-054",
+    "domain": "java-core",
+    "difficulty": 4,
+    "type": "single",
+    "mode": "definition",
+    "prompt": "Какой инструмент обычно используют для корректных Java microbenchmarks?",
+    "tags": [
+      "jmh",
+      "benchmark",
+      "performance"
+    ],
+    "options": [
+      {
+        "id": "a",
+        "text": "System.currentTimeMillis() вокруг одного вызова"
+      },
+      {
+        "id": "b",
+        "text": "JMH"
+      },
+      {
+        "id": "c",
+        "text": "Thread.sleep()"
+      },
+      {
+        "id": "d",
+        "text": "javap"
+      }
+    ],
+    "correctOptionIds": [
+      "b"
+    ],
+    "answerGuide": {
+      "short": "Для microbenchmark в Java используют JMH.",
+      "normal": "JMH учитывает warmup, forks, dead-code elimination и другие эффекты JVM/JIT. Наивное измерение одного вызова часто даёт мусор.",
+      "traps": [
+        "Мерить холодный код без warmup.",
+        "Не защищаться от оптимизации неиспользуемого результата."
+      ],
+      "followUps": [
+        "Зачем нужен warmup?",
+        "Что такое dead-code elimination?"
+      ]
+    },
+    "meta": {
+      "verified": true,
+      "source": "codex",
+      "lastReviewedAt": "2026-05-22",
+      "reviewer": "codex"
+    }
+  },
+  {
+    "id": "jc-055",
+    "domain": "java-core",
+    "difficulty": 2,
+    "type": "open",
+    "mode": "live_coding",
+    "language": "java",
+    "starterCode": "String reverse(String s) {\n    // ваш код\n}",
+    "prompt": "Реализуй метод reverse(String s), возвращающий строку в обратном порядке.",
+    "tags": [
+      "coding",
+      "strings"
+    ],
+    "rubric": [
+      {
+        "id": "logic",
+        "title": "Корректный разворот",
+        "description": "Возвращает строку, развёрнутую посимвольно (StringBuilder.reverse() или обход с конца).",
+        "required": true,
+        "weight": 2,
+        "keywords": [
+          "stringbuilder",
+          "reverse",
+          "обрат",
+          "charat"
+        ]
+      },
+      {
+        "id": "edge",
+        "title": "Краевые случаи",
+        "description": "Корректно обрабатывает null и пустую строку.",
+        "required": false,
+        "weight": 1,
+        "keywords": [
+          "null",
+          "пуст",
+          "empty"
+        ]
+      }
+    ],
+    "answerGuide": {
+      "short": "Самое простое — new StringBuilder(s).reverse().toString().",
+      "normal": "Идиоматично: return new StringBuilder(s).reverse().toString(); либо обойти массив символов с конца. Не забудь про null и пустую строку.",
+      "traps": [
+        "Падение на null.",
+        "Конкатенация String в цикле вместо StringBuilder."
+      ],
+      "followUps": [
+        "Как развернуть с учётом графем?",
+        "Какая сложность у решения?"
+      ]
+    },
+    "meta": {
+      "verified": true,
+      "source": "seed",
+      "lastReviewedAt": "2026-05-22",
+      "reviewer": "seed"
+    }
+  },
+  {
+    "id": "jc-056",
+    "domain": "java-core",
+    "difficulty": 4,
+    "type": "open",
+    "mode": "live_coding",
+    "language": "java",
+    "starterCode": "class Counter {\n    // поле(я)\n\n    void increment() {\n        // ваш код\n    }\n\n    int get() {\n        // ваш код\n    }\n}",
+    "prompt": "Реализуй потокобезопасный счётчик Counter с методами increment() и get().",
+    "tags": [
+      "coding",
+      "concurrency"
+    ],
+    "rubric": [
+      {
+        "id": "thread-safe",
+        "title": "Потокобезопасность",
+        "description": "increment атомарен (AtomicInteger или synchronized), без гонок.",
+        "required": true,
+        "weight": 2,
+        "keywords": [
+          "atomicinteger",
+          "synchronized",
+          "atomic",
+          "incrementandget"
+        ]
+      },
+      {
+        "id": "visibility",
+        "title": "Видимость",
+        "description": "get возвращает актуальное значение между потоками (atomic/volatile/synchronized).",
+        "required": true,
+        "weight": 1,
+        "keywords": [
+          "volatile",
+          "atomic",
+          "synchronized",
+          "видим"
+        ]
+      }
+    ],
+    "answerGuide": {
+      "short": "Проще всего — AtomicInteger с incrementAndGet() и get().",
+      "normal": "private final AtomicInteger c = new AtomicInteger(); increment → c.incrementAndGet(); get → c.get(). Альтернатива — synchronized на обоих методах.",
+      "traps": [
+        "volatile-счётчик с ++ (гонка).",
+        "synchronized только на increment, но не на get (теряется видимость)."
+      ],
+      "followUps": [
+        "Чем LongAdder лучше AtomicLong?",
+        "Что гарантирует happens-before здесь?"
+      ]
+    },
+    "meta": {
+      "verified": true,
+      "source": "seed",
+      "lastReviewedAt": "2026-05-22",
+      "reviewer": "seed"
+    }
+  },
+  {
+    "id": "jc-057",
+    "domain": "java-core",
+    "difficulty": 2,
+    "type": "single",
+    "mode": "definition",
+    "prompt": "Сколько в Java примитивных типов и что хранит char?",
+    "tags": [
+      "primitives"
+    ],
+    "options": [
+      {
+        "id": "a",
+        "text": "8 примитивов; char — 16-битный беззнаковый тип, один UTF-16 code unit"
+      },
+      {
+        "id": "b",
+        "text": "8 примитивов; char хранит любой символ Unicode целиком (32 бита)"
+      },
+      {
+        "id": "c",
+        "text": "9 примитивов, включая String для текста"
+      },
+      {
+        "id": "d",
+        "text": "7 примитивов; boolean — это int шириной 1 бит"
+      }
+    ],
+    "correctOptionIds": [
+      "a"
+    ],
+    "answerGuide": {
+      "short": "Примитивов восемь: byte, short, int, long, float, double, char, boolean. char — 16-битный UTF-16 code unit.",
+      "normal": "Перечисли восемь примитивов и их размеры (целые byte/short/int/long, вещественные float/double, char 16 бит, boolean — размер не специфицирован). char — это code unit, а не «символ»: эмодзи и редкие иероглифы вне базовой плоскости кодируются суррогатной парой из двух char, поэтому length() считает code units. Примитивы хранят значение напрямую, не объект.",
+      "traps": [
+        "Считать char способным вместить любой символ Unicode (вне BMP — суррогатная пара).",
+        "Называть String примитивом."
+      ],
+      "followUps": [
+        "Почему length() у строки с эмодзи больше числа видимых символов?",
+        "Чем char отличается от code point?"
+      ]
+    },
+    "meta": {
+      "verified": true,
+      "source": "seed",
+      "lastReviewedAt": "2026-05-24",
+      "reviewer": "seed"
+    }
+  },
+  {
+    "id": "jc-058",
+    "domain": "java-core",
+    "difficulty": 3,
+    "type": "single",
+    "mode": "scenario",
+    "prompt": "Чему равно Integer.MAX_VALUE + 1 и бросит ли это исключение?",
+    "tags": [
+      "primitives",
+      "numeric"
+    ],
+    "options": [
+      {
+        "id": "a",
+        "text": "Integer.MIN_VALUE; исключения нет — целочисленное переполнение молча заворачивается"
+      },
+      {
+        "id": "b",
+        "text": "Бросит ArithmeticException о переполнении"
+      },
+      {
+        "id": "c",
+        "text": "Long.MAX_VALUE; тип сам расширится до long"
+      },
+      {
+        "id": "d",
+        "text": "0 — счётчик обнуляется"
+      }
+    ],
+    "correctOptionIds": [
+      "a"
+    ],
+    "answerGuide": {
+      "short": "Переполнение int не бросает исключение, а заворачивается: MAX_VALUE + 1 = MIN_VALUE.",
+      "normal": "Целочисленная арифметика в Java работает по модулю 2^n и молча переполняется — это частый источник багов (например, в (low + high) / 2 при бинарном поиске). Если нужна защита, используют Math.addExact / Math.multiplyExact (бросают ArithmeticException) или считают в long.",
+      "traps": [
+        "Ждать ArithmeticException от обычного + (его бросает только деление на ноль у целых).",
+        "Думать, что int сам расширится до long."
+      ],
+      "followUps": [
+        "Как переполнение ломает (low + high) / 2 и как это чинят?",
+        "Что делает Math.addExact?"
+      ]
+    },
+    "meta": {
+      "verified": true,
+      "source": "seed",
+      "lastReviewedAt": "2026-05-24",
+      "reviewer": "seed"
+    }
+  },
+  {
+    "id": "jc-059",
+    "domain": "java-core",
+    "difficulty": 3,
+    "type": "single",
+    "mode": "scenario",
+    "prompt": "Что выведет System.out.println(0.1 + 0.2 == 0.3) и что брать для денег?",
+    "tags": [
+      "primitives",
+      "floating-point"
+    ],
+    "options": [
+      {
+        "id": "a",
+        "text": "false — у double есть погрешность представления IEEE 754; для денег берут BigDecimal"
+      },
+      {
+        "id": "b",
+        "text": "true — double точен для таких чисел; деньги тоже храни в double"
+      },
+      {
+        "id": "c",
+        "text": "true — компилятор округлит; для денег подойдёт float"
+      },
+      {
+        "id": "d",
+        "text": "Ошибка компиляции: double нельзя сравнивать через =="
+      }
+    ],
+    "correctOptionIds": [
+      "a"
+    ],
+    "answerGuide": {
+      "short": "0.1 + 0.2 != 0.3: float/double — это IEEE 754 с погрешностью. Для денег используют BigDecimal.",
+      "normal": "Дробные числа хранятся в двоичной плавающей точке, где 0.1 непредставимо точно, поэтому сумма даёт 0.30000000000000004. Сравнивать double на равенство нельзя — сравнивают с допуском (|a-b| < eps). Для денег берут BigDecimal и создают его из строки (new BigDecimal(\"0.1\")), а не из double, иначе погрешность переедет внутрь.",
+      "traps": [
+        "Хранить деньги в double/float.",
+        "Создавать BigDecimal из double-литерала вместо строки."
+      ],
+      "followUps": [
+        "Почему new BigDecimal(0.1) хуже new BigDecimal(\"0.1\")?",
+        "Как корректно сравнить два double?"
+      ]
+    },
+    "meta": {
+      "verified": true,
+      "source": "seed",
+      "lastReviewedAt": "2026-05-24",
+      "reviewer": "seed"
+    }
+  },
+  {
+    "id": "jc-060",
+    "domain": "java-core",
+    "difficulty": 3,
+    "type": "single",
+    "mode": "scenario",
+    "prompt": "Что произойдёт при выполнении: Integer x = null; int y = x;?",
+    "tags": [
+      "autoboxing",
+      "unboxing"
+    ],
+    "options": [
+      {
+        "id": "a",
+        "text": "NullPointerException при распаковке null-обёртки в примитив"
+      },
+      {
+        "id": "b",
+        "text": "y станет 0 — значение по умолчанию для int"
+      },
+      {
+        "id": "c",
+        "text": "Не скомпилируется: нельзя присвоить null переменной Integer"
+      },
+      {
+        "id": "d",
+        "text": "y станет null"
+      }
+    ],
+    "correctOptionIds": [
+      "a"
+    ],
+    "answerGuide": {
+      "short": "Распаковка null в примитив бросает NPE: обёртка может быть null, а int — нет.",
+      "normal": "int y = x компилируется в x.intValue(), а вызов метода на null даёт NullPointerException. Типичный источник — результаты, способные вернуть null (map.get(key)), присвоенные примитиву. Защита: использовать примитив там, где «отсутствие» бессмысленно; подставлять дефолт через getOrDefault / Objects.requireNonNullElse; для «значение может отсутствовать» возвращать Optional, а не nullable-обёртку.",
+      "traps": [
+        "Ждать дефолт 0 при распаковке null.",
+        "Присваивать map.get(key) переменной int без проверки на null."
+      ],
+      "followUps": [
+        "Как getOrDefault убирает этот NPE?",
+        "Где уместен примитив, а где обёртка в полях класса?"
+      ]
+    },
+    "meta": {
+      "verified": true,
+      "source": "seed",
+      "lastReviewedAt": "2026-05-24",
+      "reviewer": "seed"
+    }
+  },
+  {
+    "id": "jc-061",
+    "domain": "java-core",
+    "difficulty": 4,
+    "type": "single",
+    "mode": "scenario",
+    "prompt": "Почему int v = flag ? map.get(key) : 0 (map.get может вернуть null) способно бросить NPE?",
+    "tags": [
+      "autoboxing",
+      "unboxing"
+    ],
+    "options": [
+      {
+        "id": "a",
+        "text": "Смешение Integer и int делает тип всего тернарника int (числовое расширение), поэтому ветка-обёртка распаковывается — null в ней даёт NPE"
+      },
+      {
+        "id": "b",
+        "text": "Тернарный оператор вычисляет обе ветви, поэтому map.get(key) выполняется всегда"
+      },
+      {
+        "id": "c",
+        "text": "map.get(key) при отсутствии ключа сам бросает NPE"
+      },
+      {
+        "id": "d",
+        "text": "0 неявно приводится к Integer, и сравнение с null падает"
+      }
+    ],
+    "correctOptionIds": [
+      "a"
+    ],
+    "answerGuide": {
+      "short": "Тернарник с Integer и int имеет тип int, поэтому обёртка распаковывается; если выбранная ветка — null, будет NPE.",
+      "normal": "Когда одна ветвь тернарного оператора примитив (int), а другая обёртка (Integer), к выражению применяется числовое расширение и его тип становится int — значит, обёрточная ветвь будет распакована через intValue(). Если выбрана именно она и значение null, получаем NPE, хотя код выглядит безопасным. Лечится тем, что не смешивают обёртку и примитив в одном тернарнике: сначала достают значение с дефолтом (getOrDefault(key, 0)), а уже потом используют.",
+      "traps": [
+        "Думать, что тернарник вычисляет обе ветви (он вычисляет только выбранную).",
+        "Смешивать Integer и int в ветвях одного тернарного выражения."
+      ],
+      "followUps": [
+        "Как переписать выражение, чтобы NPE стал невозможен?",
+        "Почему Object o = cond ? 1 : 2.0 даёт 1.0, а не 1?"
+      ]
+    },
+    "meta": {
+      "verified": true,
+      "source": "seed",
+      "lastReviewedAt": "2026-05-24",
+      "reviewer": "seed"
+    }
+  },
+  {
+    "id": "jc-062",
+    "domain": "java-core",
+    "difficulty": 4,
+    "type": "single",
+    "mode": "comparison",
+    "prompt": "Чем int[] на миллион чисел выгоднее List<Integer> того же размера?",
+    "tags": [
+      "autoboxing",
+      "boxing",
+      "primitives"
+    ],
+    "options": [
+      {
+        "id": "a",
+        "text": "int[] — сплошной блок ~4 МБ без боксинга; List<Integer> хранит миллион отдельных объектов Integer (заголовок ~16 байт каждый) плюс массив ссылок — кратно больше памяти и промахи кэша при обходе"
+      },
+      {
+        "id": "b",
+        "text": "Разницы нет: JIT всё равно разбоксит List<Integer> в массив примитивов"
+      },
+      {
+        "id": "c",
+        "text": "List<Integer> быстрее, потому что Integer кэшируется для всех значений"
+      },
+      {
+        "id": "d",
+        "text": "int[] медленнее: примитивы хранятся в куче по одному объекту"
+      }
+    ],
+    "correctOptionIds": [
+      "a"
+    ],
+    "answerGuide": {
+      "short": "int[] — плотный блок без аллокаций; List<Integer> боксит каждый элемент в объект, отсюда лишняя память, нагрузка на GC и промахи кэша.",
+      "normal": "Каждый бокс — это аллокация объекта в куче и лишняя косвенность. На больших структурах это бьёт по памяти и скорости. Поэтому в перфо-чувствительном коде берут примитивные массивы вместо List<Integer> и специализированные потоки (IntStream/LongStream/DoubleStream) вместо Stream<Integer> — они не боксят элементы. Integer-кэш покрывает только -128..127, на больших значениях не помогает.",
+      "traps": [
+        "Полагать, что JIT уберёт боксинг из List<Integer>.",
+        "Рассчитывать на Integer cache для произвольных значений."
+      ],
+      "followUps": [
+        "Чем IntStream лучше Stream<Integer>?",
+        "Когда удобство List<Integer> важнее экономии памяти?"
+      ]
+    },
+    "meta": {
+      "verified": true,
+      "source": "seed",
+      "lastReviewedAt": "2026-05-24",
+      "reviewer": "seed"
+    }
+  },
+  {
+    "id": "jc-063",
+    "domain": "java-core",
+    "difficulty": 2,
+    "type": "single",
+    "mode": "definition",
+    "prompt": "Почему нельзя объявить List<int> и что пишут вместо этого?",
+    "tags": [
+      "autoboxing",
+      "wrappers"
+    ],
+    "options": [
+      {
+        "id": "a",
+        "text": "Дженерики и коллекции работают только со ссылочными типами, поэтому берут обёртку — List<Integer> (с автоупаковкой при вставке)"
+      },
+      {
+        "id": "b",
+        "text": "Можно: List<int> допустим начиная с Java 8"
+      },
+      {
+        "id": "c",
+        "text": "int нельзя хранить в коллекциях вообще — только массив int[]"
+      },
+      {
+        "id": "d",
+        "text": "List<int> работает, но без автоупаковки"
+      }
+    ],
+    "correctOptionIds": [
+      "a"
+    ],
+    "answerGuide": {
+      "short": "Параметр типа у дженериков должен быть ссылочным, поэтому List<int> невозможен — пишут List<Integer>.",
+      "normal": "Дженерики оперируют только ссылочными типами (одна из причин — стирание типов), а int — примитив, поэтому List<int> не компилируется. Используют обёртку List<Integer>; при add(1) срабатывает автоупаковка, при чтении — распаковка. Где важна производительность, вместо List<Integer> берут int[] или IntStream, чтобы избежать боксинга.",
+      "traps": [
+        "Считать, что обёртка и примитив взаимозаменяемы без накладных расходов.",
+        "Забывать про скрытый боксинг при вставке в List<Integer>."
+      ],
+      "followUps": [
+        "Что такое стирание типов и при чём тут это ограничение?",
+        "Когда вместо List<Integer> взять int[]?"
+      ]
+    },
+    "meta": {
+      "verified": true,
+      "source": "seed",
+      "lastReviewedAt": "2026-05-24",
+      "reviewer": "seed"
+    }
+  },
+  {
+    "id": "jc-064",
+    "domain": "java-core",
+    "difficulty": 3,
+    "type": "single",
+    "mode": "comparison",
+    "prompt": "Почему стек реализуют через ArrayDeque, а не java.util.Stack?",
+    "tags": [
+      "collections",
+      "deque",
+      "arraydeque"
+    ],
+    "options": [
+      {
+        "id": "a",
+        "text": "ArrayDeque (push/pop/peek) — массив с O(1) и хорошим кэшем; Stack наследует Vector и синхронизирован на каждой операции — медленно и не нужно для локального стека"
+      },
+      {
+        "id": "b",
+        "text": "Stack удалён из JDK, ArrayDeque — единственный вариант"
+      },
+      {
+        "id": "c",
+        "text": "Stack хранит элементы в связном списке, поэтому медленнее"
+      },
+      {
+        "id": "d",
+        "text": "ArrayDeque потокобезопасен, а Stack — нет"
+      }
+    ],
+    "correctOptionIds": [
+      "a"
+    ],
+    "answerGuide": {
+      "short": "Стек — это ArrayDeque (push/pop/peek), а не легаси Stack, который наследует Vector и синхронизирован зря.",
+      "normal": "ArrayDeque — двусторонняя очередь на массиве (кольцевой буфер) с амортизированным O(1) и хорошей cache locality. java.util.Stack наследует Vector и синхронизирует каждую операцию, что для локального стека бессмысленно и медленно; как FIFO ArrayDeque также предпочтительнее LinkedList.",
+      "traps": [
+        "Использовать java.util.Stack/Vector в новом коде.",
+        "Считать ArrayDeque потокобезопасным (он не синхронизирован)."
+      ],
+      "followUps": [
+        "Почему ArrayDeque быстрее LinkedList как очередь?",
+        "Что такое кольцевой буфер?"
+      ]
+    },
+    "meta": {
+      "verified": true,
+      "source": "seed",
+      "lastReviewedAt": "2026-05-24",
+      "reviewer": "seed"
+    }
+  },
+  {
+    "id": "jc-065",
+    "domain": "java-core",
+    "difficulty": 4,
+    "type": "single",
+    "mode": "scenario",
+    "prompt": "В каком порядке выдаёт элементы итерация (for-each) по PriorityQueue?",
+    "tags": [
+      "collections",
+      "priorityqueue",
+      "heap"
+    ],
+    "options": [
+      {
+        "id": "a",
+        "text": "В произвольном (лишь частично упорядоченном) порядке — отсортированный порядок гарантирован только при извлечении через poll()"
+      },
+      {
+        "id": "b",
+        "text": "Строго по возрастанию — это же очередь с приоритетом"
+      },
+      {
+        "id": "c",
+        "text": "В порядке вставки (FIFO)"
+      },
+      {
+        "id": "d",
+        "text": "В обратном порядке вставки (LIFO)"
+      }
+    ],
+    "correctOptionIds": [
+      "a"
+    ],
+    "answerGuide": {
+      "short": "Куча упорядочена лишь частично (родитель ≤ детей), поэтому итерация НЕ отсортирована — порядок даёт только poll().",
+      "normal": "PriorityQueue — бинарная куча в массиве: гарантируется лишь свойство кучи (родитель не больше детей), а не полный порядок. Поэтому for-each/toString выдают элементы как они лежат в массиве; отсортированную последовательность получают, многократно вызывая poll(). Это классическая ловушка «распечатал очередь и жду сортировки».",
+      "traps": [
+        "Ждать отсортированный обход PriorityQueue.",
+        "Полагаться на порядок toString()."
+      ],
+      "followUps": [
+        "Какая сложность у poll() в куче?",
+        "Как получить отсортированный список из кучи?"
+      ]
+    },
+    "meta": {
+      "verified": true,
+      "source": "seed",
+      "lastReviewedAt": "2026-05-24",
+      "reviewer": "seed"
+    }
+  },
+  {
+    "id": "jc-066",
+    "domain": "java-core",
+    "difficulty": 3,
+    "type": "single",
+    "mode": "definition",
+    "prompt": "Какая алгоритмическая сложность операций PriorityQueue (бинарной кучи)?",
+    "tags": [
+      "collections",
+      "priorityqueue",
+      "heap",
+      "performance"
+    ],
+    "options": [
+      {
+        "id": "a",
+        "text": "offer и poll — O(log n) (просеивание вверх/вниз), peek — O(1)"
+      },
+      {
+        "id": "b",
+        "text": "Все операции O(1)"
+      },
+      {
+        "id": "c",
+        "text": "offer O(1), poll O(n) — линейный поиск минимума"
+      },
+      {
+        "id": "d",
+        "text": "Все операции O(log n), включая peek"
+      }
+    ],
+    "correctOptionIds": [
+      "a"
+    ],
+    "answerGuide": {
+      "short": "offer/poll — O(log n), peek — O(1).",
+      "normal": "Куча хранится в массиве (дети узла i в 2i+1 и 2i+2). Вставка и снятие восстанавливают свойство кучи просеиванием — O(log n); корень (минимум по Comparable/Comparator) доступен за O(1) через peek. Для конкурентного варианта есть PriorityBlockingQueue.",
+      "traps": [
+        "Думать, что poll ищет минимум линейно.",
+        "Считать peek дорогим."
+      ],
+      "followUps": [
+        "Как устроено просеивание (sift up/down)?",
+        "Чем PriorityBlockingQueue отличается?"
+      ]
+    },
+    "meta": {
+      "verified": true,
+      "source": "seed",
+      "lastReviewedAt": "2026-05-24",
+      "reviewer": "seed"
+    }
+  },
+  {
+    "id": "jc-067",
+    "domain": "java-core",
+    "difficulty": 4,
+    "type": "single",
+    "mode": "comparison",
+    "prompt": "Какое ограничение Future решает CompletableFuture?",
+    "tags": [
+      "concurrency",
+      "future",
+      "completablefuture"
+    ],
+    "options": [
+      {
+        "id": "a",
+        "text": "У Future get() блокирует поток и нет композиции/колбэков; CompletableFuture добавляет неблокирующие продолжения и сцепление операций"
+      },
+      {
+        "id": "b",
+        "text": "Future нельзя отменить, а CompletableFuture можно"
+      },
+      {
+        "id": "c",
+        "text": "Future не умеет возвращать результат, а CompletableFuture умеет"
+      },
+      {
+        "id": "d",
+        "text": "Future работает только в одном потоке"
+      }
+    ],
+    "correctOptionIds": [
+      "a"
+    ],
+    "answerGuide": {
+      "short": "Future блокирует на get() и не композируется; CompletableFuture даёт неблокирующие продолжения и конвейер.",
+      "normal": "Future — дескриптор результата с блокирующим get(), без колбэков и без композиции нескольких задач без блокировок. CompletableFuture позволяет описать конвейер преобразований (supplyAsync → thenApply → thenAccept), который выполнится по готовности, — сдвиг от «дождись и забери» к «опиши, что сделать с результатом».",
+      "traps": [
+        "Считать, что Future поддерживает колбэки.",
+        "Блокироваться на get() там, где нужна композиция."
+      ],
+      "followUps": [
+        "Что делает supplyAsync против runAsync?",
+        "Как объединить два независимых CompletableFuture?"
+      ]
+    },
+    "meta": {
+      "verified": true,
+      "source": "seed",
+      "lastReviewedAt": "2026-05-24",
+      "reviewer": "seed"
+    }
+  },
+  {
+    "id": "jc-068",
+    "domain": "java-core",
+    "difficulty": 4,
+    "type": "single",
+    "mode": "comparison",
+    "prompt": "Чем thenCompose отличается от thenApply в CompletableFuture?",
+    "tags": [
+      "concurrency",
+      "completablefuture"
+    ],
+    "options": [
+      {
+        "id": "a",
+        "text": "thenApply трансформирует результат (как map); thenCompose сцепляет операцию, возвращающую свой CompletableFuture (как flatMap), избегая CompletableFuture<CompletableFuture<…>>"
+      },
+      {
+        "id": "b",
+        "text": "Они идентичны, thenCompose — устаревший псевдоним"
+      },
+      {
+        "id": "c",
+        "text": "thenApply асинхронный, thenCompose синхронный"
+      },
+      {
+        "id": "d",
+        "text": "thenCompose объединяет два независимых future (zip)"
+      }
+    ],
+    "correctOptionIds": [
+      "a"
+    ],
+    "answerGuide": {
+      "short": "thenApply — map (значение→значение), thenCompose — flatMap (значение→новый CompletableFuture).",
+      "normal": "thenApply применяет обычную функцию к результату. thenCompose нужен, когда следующий шаг сам возвращает CompletableFuture: без него вышло бы вложенное CompletableFuture<CompletableFuture<…>>. Объединение двух независимых результатов — это thenCombine (zip), а ожидание групп — allOf/anyOf.",
+      "traps": [
+        "Использовать thenApply там, где функция возвращает CompletableFuture (получится вложенность).",
+        "Путать thenCompose с thenCombine."
+      ],
+      "followUps": [
+        "Когда брать allOf, а когда anyOf?",
+        "Чем thenCombine отличается от thenCompose?"
+      ]
+    },
+    "meta": {
+      "verified": true,
+      "source": "seed",
+      "lastReviewedAt": "2026-05-24",
+      "reviewer": "seed"
+    }
+  },
+  {
+    "id": "jc-069",
+    "domain": "java-core",
+    "difficulty": 5,
+    "type": "single",
+    "mode": "scenario",
+    "prompt": "Почему опасно выполнять блокирующие операции в стадиях CompletableFuture без явного Executor?",
+    "tags": [
+      "concurrency",
+      "completablefuture",
+      "thread-pool"
+    ],
+    "options": [
+      {
+        "id": "a",
+        "text": "Без Executor стадии идут в ForkJoinPool.commonPool — он маленький (по числу ядер) и общий на весь процесс; блокировки истощают его. Для блокирующих шагов передают отдельный пул через *Async-варианты"
+      },
+      {
+        "id": "b",
+        "text": "commonPool однопоточный, любая операция его блокирует"
+      },
+      {
+        "id": "c",
+        "text": "CompletableFuture без Executor вообще не использует потоки"
+      },
+      {
+        "id": "d",
+        "text": "Блокировки в commonPool бросают IllegalStateException"
+      }
+    ],
+    "correctOptionIds": [
+      "a"
+    ],
+    "answerGuide": {
+      "short": "По умолчанию стадии идут в общий ForkJoinPool.commonPool — маленький и общий; блокировки в нём истощают пул. Для блокирующих шагов давай свой Executor.",
+      "normal": "*Async-варианты (thenApplyAsync) без Executor используют ForkJoinPool.commonPool, размер которого ~числу ядер и который делит весь процесс. Блокирующие операции (I/O, get на чужой future) занимают его потоки и тормозят всё приложение. Для блокирующих шагов передавай отдельный пул.",
+      "traps": [
+        "Делать блокирующий I/O в commonPool.",
+        "Думать, что commonPool безграничен."
+      ],
+      "followUps": [
+        "Чем отличается thenApply от thenApplyAsync?",
+        "Как обрабатывать исключения в цепочке (exceptionally/handle)?"
+      ]
+    },
+    "meta": {
+      "verified": true,
+      "source": "seed",
+      "lastReviewedAt": "2026-05-24",
+      "reviewer": "seed"
+    }
+  },
+  {
+    "id": "jc-070",
+    "domain": "java-core",
+    "difficulty": 4,
+    "type": "single",
+    "mode": "definition",
+    "prompt": "Каков компромисс трёх базовых алгоритмов GC: mark-sweep, mark-compact, copying?",
+    "tags": [
+      "gc",
+      "jvm"
+    ],
+    "options": [
+      {
+        "id": "a",
+        "text": "mark-sweep оставляет фрагментацию; mark-compact уплотняет живых ценой перемещения; copying быстр и без фрагментации, но требует резервного пространства"
+      },
+      {
+        "id": "b",
+        "text": "Все три одинаковы по скорости, отличаются только именами"
+      },
+      {
+        "id": "c",
+        "text": "copying оставляет фрагментацию, а mark-sweep уплотняет память"
+      },
+      {
+        "id": "d",
+        "text": "mark-compact только помечает и ничего не освобождает"
+      }
+    ],
+    "correctOptionIds": [
+      "a"
+    ],
+    "answerGuide": {
+      "short": "mark-sweep — фрагментация; mark-compact — уплотнение (перемещение); copying — быстро без фрагментации, но нужен резерв.",
+      "normal": "Mark-sweep помечает достижимые и освобождает остальное, оставляя дыры. Mark-compact дополнительно уплотняет живых к началу области, убирая фрагментацию ценой перемещения. Copying копирует живых в другое пространство — быстро и без фрагментации, но требует резервного места. Реальные сборщики комбинируют их (copying в young, mark-compact в old).",
+      "traps": [
+        "Считать, что copying фрагментирует память.",
+        "Думать, что один алгоритм используется на всю кучу."
+      ],
+      "followUps": [
+        "Почему copying удобен в молодом поколении?",
+        "Что такое floating garbage?"
+      ]
+    },
+    "meta": {
+      "verified": true,
+      "source": "seed",
+      "lastReviewedAt": "2026-05-24",
+      "reviewer": "seed"
+    }
+  },
+  {
+    "id": "jc-071",
+    "domain": "java-core",
+    "difficulty": 5,
+    "type": "single",
+    "mode": "comparison",
+    "prompt": "Как выбрать сборщик мусора: Parallel, G1 или ZGC?",
+    "tags": [
+      "gc",
+      "jvm",
+      "performance"
+    ],
+    "options": [
+      {
+        "id": "a",
+        "text": "Parallel — максимум throughput при терпимых паузах (батч/аналитика); G1 (дефолт) — баланс и предсказуемые паузы; ZGC — суб-мс паузы на больших кучах при жёстких SLA на задержки"
+      },
+      {
+        "id": "b",
+        "text": "ZGC всегда лучше — и максимальный throughput, и минимальные паузы сразу"
+      },
+      {
+        "id": "c",
+        "text": "Serial — для продакшена, остальные только для тестов"
+      },
+      {
+        "id": "d",
+        "text": "CMS — современный дефолт для низколатентных сервисов"
+      }
+    ],
+    "correctOptionIds": [
+      "a"
+    ],
+    "answerGuide": {
+      "short": "Это компромисс throughput против latency: Parallel — throughput, G1 — баланс (дефолт), ZGC — суб-мс паузы на больших кучах.",
+      "normal": "Parallel максимизирует полезную работу, но с заметными паузами — годится для батчей. G1 (дефолт с JDK 9) делит кучу на регионы, собирает самые «мусорные» и держит цель пауз -XX:MaxGCPauseMillis. ZGC/Shenandoah дают суб-миллисекундные паузы почти независимо от размера кучи. Выбор подтверждают измерением, а CMS устарел и удалён.",
+      "traps": [
+        "Предлагать CMS как актуальный сборщик.",
+        "Думать, что один сборщик идеален и по throughput, и по latency."
+      ],
+      "followUps": [
+        "Что значит garbage-first в G1?",
+        "За счёт чего ZGC держит паузы суб-мс?"
+      ]
+    },
+    "meta": {
+      "verified": true,
+      "source": "seed",
+      "lastReviewedAt": "2026-05-24",
+      "reviewer": "seed"
+    }
+  },
+  {
+    "id": "jc-072",
+    "domain": "java-core",
+    "difficulty": 5,
+    "type": "single",
+    "mode": "definition",
+    "prompt": "Что такое stop-the-world и safepoint в работе GC?",
+    "tags": [
+      "gc",
+      "jvm"
+    ],
+    "options": [
+      {
+        "id": "a",
+        "text": "STW — пауза, когда потоки приложения замирают в safepoint (точке с согласованным состоянием стека), чтобы GC мог безопасно двигать объекты и менять ссылки"
+      },
+      {
+        "id": "b",
+        "text": "STW — аварийная остановка JVM при OutOfMemoryError"
+      },
+      {
+        "id": "c",
+        "text": "safepoint — это точка сохранения heap dump на диск"
+      },
+      {
+        "id": "d",
+        "text": "STW бывает только при ручном System.gc()"
+      }
+    ],
+    "correctOptionIds": [
+      "a"
+    ],
+    "answerGuide": {
+      "short": "STW — остановка приложения; потоки замирают в safepoint, чтобы GC безопасно перемещал объекты и правил ссылки.",
+      "normal": "Чтобы двигать объекты и менять ссылки, JVM должна остановить потоки в safepoint — заранее определённой точке, где состояние стека согласовано. Длительность STW-пауз — главный враг латентности; эволюция сборщиков — это борьба за то, чтобы делать больше работы конкурентно и сокращать STW (конкурентная маркировка с барьерами записи, SATB).",
+      "traps": [
+        "Путать STW с крахом JVM.",
+        "Считать, что вся работа GC всегда останавливает приложение."
+      ],
+      "followUps": [
+        "Зачем нужна конкурентная маркировка?",
+        "Что такое барьер записи (write barrier)?"
+      ]
+    },
+    "meta": {
+      "verified": true,
+      "source": "seed",
+      "lastReviewedAt": "2026-05-24",
+      "reviewer": "seed"
+    }
+  },
+  {
+    "id": "jc-073",
+    "domain": "java-core",
+    "difficulty": 4,
+    "type": "single",
+    "mode": "definition",
+    "prompt": "С чего корректно начинать тюнинг GC?",
+    "tags": [
+      "gc",
+      "jvm",
+      "performance"
+    ],
+    "options": [
+      {
+        "id": "a",
+        "text": "С цели (например, p99 паузы < 50 мс при заданном RPS) и измерения (GC-логи, метрики), затем менять один параметр и перезамерять — не подбирать флаги вслепую"
+      },
+      {
+        "id": "b",
+        "text": "Сразу выставить максимум флагов поколений и Survivor"
+      },
+      {
+        "id": "c",
+        "text": "Включить System.gc() по таймеру"
+      },
+      {
+        "id": "d",
+        "text": "Поднять -Xmx до предела — это всегда помогает"
+      }
+    ],
+    "correctOptionIds": [
+      "a"
+    ],
+    "answerGuide": {
+      "short": "Дисциплина: цель → измерение → изменение одного параметра → повторный замер.",
+      "normal": "Тюнинг начинается не с флагов, а с фактов: какие паузы (средние и p99), какой throughput, как часто и почему идут сборки. Сначала формулируют цель, затем измеряют (unified -Xlog:gc, JFR/JMX), потом меняют ОДИН параметр и перезамеряют. Менять флаги вслепую обычно делает хуже.",
+      "traps": [
+        "Менять несколько флагов сразу.",
+        "Тюнить без замеров «на глаз»."
+      ],
+      "followUps": [
+        "Какие базовые флаги задают первым делом?",
+        "Что даёт unified logging -Xlog:gc?"
+      ]
+    },
+    "meta": {
+      "verified": true,
+      "source": "seed",
+      "lastReviewedAt": "2026-05-24",
+      "reviewer": "seed"
+    }
+  },
+  {
+    "id": "jc-074",
+    "domain": "java-core",
+    "difficulty": 5,
+    "type": "single",
+    "mode": "scenario",
+    "prompt": "Идут постоянные full GC, и old растёт после каждого цикла. Наиболее вероятная причина?",
+    "tags": [
+      "gc",
+      "jvm",
+      "performance"
+    ],
+    "options": [
+      {
+        "id": "a",
+        "text": "Утечка памяти (или premature promotion / слишком малая куча) — ищут причину (heap dump, размер Survivor), а не просто «дают больше памяти»"
+      },
+      {
+        "id": "b",
+        "text": "Слишком большой -Xmx — надо уменьшить кучу"
+      },
+      {
+        "id": "c",
+        "text": "Включён unified logging, он и вызывает паузы"
+      },
+      {
+        "id": "d",
+        "text": "Используется G1 — надо вернуться на CMS"
+      }
+    ],
+    "correctOptionIds": [
+      "a"
+    ],
+    "answerGuide": {
+      "short": "Растущий old после каждого full GC — признак утечки или premature promotion; лечат причину, а не добавлением памяти.",
+      "normal": "Если old не очищается, объекты удерживаются ссылками (утечка) либо слишком рано продвигаются из-за малого Survivor (premature promotion), либо куча просто мала. Снимают heap dump (-XX:+HeapDumpOnOutOfMemoryError) и ищут доминаторы; высокий allocation rate лечат кодом (меньше временных объектов), а не флагами.",
+      "traps": [
+        "Лечить утечку увеличением -Xmx.",
+        "Возвращаться на удалённый CMS."
+      ],
+      "followUps": [
+        "Что такое premature promotion?",
+        "Как снять и читать heap dump?"
+      ]
+    },
+    "meta": {
+      "verified": true,
+      "source": "seed",
+      "lastReviewedAt": "2026-05-24",
+      "reviewer": "seed"
+    }
+  },
+  {
+    "id": "jc-075",
+    "domain": "java-core",
+    "difficulty": 4,
+    "type": "single",
+    "mode": "definition",
+    "prompt": "Что показывают метрики allocation rate и promotion rate?",
+    "tags": [
+      "gc",
+      "jvm",
+      "performance"
+    ],
+    "options": [
+      {
+        "id": "a",
+        "text": "allocation rate — сколько МБ/с создаётся (высокий разгоняет minor GC); promotion rate — сколько уезжает в old (высокий ведёт к full GC)"
+      },
+      {
+        "id": "b",
+        "text": "Это размеры -Xms и -Xmx соответственно"
+      },
+      {
+        "id": "c",
+        "text": "allocation rate — частота full GC, promotion rate — частота minor GC"
+      },
+      {
+        "id": "d",
+        "text": "Оба показывают только длительность пауз stop-the-world"
+      }
+    ],
+    "correctOptionIds": [
+      "a"
+    ],
+    "answerGuide": {
+      "short": "allocation rate — скорость создания объектов (нагрузка на minor GC); promotion rate — скорость ухода в old (нагрузка на full GC).",
+      "normal": "Высокий allocation rate означает много временных объектов и частые minor GC — это лечится кодом (переиспользование, примитивы, потоки данных). Высокий promotion rate означает, что объекты переживают молодое поколение и заполняют old, провоцируя full GC. Обе метрики снимают из GC-логов или через JFR/JMX.",
+      "traps": [
+        "Путать allocation rate с размером кучи.",
+        "Лечить высокий allocation rate только флагами."
+      ],
+      "followUps": [
+        "Как высокий allocation rate связан с паузами?",
+        "Где взять эти метрики в проде?"
+      ]
+    },
+    "meta": {
+      "verified": true,
+      "source": "seed",
+      "lastReviewedAt": "2026-05-24",
+      "reviewer": "seed"
+    }
+  },
+  {
+    "id": "jc-076",
+    "domain": "java-core",
+    "difficulty": 5,
+    "type": "single",
+    "mode": "definition",
+    "prompt": "Почему нельзя создать массив параметризованного типа (new List<String>[10] или new T[n])?",
+    "tags": [
+      "generics",
+      "internals"
+    ],
+    "options": [
+      {
+        "id": "a",
+        "text": "Массивы reifiable и ковариантны, дженерики стёрты и инвариантны; иначе вышел бы heap pollution — массив принял бы элемент не того типа без ArrayStoreException, а ClassCastException вылез бы позже"
+      },
+      {
+        "id": "b",
+        "text": "Это разрешено начиная с Java 8"
+      },
+      {
+        "id": "c",
+        "text": "Массивы умеют хранить только примитивы"
+      },
+      {
+        "id": "d",
+        "text": "JVM запрещает любые массивы объектов"
+      }
+    ],
+    "correctOptionIds": [
+      "a"
+    ],
+    "answerGuide": {
+      "short": "Массивы reifiable+ковариантны, дженерики стёрты+инвариантны — несовместимо; разрешить значило бы heap pollution.",
+      "normal": "Массив знает свой тип элемента в рантайме и проверяет вставку (ArrayStoreException). У дженериков тип стёрт, поэтому массив дженериков не смог бы проверить элемент — туда попал бы объект неверного типа, а ClassCastException всплыл бы позже в неожиданном месте. Штатное решение — List<T> вместо массива; если массив реально нужен, его делают через Array.newInstance с Class-токеном.",
+      "traps": [
+        "Создавать new T[] внутри generic-кода.",
+        "Глушить unchecked-варнинг широко вместо узкого @SuppressWarnings."
+      ],
+      "followUps": [
+        "Как создать generic-массив через рефлексию?",
+        "Что такое ковариантность массивов?"
+      ]
+    },
+    "meta": {
+      "verified": true,
+      "source": "seed",
+      "lastReviewedAt": "2026-05-24",
+      "reviewer": "seed"
+    }
+  },
+  {
+    "id": "jc-077",
+    "domain": "java-core",
+    "difficulty": 5,
+    "type": "single",
+    "mode": "scenario",
+    "prompt": "Когда корректно ставить @SafeVarargs на generic-varargs-метод?",
+    "tags": [
+      "generics",
+      "varargs"
+    ],
+    "options": [
+      {
+        "id": "a",
+        "text": "Когда метод только ЧИТАЕТ элементы и не хранит/не публикует внутренний массив T[] наружу — тогда heap pollution невозможен"
+      },
+      {
+        "id": "b",
+        "text": "Всегда — аннотация просто убирает любой варнинг"
+      },
+      {
+        "id": "c",
+        "text": "Когда метод складывает элементы в массив и возвращает его наружу"
+      },
+      {
+        "id": "d",
+        "text": "Только для методов без аргументов"
+      }
+    ],
+    "correctOptionIds": [
+      "a"
+    ],
+    "answerGuide": {
+      "short": "@SafeVarargs ставят, когда метод лишь читает varargs и не отдаёт/не сохраняет созданный T[] — иначе он небезопасен.",
+      "normal": "generic varargs (T...) под капотом создают массив T[], а массив дженериков небезопасен (heap pollution). Если метод только перебирает элементы и не публикует сам массив, он безопасен — это и помечает @SafeVarargs, убирая предупреждение у вызывающих. Ставить её на метод, который кладёт в массив или возвращает его, — ошибка.",
+      "traps": [
+        "Помечать @SafeVarargs метод, публикующий массив.",
+        "Считать аннотацию универсальным глушителем варнингов."
+      ],
+      "followUps": [
+        "Что такое heap pollution?",
+        "Почему generic varargs вообще создают предупреждение?"
+      ]
+    },
+    "meta": {
+      "verified": true,
+      "source": "seed",
+      "lastReviewedAt": "2026-05-24",
+      "reviewer": "seed"
+    }
+  },
+  {
+    "id": "jc-078",
+    "domain": "java-core",
+    "difficulty": 5,
+    "type": "single",
+    "mode": "definition",
+    "prompt": "Что такое bridge-метод в Java?",
+    "tags": [
+      "generics",
+      "internals"
+    ],
+    "options": [
+      {
+        "id": "a",
+        "text": "Синтетический метод, который компилятор генерирует, чтобы переопределение работало после стирания (мост compare(Object,Object), вызывающий вашу compare(String,String))"
+      },
+      {
+        "id": "b",
+        "text": "Метод, соединяющий два потока через очередь"
+      },
+      {
+        "id": "c",
+        "text": "default-метод интерфейса"
+      },
+      {
+        "id": "d",
+        "text": "Нативный метод, реализованный на C"
+      }
+    ],
+    "correctOptionIds": [
+      "a"
+    ],
+    "answerGuide": {
+      "short": "Bridge-метод — синтетический мост, добавляемый компилятором, чтобы полиморфизм работал после стирания типов.",
+      "normal": "Когда вы реализуете обобщённый интерфейс (Comparator<String>) конкретным типом, стёртая сигнатура надкласса compare(Object,Object) расходится с вашей compare(String,String). Чтобы вызов через ссылку на интерфейс попадал в вашу версию, компилятор генерирует мост compare(Object,Object), который кастит аргументы и зовёт вашу реализацию. Такие методы помечены isBridge()/isSynthetic() и иногда видны в стектрейсах.",
+      "traps": [
+        "Принимать bridge-метод в стектрейсе за свой код.",
+        "Путать его с default-методом."
+      ],
+      "followUps": [
+        "Как отличить bridge-метод через рефлексию?",
+        "Почему стирание вообще требует мостов?"
+      ]
+    },
+    "meta": {
+      "verified": true,
+      "source": "seed",
+      "lastReviewedAt": "2026-05-24",
+      "reviewer": "seed"
+    }
+  },
+  {
+    "id": "jc-079",
+    "domain": "java-core",
+    "difficulty": 2,
+    "type": "single",
+    "mode": "definition",
+    "prompt": "Что такое функциональный интерфейс?",
+    "tags": [
+      "functional",
+      "java8",
+      "lambda"
+    ],
+    "options": [
+      {
+        "id": "a",
+        "text": "Интерфейс ровно с одним абстрактным методом (SAM); default- и static-методы не в счёт. @FunctionalInterface даёт проверку компилятором"
+      },
+      {
+        "id": "b",
+        "text": "Интерфейс без методов (маркерный)"
+      },
+      {
+        "id": "c",
+        "text": "Интерфейс, у которого все методы статические"
+      },
+      {
+        "id": "d",
+        "text": "Любой интерфейс с аннотацией @Override"
+      }
+    ],
+    "correctOptionIds": [
+      "a"
+    ],
+    "answerGuide": {
+      "short": "Функциональный интерфейс — один абстрактный метод (SAM); под него и пишут лямбду.",
+      "normal": "Лямбда реализует интерфейс ровно с одним абстрактным методом. default- и static-методы не считаются, поэтому интерфейс с ними всё ещё функциональный. @FunctionalInterface необязательна, но полезна: компилятор проверит, что абстрактный метод один, и не даст случайно добавить второй.",
+      "traps": [
+        "Считать, что default-метод лишает интерфейс «функциональности».",
+        "Думать, что @FunctionalInterface обязательна для лямбды."
+      ],
+      "followUps": [
+        "Назови стандартные функциональные интерфейсы из java.util.function.",
+        "Зачем примитивные специализации (IntPredicate)?"
+      ]
+    },
+    "meta": {
+      "verified": true,
+      "source": "seed",
+      "lastReviewedAt": "2026-05-24",
+      "reviewer": "seed"
+    }
+  },
+  {
+    "id": "jc-080",
+    "domain": "java-core",
+    "difficulty": 4,
+    "type": "single",
+    "mode": "comparison",
+    "prompt": "Чем this внутри лямбды отличается от this внутри анонимного класса?",
+    "tags": [
+      "functional",
+      "lambda"
+    ],
+    "options": [
+      {
+        "id": "a",
+        "text": "В лямбде this — окружающий объект (лямбда не вводит свой scope); в анонимном классе this — сам анонимный объект. Лямбда транслируется через invokedynamic, а не в отдельный .class"
+      },
+      {
+        "id": "b",
+        "text": "В обоих this указывает на сам объект функции"
+      },
+      {
+        "id": "c",
+        "text": "В лямбде this всегда null"
+      },
+      {
+        "id": "d",
+        "text": "В анонимном классе this — окружающий объект, в лямбде — сам объект"
+      }
+    ],
+    "correctOptionIds": [
+      "a"
+    ],
+    "answerGuide": {
+      "short": "В лямбде this — окружающий объект; в анонимном классе this — сам анонимный объект.",
+      "normal": "Лямбда — не «короткий анонимный класс»: она не вводит свой scope, поэтому this ссылается на окружающий объект, и транслируется через invokedynamic/LambdaMetafactory (без отдельного .class, без захвата — экземпляр может переиспользоваться). Анонимный класс компилируется в отдельный класс и создаёт новый объект, внутри которого this — он сам.",
+      "traps": [
+        "Ожидать, что this в лямбде — сама лямбда.",
+        "Считать лямбду просто синтаксическим сахаром над анонимным классом."
+      ],
+      "followUps": [
+        "Что такое invokedynamic в контексте лямбд?",
+        "Когда лямбда без захвата переиспользуется?"
+      ]
+    },
+    "meta": {
+      "verified": true,
+      "source": "seed",
+      "lastReviewedAt": "2026-05-24",
+      "reviewer": "seed"
+    }
+  },
+  {
+    "id": "jc-081",
+    "domain": "java-core",
+    "difficulty": 4,
+    "type": "single",
+    "mode": "scenario",
+    "prompt": "Почему лямбда может захватывать только effectively final локальные переменные?",
+    "tags": [
+      "functional",
+      "lambda"
+    ],
+    "options": [
+      {
+        "id": "a",
+        "text": "Локалки живут на стеке и исчезают с кадром метода, поэтому захватывается их значение (копия); мутацию запрещают во избежание рассинхрона. Изменяемое состояние держат в поле/holder/Atomic"
+      },
+      {
+        "id": "b",
+        "text": "Это ограничение синтаксиса, обходится словом var"
+      },
+      {
+        "id": "c",
+        "text": "Лямбда вообще не может читать локальные переменные"
+      },
+      {
+        "id": "d",
+        "text": "Потому что лямбды всегда выполняются в другом потоке"
+      }
+    ],
+    "correctOptionIds": [
+      "a"
+    ],
+    "answerGuide": {
+      "short": "Захватывается значение локалки (копия со стека), поэтому она должна быть effectively final; изменяемое состояние — в поле/holder/Atomic.",
+      "normal": "Локальные переменные живут на стеке и исчезают с кадром метода, поэтому лямбда захватывает их значение, а не саму ячейку. Разрешить мутацию значило бы менять копию незаметно для оригинала. Поля объекта и статические поля менять можно — ограничение только на локалки. Нужен изменяемый счётчик — берут поле, массив-холдер или Atomic.",
+      "traps": [
+        "Пытаться инкрементировать локальную переменную из лямбды.",
+        "Считать, что ограничение касается и полей объекта."
+      ],
+      "followUps": [
+        "Как обойти запрет через holder/Atomic?",
+        "Что значит effectively final?"
+      ]
+    },
+    "meta": {
+      "verified": true,
+      "source": "seed",
+      "lastReviewedAt": "2026-05-24",
+      "reviewer": "seed"
+    }
+  },
+  {
+    "id": "jc-082",
+    "domain": "java-core",
+    "difficulty": 4,
+    "type": "single",
+    "mode": "comparison",
+    "prompt": "Чем collect отличается от reduce при сборке стрима?",
+    "tags": [
+      "streams",
+      "functional",
+      "collectors"
+    ],
+    "options": [
+      {
+        "id": "a",
+        "text": "reduce — неизменяемая свёртка (identity + ассоциативная функция), хороша для значений; collect — изменяемая свёртка в один мутируемый контейнер, для построения коллекций"
+      },
+      {
+        "id": "b",
+        "text": "Они идентичны; collect — устаревший псевдоним reduce"
+      },
+      {
+        "id": "c",
+        "text": "collect работает только последовательно, reduce — только параллельно"
+      },
+      {
+        "id": "d",
+        "text": "reduce собирает в коллекцию, collect — в одно значение"
+      }
+    ],
+    "correctOptionIds": [
+      "a"
+    ],
+    "answerGuide": {
+      "short": "reduce — immutable свёртка для значений; collect — mutable reduction в контейнер, для коллекций.",
+      "normal": "reduce объединяет элементы ассоциативной функцией от identity (сумма, конкатенация коротких строк); накапливать ею коллекцию неэффективно — на каждом шаге новый контейнер. collect аккумулирует в один мутируемый контейнер (список, карта, StringBuilder) через Collector — именно им строят коллекции.",
+      "traps": [
+        "Собирать список через reduce с пересозданием контейнера.",
+        "Думать, что reduce умеет mutable-накопление."
+      ],
+      "followUps": [
+        "Что такое identity в reduce?",
+        "Зачем коллектору ассоциативность для параллели?"
+      ]
+    },
+    "meta": {
+      "verified": true,
+      "source": "seed",
+      "lastReviewedAt": "2026-05-24",
+      "reviewer": "seed"
+    }
+  },
+  {
+    "id": "jc-083",
+    "domain": "java-core",
+    "difficulty": 4,
+    "type": "single",
+    "mode": "scenario",
+    "prompt": "Что произойдёт в Collectors.toMap, если два элемента дают одинаковый ключ, а merge-функция не передана?",
+    "tags": [
+      "streams",
+      "collectors"
+    ],
+    "options": [
+      {
+        "id": "a",
+        "text": "Бросится IllegalStateException (Duplicate key); при возможных дубликатах передают третий аргумент — merge-функцию"
+      },
+      {
+        "id": "b",
+        "text": "Последний элемент молча перезапишет предыдущий"
+      },
+      {
+        "id": "c",
+        "text": "Первый сохранится, остальные молча отбросятся"
+      },
+      {
+        "id": "d",
+        "text": "Вернётся null вместо карты"
+      }
+    ],
+    "correctOptionIds": [
+      "a"
+    ],
+    "answerGuide": {
+      "short": "toMap без merge на дубликате ключа бросает IllegalStateException; для устойчивости передают merge-функцию.",
+      "normal": "toMap(keyFn, valueFn) при конфликте ключей падает с IllegalStateException (Duplicate key). Поэтому при возможных дубликатах ОБЯЗАТЕЛЬНО передают третий аргумент — функцию слияния ((a,b)->a, сумма и т.п.). Это типичная причина падений на проде, когда данные оказались не уникальны.",
+      "traps": [
+        "Звать toMap без merge на неуникальных ключах.",
+        "Ждать, что дубликат молча перезапишется."
+      ],
+      "followUps": [
+        "Как собрать Map<K, List<V>> вместо конфликта?",
+        "Чем groupingBy отличается от toMap здесь?"
+      ]
+    },
+    "meta": {
+      "verified": true,
+      "source": "seed",
+      "lastReviewedAt": "2026-05-24",
+      "reviewer": "seed"
+    }
+  },
+  {
+    "id": "jc-084",
+    "domain": "java-core",
+    "difficulty": 4,
+    "type": "single",
+    "mode": "scenario",
+    "prompt": "Как одним коллектором получить «количество элементов в каждой группе»?",
+    "tags": [
+      "streams",
+      "collectors"
+    ],
+    "options": [
+      {
+        "id": "a",
+        "text": "groupingBy(classifier, counting()) — downstream-коллектор counting() сворачивает каждую группу в её размер"
+      },
+      {
+        "id": "b",
+        "text": "toMap(classifier, size())"
+      },
+      {
+        "id": "c",
+        "text": "partitioningBy(classifier).count()"
+      },
+      {
+        "id": "d",
+        "text": "reduce(0, (a,b) -> a+1) по всему стриму"
+      }
+    ],
+    "correctOptionIds": [
+      "a"
+    ],
+    "answerGuide": {
+      "short": "groupingBy(classifier, counting()) — группировка с downstream-коллектором counting().",
+      "normal": "Сила groupingBy во втором аргументе — downstream-коллекторе, который сворачивает каждую группу дальше: counting() (размер), mapping/summingInt/averagingInt (агрегаты), maxBy/minBy. Так одной строкой получают «сотрудников по отделам» (counting) или «среднюю зарплату по отделам» — вложенная свёртка вместо ручного цикла.",
+      "traps": [
+        "Искать несуществующий size() в toMap.",
+        "Считать, что groupingBy умеет только Map<K,List<V>>."
+      ],
+      "followUps": [
+        "Какие ещё downstream-коллекторы есть?",
+        "Чем partitioningBy отличается от groupingBy?"
+      ]
+    },
+    "meta": {
+      "verified": true,
+      "source": "seed",
+      "lastReviewedAt": "2026-05-24",
+      "reviewer": "seed"
+    }
+  },
+  {
+    "id": "jc-085",
+    "domain": "java-core",
+    "difficulty": 2,
+    "type": "single",
+    "mode": "scenario",
+    "prompt": "Что верно про var (Java 10)?",
+    "tags": [
+      "modern-java",
+      "var"
+    ],
+    "options": [
+      {
+        "id": "a",
+        "text": "Это статический вывод типа компилятором (не динамическая типизация); работает только для локальных переменных с инициализатором"
+      },
+      {
+        "id": "b",
+        "text": "Это динамическая типизация, как в JavaScript"
+      },
+      {
+        "id": "c",
+        "text": "var можно использовать для полей и параметров методов"
+      },
+      {
+        "id": "d",
+        "text": "Переменная var может менять тип во время выполнения"
+      }
+    ],
+    "correctOptionIds": [
+      "a"
+    ],
+    "answerGuide": {
+      "short": "var — статический вывод типа из инициализатора, только для локальных переменных; не динамика.",
+      "normal": "Компилятор выводит тип из правой части и фиксирует его на компиляции — тип остаётся статическим, просто не пишется руками. var работает лишь для локальных переменных с инициализатором (не для полей, параметров и без значения). Уместен, когда тип очевиден (var users = new ArrayList<User>()), и вредит, когда из правой части тип неочевиден.",
+      "traps": [
+        "Считать var динамической типизацией.",
+        "Пытаться применить var к полю/параметру."
+      ],
+      "followUps": [
+        "Когда var ухудшает читаемость?",
+        "Можно ли var без инициализатора?"
+      ]
+    },
+    "meta": {
+      "verified": true,
+      "source": "seed",
+      "lastReviewedAt": "2026-05-24",
+      "reviewer": "seed"
+    }
+  },
+  {
+    "id": "jc-086",
+    "domain": "java-core",
+    "difficulty": 3,
+    "type": "single",
+    "mode": "definition",
+    "prompt": "Чем switch-выражение (case L -> …) надёжнее старого switch?",
+    "tags": [
+      "modern-java",
+      "switch"
+    ],
+    "options": [
+      {
+        "id": "a",
+        "text": "Нет проваливания (fall-through) и break; возвращает значение (через yield для блока); по enum/sealed компилятор проверяет исчерпываемость"
+      },
+      {
+        "id": "b",
+        "text": "Оно быстрее на выполнении за счёт JIT"
+      },
+      {
+        "id": "c",
+        "text": "Оно допускает fall-through по умолчанию, что удобнее"
+      },
+      {
+        "id": "d",
+        "text": "Оно не требует default даже для int"
+      }
+    ],
+    "correctOptionIds": [
+      "a"
+    ],
+    "answerGuide": {
+      "short": "switch-выражение: стрелочный синтаксис без fall-through, возвращает значение (yield), исчерпываемость по enum/sealed.",
+      "normal": "case L -> … не проваливается и не требует break, а всё выражение возвращает значение (для блока — через yield). Главный выигрыш — исчерпываемость: switch по enum или sealed-типу обязан покрыть все варианты, и компилятор это проверяет. Это надёжнее старого statement-switch с легко забываемым break.",
+      "traps": [
+        "Ждать fall-through в стрелочном case.",
+        "Забывать yield в блочной ветви."
+      ],
+      "followUps": [
+        "Что такое исчерпываемость по sealed-типу?",
+        "Когда нужен yield?"
+      ]
+    },
+    "meta": {
+      "verified": true,
+      "source": "seed",
+      "lastReviewedAt": "2026-05-24",
+      "reviewer": "seed"
+    }
+  },
+  {
+    "id": "jc-087",
+    "domain": "java-core",
+    "difficulty": 3,
+    "type": "single",
+    "mode": "definition",
+    "prompt": "Что такое текстовый блок (\"\"\"…\"\"\", Java 15)?",
+    "tags": [
+      "modern-java",
+      "text-blocks"
+    ],
+    "options": [
+      {
+        "id": "a",
+        "text": "Многострочный строковый литерал, убирающий экранирование (JSON/SQL/HTML); компилятор срезает incidental whitespace. Это обычная String"
+      },
+      {
+        "id": "b",
+        "text": "Специальный неизменяемый тип, отличный от String"
+      },
+      {
+        "id": "c",
+        "text": "Шаблон с подстановкой переменных, как строковая интерполяция"
+      },
+      {
+        "id": "d",
+        "text": "Способ хранить бинарные данные в коде"
+      }
+    ],
+    "correctOptionIds": [
+      "a"
+    ],
+    "answerGuide": {
+      "short": "Текстовый блок — многострочный литерал в тройных кавычках; обычная String без ада экранирования.",
+      "normal": "Тройные кавычки позволяют писать многострочный JSON/SQL/HTML без экранирования и конкатенации. Компилятор аккуратно срезает «случайные» отступы (incidental whitespace) по самой левой значимой строке, поэтому блок можно выровнять по коду. Результат — обычная String, просто удобно записанная (без интерполяции переменных).",
+      "traps": [
+        "Считать текстовый блок отдельным типом, не String.",
+        "Ждать подстановку переменных внутри блока."
+      ],
+      "followUps": [
+        "Что такое incidental whitespace?",
+        "Как блок ведёт себя с завершающим переводом строки?"
+      ]
+    },
+    "meta": {
+      "verified": true,
+      "source": "seed",
+      "lastReviewedAt": "2026-05-24",
+      "reviewer": "seed"
+    }
+  },
+  {
+    "id": "jc-088",
+    "domain": "java-core",
+    "difficulty": 3,
+    "type": "single",
+    "mode": "comparison",
+    "prompt": "Почему java.time (Java 8) предпочитают старым Date/Calendar?",
+    "tags": [
+      "date-time",
+      "java8",
+      "immutability"
+    ],
+    "options": [
+      {
+        "id": "a",
+        "text": "Типы java.time неизменяемы и потокобезопасны, с явной моделью (Instant/LocalDate/ZonedDateTime); Date/Calendar изменяемы и с ловушками (месяцы с 0, не потокобезопасный SimpleDateFormat)"
+      },
+      {
+        "id": "b",
+        "text": "java.time быстрее, но так же изменяем, как Date"
+      },
+      {
+        "id": "c",
+        "text": "Date удалён из JDK, альтернатив нет"
+      },
+      {
+        "id": "d",
+        "text": "java.time — это обёртка над Calendar с теми же проблемами"
+      }
+    ],
+    "correctOptionIds": [
+      "a"
+    ],
+    "answerGuide": {
+      "short": "java.time неизменяем, потокобезопасен и с явной моделью; Date/Calendar изменяемы и полны ловушек.",
+      "normal": "Старые Date/Calendar изменяемы и не потокобезопасны: у Calendar месяцы с нуля, SimpleDateFormat нельзя шарить между потоками, большая часть Date устарела. java.time (JSR-310) разделяет момент, дату, время и зону, все типы неизменяемы и потокобезопасны, API текучий и предсказуемый — это стандарт для нового кода.",
+      "traps": [
+        "Использовать SimpleDateFormat как общий static (он не потокобезопасен).",
+        "Забывать, что в Calendar январь = 0."
+      ],
+      "followUps": [
+        "Какие основные типы есть в java.time?",
+        "Как навести мост со старым Date?"
+      ]
+    },
+    "meta": {
+      "verified": true,
+      "source": "seed",
+      "lastReviewedAt": "2026-05-24",
+      "reviewer": "seed"
+    }
+  },
+  {
+    "id": "jc-089",
+    "domain": "java-core",
+    "difficulty": 4,
+    "type": "single",
+    "mode": "scenario",
+    "prompt": "Чем Instant и LocalDateTime отличаются и когда брать Duration, а когда Period?",
+    "tags": [
+      "date-time",
+      "java8"
+    ],
+    "options": [
+      {
+        "id": "a",
+        "text": "Instant — момент на шкале (UTC, эпоха); LocalDateTime — дата-время БЕЗ зоны. Duration — машинное время (секунды/нано), Period — календарные единицы (годы/месяцы/дни)"
+      },
+      {
+        "id": "b",
+        "text": "Instant и LocalDateTime — синонимы; Duration и Period тоже"
+      },
+      {
+        "id": "c",
+        "text": "LocalDateTime хранит зону, а Instant — нет"
+      },
+      {
+        "id": "d",
+        "text": "Period измеряет секунды, Duration — месяцы"
+      }
+    ],
+    "correctOptionIds": [
+      "a"
+    ],
+    "answerGuide": {
+      "short": "Instant — конкретный момент (UTC); LocalDateTime — дата-время без зоны. Duration — секунды, Period — календарные дни/месяцы/годы.",
+      "normal": "Instant — точка на глобальной шкале (эпоха, UTC), удобна для хранения и сравнения. LocalDateTime не задаёт момент, пока не привязан к зоне (ZonedDateTime). Duration измеряет машинное время в секундах/наносекундах, Period — календарные единицы; на стыке перехода на летнее время Period.ofDays(1) и Duration.ofHours(24) могут дать разный результат — поэтому тип берут по смыслу.",
+      "traps": [
+        "Считать LocalDateTime конкретным моментом без зоны.",
+        "Мерить календарные интервалы через Duration."
+      ],
+      "followUps": [
+        "Зачем хранить моменты в UTC?",
+        "Что добавляет ZonedDateTime к LocalDateTime?"
+      ]
+    },
+    "meta": {
+      "verified": true,
+      "source": "seed",
+      "lastReviewedAt": "2026-05-24",
+      "reviewer": "seed"
+    }
+  },
+  {
+    "id": "jc-090",
+    "domain": "java-core",
+    "difficulty": 2,
+    "type": "single",
+    "mode": "definition",
+    "prompt": "Что даёт неизменяемость (immutability) объекта?",
+    "tags": [
+      "immutability",
+      "oop"
+    ],
+    "options": [
+      {
+        "id": "a",
+        "text": "Потокобезопасность без синхронизации, безопасное использование как ключей Map / элементов Set и свободное кэширование и шаринг одного экземпляра"
+      },
+      {
+        "id": "b",
+        "text": "Ускоряет любые операции, потому что объект хранится в стеке, а не в куче"
+      },
+      {
+        "id": "c",
+        "text": "Автоматически уменьшает память, переиспользуя все объекты программы"
+      },
+      {
+        "id": "d",
+        "text": "Гарантирует отсутствие NullPointerException"
+      }
+    ],
+    "correctOptionIds": [
+      "a"
+    ],
+    "answerGuide": {
+      "short": "Неизменяемость даёт потокобезопасность без синхронизации, безопасные ключи Map/Set и свободное кэширование/шаринг.",
+      "normal": "У immutable-объекта наблюдаемое состояние не меняется после создания, поэтому его нечего «испортить» гонкой (потокобезопасен без блокировок), хеш не «уедет» (безопасен как ключ Map / элемент Set), и один экземпляр можно свободно кэшировать и делить. Отсюда совет: делать классы неизменяемыми по умолчанию, а изменяемость вводить лишь при необходимости.",
+      "traps": [
+        "Связывать неизменяемость с хранением в стеке.",
+        "Думать, что она убирает NPE."
+      ],
+      "followUps": [
+        "Почему immutable безопасен как ключ HashMap?",
+        "Когда изменяемость всё же оправдана?"
+      ]
+    },
+    "meta": {
+      "verified": true,
+      "source": "seed",
+      "lastReviewedAt": "2026-05-24",
+      "reviewer": "seed"
+    }
+  },
+  {
+    "id": "jc-091",
+    "domain": "java-core",
+    "difficulty": 3,
+    "type": "single",
+    "mode": "definition",
+    "prompt": "Что требуется, чтобы класс был ПО-НАСТОЯЩЕМУ неизменяемым?",
+    "tags": [
+      "immutability",
+      "final"
+    ],
+    "options": [
+      {
+        "id": "a",
+        "text": "private final поля, отсутствие сеттеров/мутаторов, запрет наследования (final-класс или фабрики) и защитные копии изменяемых полей"
+      },
+      {
+        "id": "b",
+        "text": "Достаточно объявить все поля private"
+      },
+      {
+        "id": "c",
+        "text": "Достаточно убрать сеттеры; геттеры могут возвращать внутренние изменяемые объекты как есть"
+      },
+      {
+        "id": "d",
+        "text": "Достаточно пометить класс комментарием immutable"
+      }
+    ],
+    "correctOptionIds": [
+      "a"
+    ],
+    "answerGuide": {
+      "short": "Рецепт: private final поля, без сеттеров, запрет наследования и защитные копии изменяемых полей.",
+      "normal": "По-настоящему неизменяемый класс: (1) без сеттеров/мутаторов; (2) все поля private final; (3) наследование запрещено (final-класс или приватный конструктор + фабрики), иначе подкласс добавит изменяемость; (4) изменяемые поля копируются на входе и наружу. Пункт 4 (защитные копии) — самый забываемый и важный.",
+      "traps": [
+        "Считать, что private-полей достаточно.",
+        "Возвращать из геттера внутренний изменяемый объект без копии."
+      ],
+      "followUps": [
+        "Зачем запрещать наследование?",
+        "Почему private final без защитных копий не спасает?"
+      ]
+    },
+    "meta": {
+      "verified": true,
+      "source": "seed",
+      "lastReviewedAt": "2026-05-24",
+      "reviewer": "seed"
+    }
+  },
+  {
+    "id": "jc-092",
+    "domain": "java-core",
+    "difficulty": 3,
+    "type": "single",
+    "mode": "scenario",
+    "prompt": "Конструктор сохранил переданный List по ссылке (this.items = items). Почему объект всё равно изменяем?",
+    "tags": [
+      "immutability",
+      "defensive-copy"
+    ],
+    "options": [
+      {
+        "id": "a",
+        "text": "Вызывающий держит ссылку на тот же список и может менять его содержимое снаружи — нужна защитная копия на входе и копия/неизменяемое представление в геттере"
+      },
+      {
+        "id": "b",
+        "text": "List нельзя хранить в final-поле, поэтому неизменяемость ломается"
+      },
+      {
+        "id": "c",
+        "text": "Проблема возникает, только если список пустой"
+      },
+      {
+        "id": "d",
+        "text": "Достаточно пометить поле final — тогда и список станет неизменяемым"
+      }
+    ],
+    "correctOptionIds": [
+      "a"
+    ],
+    "answerGuide": {
+      "short": "Поле хранит чужую ссылку: вызывающий меняет список снаружи. Нужна защитная копия (List.copyOf) на входе и наружу.",
+      "normal": "final у ссылки запрещает переприсвоить поле, но не делает сам список неизменяемым. Если сохранить переданную ссылку, у вызывающего остаётся та же ссылка, и он поменяет «внутренности» вашего объекта — неизменяемость иллюзорна. Поэтому изменяемые входные данные копируют в конструкторе (List.copyOf(events)), а в геттере возвращают копию или неизменяемое представление. Это defensive copy.",
+      "traps": [
+        "Думать, что final-ссылка делает содержимое неизменяемым.",
+        "Возвращать внутренний список из геттера напрямую."
+      ],
+      "followUps": [
+        "Что делает List.copyOf на входе?",
+        "Почему копию нужно делать и в геттере?"
+      ]
+    },
+    "meta": {
+      "verified": true,
+      "source": "seed",
+      "lastReviewedAt": "2026-05-24",
+      "reviewer": "seed"
+    }
+  },
+  {
+    "id": "jc-093",
+    "domain": "java-core",
+    "difficulty": 4,
+    "type": "single",
+    "mode": "scenario",
+    "prompt": "Почему про immutable-объект говорят «потокобезопасен без синхронизации»?",
+    "tags": [
+      "immutability",
+      "concurrency"
+    ],
+    "options": [
+      {
+        "id": "a",
+        "text": "Если все поля final и ссылка this не утекла из конструктора, объект безопасно публикуется (final field freeze): другой поток видит поля корректно установленными без синхронизации"
+      },
+      {
+        "id": "b",
+        "text": "JVM автоматически синхронизирует доступ ко всем immutable-объектам"
+      },
+      {
+        "id": "c",
+        "text": "Неизменяемые объекты всегда лежат в ThreadLocal, поэтому их не видят другие потоки"
+      },
+      {
+        "id": "d",
+        "text": "Любое чтение объекта в Java и так атомарно и сразу видимо всем потокам"
+      }
+    ],
+    "correctOptionIds": [
+      "a"
+    ],
+    "answerGuide": {
+      "short": "Все поля final + this не утёк из конструктора → безопасная публикация по JMM (final field freeze), видимость без синхронизации.",
+      "normal": "Модель памяти Java гарантирует: у объекта со ВСЕМИ полями final, чья ссылка this не «утекла» из конструктора, любой поток, получивший ссылку на готовый объект, увидит его поля корректно проинициализированными — без блокировок. Это и делает «immutable ⇒ потокобезопасен». Подробный механизм — в уроке про JMM.",
+      "traps": [
+        "Думать, что JVM сама синхронизирует immutable.",
+        "Публиковать this из конструктора (ломает гарантию)."
+      ],
+      "followUps": [
+        "Что значит «утечка this» из конструктора?",
+        "Как это связано с happens-before?"
+      ]
+    },
+    "meta": {
+      "verified": true,
+      "source": "seed",
+      "lastReviewedAt": "2026-05-24",
+      "reviewer": "seed"
+    }
+  },
+  {
+    "id": "jc-094",
+    "domain": "java-core",
+    "difficulty": 3,
+    "type": "single",
+    "mode": "comparison",
+    "prompt": "Как в immutable-дизайне моделируют «изменение» и снижают его цену?",
+    "tags": [
+      "immutability",
+      "performance"
+    ],
+    "options": [
+      {
+        "id": "a",
+        "text": "Вместо мутации создают новый объект (методы withX); при частых изменениях берут изменяемый Builder, который на выходе отдаёт неизменяемый результат"
+      },
+      {
+        "id": "b",
+        "text": "Меняют поля через рефлексию, обходя final"
+      },
+      {
+        "id": "c",
+        "text": "Добавляют сеттеры только для часто меняющихся полей"
+      },
+      {
+        "id": "d",
+        "text": "Никак — изменяемые данные неизменяемыми объектами не моделируют"
+      }
+    ],
+    "correctOptionIds": [
+      "a"
+    ],
+    "answerGuide": {
+      "short": "«Изменение» = новый объект (withX); для частых правок — изменяемый Builder с финальной заморозкой результата.",
+      "normal": "Цена неизменяемости — копирование при «изменении»: методы withX возвращают копию с одним изменённым полем. Для редких изменений это дёшево; для частых берут изменяемый Builder, который собирает состояние и отдаёт неизменяемый результат, или persistent-структуры. Главное — не плодить withX в горячем цикле (мусор для GC); там уместен мутабельный буфер с заморозкой на выходе.",
+      "traps": [
+        "Обходить final рефлексией ради «изменения».",
+        "Сыпать withX в горячем цикле."
+      ],
+      "followUps": [
+        "Чем Builder лучше цепочки withX при частых изменениях?",
+        "Что такое persistent-структуры?"
+      ]
+    },
+    "meta": {
+      "verified": true,
+      "source": "seed",
+      "lastReviewedAt": "2026-05-24",
+      "reviewer": "seed"
+    }
+  },
+  {
+    "id": "jc-095",
+    "domain": "java-core",
+    "difficulty": 3,
+    "type": "single",
+    "mode": "scenario",
+    "prompt": "Чего record НЕ делает за вас при проектировании неизменяемого носителя данных?",
+    "tags": [
+      "immutability",
+      "records"
+    ],
+    "options": [
+      {
+        "id": "a",
+        "text": "Не делает защитных копий: изменяемый компонент (например, List) надо скопировать в компактном конструкторе, иначе «неизменяемая» запись протекает"
+      },
+      {
+        "id": "b",
+        "text": "Не генерирует equals/hashCode — их пишут руками"
+      },
+      {
+        "id": "c",
+        "text": "Не делает поля-компоненты final"
+      },
+      {
+        "id": "d",
+        "text": "Не позволяет добавить собственные методы"
+      }
+    ],
+    "correctOptionIds": [
+      "a"
+    ],
+    "answerGuide": {
+      "short": "record делает компоненты private final и генерирует equals/hashCode/toString, но НЕ делает защитных копий — их пишут сами.",
+      "normal": "record автоматически делает компоненты private final и генерирует конструктор, геттеры, equals/hashCode и toString. Но он гарантирует неизменяемость только ССЫЛОК: изменяемый компонент (List, массив, Date) всё равно нужно скопировать в компактном конструкторе, иначе через него запись «протекает» и перестаёт быть неизменяемой.",
+      "traps": [
+        "Считать, что record сам делает defensive copy.",
+        "Думать, что record не генерирует equals/hashCode."
+      ],
+      "followUps": [
+        "Как сделать защитную копию в компактном конструкторе record?",
+        "Что record генерирует автоматически?"
+      ]
+    },
+    "meta": {
+      "verified": true,
+      "source": "seed",
+      "lastReviewedAt": "2026-05-24",
+      "reviewer": "seed"
+    }
+  }
+]

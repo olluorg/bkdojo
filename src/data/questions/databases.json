@@ -1,0 +1,823 @@
+[
+  {
+    "id": "db-001",
+    "domain": "databases",
+    "difficulty": 2,
+    "type": "single",
+    "mode": "definition",
+    "prompt": "Что означает аббревиатура ACID?",
+    "tags": ["transactions", "acid", "basics"],
+    "options": [
+      { "id": "a", "text": "Atomicity, Consistency, Isolation, Durability" },
+      { "id": "b", "text": "Availability, Consistency, Integrity, Durability" },
+      { "id": "c", "text": "Atomicity, Concurrency, Isolation, Distribution" },
+      { "id": "d", "text": "Accuracy, Consistency, Isolation, Persistence" }
+    ],
+    "correctOptionIds": ["a"],
+    "answerGuide": {
+      "short": "ACID: Atomicity, Consistency, Isolation, Durability — гарантии транзакций.",
+      "normal": "Расшифруй каждую букву: Atomicity — «всё или ничего», транзакция выполняется целиком либо откатывается; Consistency — переводит БД из одного валидного состояния в другое, не нарушая инварианты и ограничения; Isolation — параллельные транзакции не мешают друг другу, как будто шли по очереди; Durability — после commit изменения переживут сбой (журнал/диск). Пример: перевод денег — списание и зачисление атомарны и долговечны.",
+      "traps": ["Путать Consistency из ACID с eventual consistency из CAP."],
+      "followUps": ["Какие бывают уровни изоляции?", "Чем ACID отличается от BASE?"]
+    },
+    "meta": { "verified": true, "source": "seed", "lastReviewedAt": "2026-05-21", "reviewer": "seed" }
+  },
+  {
+    "id": "db-002",
+    "domain": "databases",
+    "difficulty": 3,
+    "type": "single",
+    "mode": "scenario",
+    "prompt": "Какой уровень изоляции транзакций по стандарту SQL гарантированно предотвращает phantom reads?",
+    "tags": ["transactions", "isolation", "phantom"],
+    "options": [
+      { "id": "a", "text": "READ UNCOMMITTED" },
+      { "id": "b", "text": "READ COMMITTED" },
+      { "id": "c", "text": "REPEATABLE READ" },
+      { "id": "d", "text": "SERIALIZABLE" }
+    ],
+    "correctOptionIds": ["d"],
+    "answerGuide": {
+      "short": "По стандарту SQL phantom reads исключает только SERIALIZABLE.",
+      "normal": "Стандарт: READ UNCOMMITTED допускает dirty reads, READ COMMITTED — non-repeatable, REPEATABLE READ — phantom reads, и только SERIALIZABLE убирает все три аномалии.",
+      "traps": ["Считать REPEATABLE READ достаточным по стандарту — он не исключает phantom.", "Смешивать стандарт и поведение конкретной СУБД."],
+      "followUps": ["Чем phantom read отличается от non-repeatable read?", "Как InnoDB предотвращает phantom?"]
+    },
+    "meta": { "verified": true, "source": "seed", "lastReviewedAt": "2026-05-21", "reviewer": "seed" }
+  },
+  {
+    "id": "db-003",
+    "domain": "databases",
+    "difficulty": 4,
+    "type": "open",
+    "mode": "scenario",
+    "prompt": "Что такое проблема N+1 запросов и как её решать?",
+    "tags": ["orm", "performance", "n+1"],
+    "rubric": [
+      {
+        "id": "definition",
+        "title": "Суть проблемы",
+        "description": "Один запрос за списком сущностей и ещё N запросов за связанными данными по одному на элемент.",
+        "required": true,
+        "weight": 2,
+        "keywords": ["n+1", "один запрос", "n запросов", "связанные"]
+      },
+      {
+        "id": "cause",
+        "title": "Где возникает",
+        "description": "Чаще всего из-за lazy loading в ORM (Hibernate/JPA) при обходе коллекции связей.",
+        "required": true,
+        "weight": 1,
+        "keywords": ["lazy", "orm", "hibernate", "jpa", "коллекция"]
+      },
+      {
+        "id": "fix",
+        "title": "Как решать",
+        "description": "JOIN FETCH / @EntityGraph / batch fetching / DTO-проекции / пагинация запросов.",
+        "required": true,
+        "weight": 2,
+        "keywords": ["join fetch", "entitygraph", "batch", "projection", "проекция"]
+      }
+    ],
+    "answerGuide": {
+      "short": "N+1 — 1 запрос за списком + по запросу на каждую связь. Лечится JOIN FETCH / @EntityGraph / batch size.",
+      "normal": "Объясни механизм через lazy loading, как обнаружить (логи SQL / p6spy), и перечисли средства: JOIN FETCH, @EntityGraph, hibernate.default_batch_fetch_size, DTO-проекции.",
+      "traps": ["Лечить N+1 через EAGER глобально — это просто переносит проблему.", "JOIN FETCH двух коллекций сразу."],
+      "followUps": ["Чем @EntityGraph отличается от JOIN FETCH?", "Как поймать N+1 в тестах?"]
+    },
+    "meta": { "verified": true, "source": "seed", "lastReviewedAt": "2026-05-21", "reviewer": "seed" }
+  },
+  {
+    "id": "db-004",
+    "domain": "databases",
+    "difficulty": 2,
+    "type": "single",
+    "mode": "definition",
+    "prompt": "Каков основной эффект добавления индекса по столбцу?",
+    "tags": ["index", "performance"],
+    "options": [
+      { "id": "a", "text": "Ускоряет и чтение, и запись одновременно" },
+      { "id": "b", "text": "Ускоряет выборки по столбцу ценой замедления записи и доп. памяти" },
+      { "id": "c", "text": "Уменьшает физический размер таблицы" },
+      { "id": "d", "text": "Всегда гарантирует уникальность значений столбца" }
+    ],
+    "correctOptionIds": ["b"],
+    "answerGuide": {
+      "short": "Индекс ускоряет чтение по столбцу, но замедляет запись и требует памяти.",
+      "normal": "Индекс — отдельная структура для быстрого поиска. Чтения по индексированному столбцу ускоряются, но INSERT/UPDATE/DELETE дорожают (надо поддерживать индекс) и растёт объём хранения. Уникальность даёт только unique index.",
+      "traps": ["Индексировать всё подряд.", "Считать, что любой индекс уникален."],
+      "followUps": ["Когда индекс не используется оптимизатором?", "Что такое составной (composite) индекс?"]
+    },
+    "meta": { "verified": true, "source": "seed", "lastReviewedAt": "2026-05-22", "reviewer": "seed" }
+  },
+  {
+    "id": "db-005",
+    "domain": "databases",
+    "difficulty": 4,
+    "type": "single",
+    "mode": "comparison",
+    "prompt": "Чем B-tree индекс принципиально превосходит hash-индекс?",
+    "tags": ["index", "btree", "hash"],
+    "options": [
+      { "id": "a", "text": "Поддерживает поиск по диапазону и сортировку, а не только по равенству" },
+      { "id": "b", "text": "Всегда быстрее для любых запросов" },
+      { "id": "c", "text": "Не занимает места на диске" },
+      { "id": "d", "text": "Гарантирует уникальность значений столбца" }
+    ],
+    "correctOptionIds": ["a"],
+    "answerGuide": {
+      "short": "B-tree упорядочен (диапазоны, сортировка), hash — только равенство, зато ~O(1).",
+      "normal": "Сравни: B-tree поддерживает >, <, BETWEEN, ORDER BY и префиксы; hash хорош лишь для =. Поэтому почти везде дефолт — B-tree.",
+      "traps": ["Ждать от hash-индекса поддержки диапазонов.", "Считать hash всегда быстрее."],
+      "followUps": ["Что такое covering index?", "Когда индекс по равенству выгоднее B-tree?"]
+    },
+    "meta": { "verified": true, "source": "seed", "lastReviewedAt": "2026-05-22", "reviewer": "seed" }
+  },
+  {
+    "id": "db-006",
+    "domain": "databases",
+    "difficulty": 3,
+    "type": "open",
+    "mode": "comparison",
+    "prompt": "Что такое нормализация и когда оправдана денормализация?",
+    "tags": ["normalization", "schema-design"],
+    "rubric": [
+      {
+        "id": "normalization",
+        "title": "Нормализация",
+        "description": "Разбиение данных на таблицы для устранения избыточности и аномалий вставки/обновления/удаления.",
+        "required": true,
+        "weight": 2,
+        "keywords": ["нормализац", "избыточность", "аномал", "1nf", "3nf"]
+      },
+      {
+        "id": "denormalization",
+        "title": "Денормализация",
+        "description": "Сознательное дублирование данных ради ускорения чтения (меньше JOIN).",
+        "required": true,
+        "weight": 1,
+        "keywords": ["денормализац", "дублирование", "чтение", "join"]
+      },
+      {
+        "id": "tradeoff",
+        "title": "Компромисс",
+        "description": "Денормализация ускоряет чтение, но усложняет поддержание согласованности при записи.",
+        "required": false,
+        "weight": 1,
+        "keywords": ["компромисс", "согласованность", "запись"]
+      }
+    ],
+    "answerGuide": {
+      "short": "Нормализация убирает избыточность и аномалии; денормализация дублирует данные ради скорости чтения.",
+      "normal": "Объясни цель нормализации (нет дублей → нет аномалий) и почему иногда денормализуют (тяжёлые JOIN, read-heavy нагрузка), приняв риск рассинхронизации.",
+      "traps": ["Денормализовать «на всякий случай» без замеров.", "Путать нормальные формы."],
+      "followUps": ["Что такое 3NF простыми словами?", "Как поддерживать согласованность денормализованных данных?"]
+    },
+    "meta": { "verified": true, "source": "seed", "lastReviewedAt": "2026-05-22", "reviewer": "seed" }
+  },
+  {
+    "id": "db-007",
+    "domain": "databases",
+    "difficulty": 5,
+    "type": "open",
+    "mode": "comparison",
+    "prompt": "Чем отличается оптимистичная блокировка от пессимистичной?",
+    "tags": ["locking", "concurrency"],
+    "rubric": [
+      {
+        "id": "pessimistic",
+        "title": "Пессимистичная",
+        "description": "Блокирует строки при чтении (SELECT ... FOR UPDATE); другие ждут. Хороша при высокой конкуренции.",
+        "required": true,
+        "weight": 2,
+        "keywords": ["пессимист", "for update", "блокировк", "lock", "ждут"]
+      },
+      {
+        "id": "optimistic",
+        "title": "Оптимистичная",
+        "description": "Без блокировок: проверка версии/timestamp при записи, при конфликте — повтор.",
+        "required": true,
+        "weight": 2,
+        "keywords": ["оптимист", "версия", "version", "timestamp", "повтор", "конфликт"]
+      },
+      {
+        "id": "tradeoff",
+        "title": "Когда что",
+        "description": "Оптимистичная — при низкой конкуренции; пессимистичная — когда конфликты часты и повтор дорог.",
+        "required": false,
+        "weight": 1,
+        "keywords": ["низкая конкуренц", "высокая конкуренц", "выбор"]
+      }
+    ],
+    "answerGuide": {
+      "short": "Пессимистичная блокирует заранее (FOR UPDATE); оптимистичная проверяет версию при записи и повторяет при конфликте.",
+      "normal": "Опиши обе: пессимистичная держит блокировку и сериализует доступ; оптимистичная не блокирует, а ловит конфликт по version-полю (@Version в JPA). Выбор зависит от частоты конфликтов.",
+      "traps": ["Использовать пессимистичную при низкой конкуренции (лишние блокировки).", "Забывать обрабатывать конфликт версий."],
+      "followUps": ["Как реализуется @Version в JPA?", "Как избежать deadlock при FOR UPDATE?"]
+    },
+    "meta": { "verified": true, "source": "seed", "lastReviewedAt": "2026-05-22", "reviewer": "seed" }
+  },
+  {
+    "id": "db-008",
+    "domain": "databases",
+    "difficulty": 3,
+    "type": "single",
+    "mode": "sql",
+    "prompt": "Какой JOIN вернёт все строки левой таблицы и совпавшие из правой (NULL там, где совпадений нет)?",
+    "tags": ["sql", "join"],
+    "options": [
+      { "id": "a", "text": "INNER JOIN" },
+      { "id": "b", "text": "LEFT (OUTER) JOIN" },
+      { "id": "c", "text": "RIGHT JOIN" },
+      { "id": "d", "text": "CROSS JOIN" }
+    ],
+    "correctOptionIds": ["b"],
+    "answerGuide": {
+      "short": "LEFT JOIN: все строки левой таблицы + совпадения справа, иначе NULL.",
+      "normal": "INNER возвращает только совпадения, LEFT — все левые строки (с NULL для непарных), RIGHT — наоборот, CROSS — декартово произведение.",
+      "traps": ["Путать LEFT и RIGHT.", "Фильтровать правую таблицу в WHERE и неявно превращать LEFT в INNER."],
+      "followUps": ["Почему условие на правую таблицу лучше класть в ON, а не WHERE?", "Что такое FULL OUTER JOIN?"]
+    },
+    "meta": { "verified": true, "source": "seed", "lastReviewedAt": "2026-05-22", "reviewer": "seed" }
+  },
+  {
+    "id": "db-009",
+    "domain": "databases",
+    "difficulty": 3,
+    "type": "single",
+    "mode": "sql",
+    "prompt": "Чем HAVING отличается от WHERE?",
+    "tags": ["sql", "group-by", "filtering"],
+    "options": [
+      { "id": "a", "text": "HAVING фильтрует группы после GROUP BY и допускает агрегаты, а WHERE — строки до группировки" },
+      { "id": "b", "text": "HAVING фильтрует строки до группировки, а WHERE — после" },
+      { "id": "c", "text": "Это полные синонимы" },
+      { "id": "d", "text": "HAVING можно использовать только без GROUP BY" }
+    ],
+    "correctOptionIds": ["a"],
+    "answerGuide": {
+      "short": "WHERE фильтрует строки до GROUP BY, HAVING фильтрует группы после агрегации.",
+      "normal": "WHERE применяют к исходным строкам, поэтому там нельзя нормально фильтровать по count/sum текущей группы. HAVING работает после группировки и нужен для условий по агрегатам.",
+      "traps": ["Писать агрегатные условия в WHERE.", "Использовать HAVING вместо WHERE без необходимости и ухудшать план."],
+      "followUps": ["Каков логический порядок выполнения SELECT?", "Когда индекс поможет условию WHERE?"]
+    },
+    "meta": { "verified": true, "source": "enhorse/java-interview topics, paraphrased", "lastReviewedAt": "2026-05-22", "reviewer": "codex" }
+  },
+  {
+    "id": "db-010",
+    "domain": "databases",
+    "difficulty": 4,
+    "type": "single",
+    "mode": "sql",
+    "prompt": "Что вернёт INNER JOIN?",
+    "tags": ["sql", "join"],
+    "options": [
+      { "id": "a", "text": "Все строки левой таблицы и совпавшие справа" },
+      { "id": "b", "text": "Только строки, для которых найдено совпадение по условию соединения" },
+      { "id": "c", "text": "Декартово произведение без условия" },
+      { "id": "d", "text": "Все строки обеих таблиц с NULL для отсутствующих совпадений" }
+    ],
+    "correctOptionIds": ["b"],
+    "answerGuide": {
+      "short": "INNER JOIN возвращает только совпавшие пары строк.",
+      "normal": "Если строка из одной таблицы не имеет пары по ON-условию, она не попадёт в результат INNER JOIN. Для сохранения непарных строк нужны OUTER JOIN варианты.",
+      "traps": ["Путать INNER JOIN с LEFT JOIN.", "Переносить условия из ON в WHERE и менять смысл outer join."],
+      "followUps": ["Чем ON отличается от WHERE при LEFT JOIN?", "Что такое CROSS JOIN?"]
+    },
+    "meta": { "verified": true, "source": "enhorse/java-interview topics, paraphrased", "lastReviewedAt": "2026-05-22", "reviewer": "codex" }
+  },
+  {
+    "id": "db-011",
+    "domain": "databases",
+    "difficulty": 4,
+    "type": "single",
+    "mode": "sql",
+    "prompt": "Чем primary key отличается от unique-ограничения?",
+    "tags": ["sql", "constraints", "keys"],
+    "options": [
+      { "id": "a", "text": "Primary key — основной идентификатор строки, не допускает NULL и один на таблицу; unique лишь гарантирует уникальность" },
+      { "id": "b", "text": "Это одно и то же" },
+      { "id": "c", "text": "Unique не допускает NULL, а primary key допускает" },
+      { "id": "d", "text": "Primary key допускает дубликаты, а unique — нет" }
+    ],
+    "correctOptionIds": ["a"],
+    "answerGuide": {
+      "short": "Primary key — основной NOT NULL идентификатор строки; unique — дополнительная гарантия уникальности.",
+      "normal": "PK используют как стабильную ссылку на строку и цель внешних ключей. UNIQUE может быть несколько на таблицу и он защищает бизнес-уникальность вроде email.",
+      "traps": ["Делать nullable primary key.", "Считать, что unique всегда запрещает несколько NULL во всех СУБД."],
+      "followUps": ["Что такое foreign key?", "Когда нужен составной primary key?"]
+    },
+    "meta": { "verified": true, "source": "enhorse/java-interview topics, paraphrased", "lastReviewedAt": "2026-05-22", "reviewer": "codex" }
+  },
+  {
+    "id": "db-012",
+    "domain": "databases",
+    "difficulty": 2,
+    "type": "single",
+    "mode": "sql",
+    "prompt": "Как правильно проверить значение на NULL в SQL?",
+    "tags": ["sql", "null"],
+    "options": [
+      { "id": "a", "text": "field = NULL" },
+      { "id": "b", "text": "field IS NULL" },
+      { "id": "c", "text": "field == NULL" },
+      { "id": "d", "text": "field EQUALS NULL" }
+    ],
+    "correctOptionIds": ["b"],
+    "answerGuide": {
+      "short": "NULL проверяют через IS NULL или IS NOT NULL.",
+      "normal": "NULL означает неизвестное/отсутствующее значение. Обычные сравнения с NULL дают unknown, поэтому для фильтрации нужны IS NULL и IS NOT NULL.",
+      "traps": ["Сравнивать NULL через =.", "Путать NULL с пустой строкой или нулём."],
+      "followUps": ["Как count(*) отличается от count(column)?", "Что такое three-valued logic?"]
+    },
+    "meta": { "verified": true, "source": "enhorse/java-interview topics, paraphrased", "lastReviewedAt": "2026-05-22", "reviewer": "codex" }
+  },
+  {
+    "id": "db-013",
+    "domain": "databases",
+    "difficulty": 3,
+    "type": "single",
+    "mode": "definition",
+    "prompt": "К какой группе SQL-команд относятся SELECT, INSERT, UPDATE, DELETE?",
+    "tags": ["sql", "ddl", "dml"],
+    "options": [
+      { "id": "a", "text": "DDL (Data Definition Language) — определение схемы: CREATE, ALTER, DROP" },
+      { "id": "b", "text": "DML (Data Manipulation Language) — чтение и изменение данных" },
+      { "id": "c", "text": "TCL (Transaction Control Language) — управление транзакциями: COMMIT, ROLLBACK" },
+      { "id": "d", "text": "DCL (Data Control Language) — управление правами: GRANT, REVOKE" }
+    ],
+    "correctOptionIds": ["b"],
+    "answerGuide": {
+      "short": "DDL — схема, DML — данные, TCL — транзакции, DCL — права.",
+      "normal": "Приведи по нескольку примеров: DDL создаёт/меняет таблицы, DML выбирает и меняет строки, TCL фиксирует или откатывает транзакции, DCL управляет доступом.",
+      "traps": ["Смешивать изменение схемы и изменение данных.", "Забывать про транзакционные команды."],
+      "followUps": ["Чем DELETE отличается от TRUNCATE?", "Что делает COMMIT?"]
+    },
+    "meta": { "verified": true, "source": "enhorse/java-interview topics, paraphrased", "lastReviewedAt": "2026-05-22", "reviewer": "codex" }
+  },
+  {
+    "id": "db-014",
+    "domain": "databases",
+    "difficulty": 4,
+    "type": "single",
+    "mode": "comparison",
+    "prompt": "Чем TRUNCATE отличается от DELETE и DROP?",
+    "tags": ["sql", "ddl", "dml"],
+    "options": [
+      { "id": "a", "text": "TRUNCATE быстро очищает все строки таблицы, DELETE удаляет выбранные строки, DROP удаляет саму таблицу" },
+      { "id": "b", "text": "TRUNCATE удаляет таблицу, а DROP очищает строки" },
+      { "id": "c", "text": "DELETE и TRUNCATE полностью идентичны" },
+      { "id": "d", "text": "DROP удаляет только данные, оставляя структуру таблицы" }
+    ],
+    "correctOptionIds": ["a"],
+    "answerGuide": {
+      "short": "DELETE удаляет строки, TRUNCATE очищает таблицу целиком, DROP удаляет саму таблицу.",
+      "normal": "DELETE подходит для выборочного удаления через WHERE. TRUNCATE быстрее для полной очистки. DROP уничтожает объект схемы, после него таблицы уже нет.",
+      "traps": ["Использовать DELETE без WHERE в production.", "Путать очистку данных с удалением таблицы."],
+      "followUps": ["Можно ли откатить TRUNCATE?", "Что происходит с identity/sequence при TRUNCATE?"]
+    },
+    "meta": { "verified": true, "source": "enhorse/java-interview topics, paraphrased", "lastReviewedAt": "2026-05-22", "reviewer": "codex" }
+  },
+  {
+    "id": "db-015",
+    "domain": "databases",
+    "difficulty": 4,
+    "type": "single",
+    "mode": "definition",
+    "prompt": "Почему в составном индексе важен порядок колонок?",
+    "tags": ["index", "composite-index", "performance"],
+    "options": [
+      { "id": "a", "text": "B-tree эффективно использует только левый префикс индекса" },
+      { "id": "b", "text": "Порядок колонок вообще не влияет на использование индекса" },
+      { "id": "c", "text": "Индекс работает только при обратном порядке колонок" },
+      { "id": "d", "text": "Порядок колонок определяет уникальность строк" }
+    ],
+    "correctOptionIds": ["a"],
+    "answerGuide": {
+      "short": "Составной индекс строится по нескольким колонкам; B-tree хорошо использует левый префикс.",
+      "normal": "Индекс (user_id, created_at) полезен для user_id и user_id+created_at, но не обязан помогать для одного created_at. Порядок должен соответствовать WHERE/ORDER BY реальных запросов.",
+      "traps": ["Думать, что порядок колонок в composite index не важен.", "Создавать отдельный индекс на каждую колонку вместо нужного составного."],
+      "followUps": ["Что такое covering index?", "Как EXPLAIN показывает использование индекса?"]
+    },
+    "meta": { "verified": true, "source": "enhorse/java-interview topics, paraphrased", "lastReviewedAt": "2026-05-22", "reviewer": "codex" }
+  },
+  {
+    "id": "db-016",
+    "domain": "databases",
+    "difficulty": 4,
+    "type": "single",
+    "mode": "sql",
+    "prompt": "Что делает EXPLAIN для SQL-запроса?",
+    "tags": ["sql", "explain", "performance"],
+    "options": [
+      { "id": "a", "text": "Гарантированно ускоряет запрос" },
+      { "id": "b", "text": "Показывает план выполнения, выбранный оптимизатором" },
+      { "id": "c", "text": "Удаляет неиспользуемые индексы" },
+      { "id": "d", "text": "Преобразует SQL в Java-код" }
+    ],
+    "correctOptionIds": ["b"],
+    "answerGuide": {
+      "short": "EXPLAIN показывает план выполнения запроса.",
+      "normal": "По плану смотрят порядок join, типы scan, использование индексов, оценку строк и стоимость. В некоторых СУБД EXPLAIN ANALYZE ещё реально выполняет запрос и показывает фактические метрики.",
+      "traps": ["Считать EXPLAIN оптимизацией сам по себе.", "Игнорировать разницу estimate и actual."],
+      "followUps": ["Что такое sequential scan?", "Чем EXPLAIN ANALYZE опасен для write-запросов?"]
+    },
+    "meta": { "verified": true, "source": "enhorse/java-interview topics, paraphrased", "lastReviewedAt": "2026-05-22", "reviewer": "codex" }
+  },
+  {
+    "id": "db-017",
+    "domain": "databases",
+    "difficulty": 5,
+    "type": "single",
+    "mode": "comparison",
+    "prompt": "Чем PreparedStatement безопаснее обычного Statement?",
+    "tags": ["jdbc", "preparedstatement", "sql-injection"],
+    "options": [
+      { "id": "a", "text": "Параметры передаются отдельно от текста запроса, что защищает от SQL-инъекций" },
+      { "id": "b", "text": "Он шифрует текст SQL-запроса" },
+      { "id": "c", "text": "Он автоматически создаёт индексы под запрос" },
+      { "id": "d", "text": "Он запрещает любые запросы с условием WHERE" }
+    ],
+    "correctOptionIds": ["a"],
+    "answerGuide": {
+      "short": "PreparedStatement параметризует запрос и защищает от SQL injection; Statement выполняет строку как есть.",
+      "normal": "PreparedStatement позволяет БД/драйверу подготовить SQL и передать значения отдельно. Это безопаснее и часто эффективнее для повторяющихся запросов.",
+      "traps": ["Склеивать SQL с пользовательским вводом.", "Пытаться параметризовать имя таблицы через ?."],
+      "followUps": ["Как закрывать JDBC resources?", "Что такое connection pool?"]
+    },
+    "meta": { "verified": true, "source": "enhorse/java-interview topics, paraphrased", "lastReviewedAt": "2026-05-22", "reviewer": "codex" }
+  },
+  {
+    "id": "db-018",
+    "domain": "databases",
+    "difficulty": 4,
+    "type": "single",
+    "mode": "definition",
+    "prompt": "Как в JDBC выполнить несколько операций в одной транзакции вручную?",
+    "tags": ["jdbc", "transactions"],
+    "options": [
+      { "id": "a", "text": "setAutoCommit(false), выполнить операции, commit; при ошибке — rollback" },
+      { "id": "b", "text": "Просто выполнить операции — JDBC объединит их сам" },
+      { "id": "c", "text": "Вызывать commit() перед каждой операцией" },
+      { "id": "d", "text": "Установить setAutoCommit(true) и вызвать flush()" }
+    ],
+    "correctOptionIds": ["a"],
+    "answerGuide": {
+      "short": "setAutoCommit(false), выполнить операции, commit; при ошибке rollback.",
+      "normal": "Важно вернуть соединение в корректное состояние перед возвратом в pool и закрывать ресурсы. В Spring обычно ручное управление заменяется @Transactional.",
+      "traps": ["Забыть rollback при исключении.", "Оставить autoCommit=false на pooled connection."],
+      "followUps": ["Какие isolation levels есть в JDBC?", "Зачем нужен connection pool?"]
+    },
+    "meta": { "verified": true, "source": "enhorse/java-interview topics, paraphrased", "lastReviewedAt": "2026-05-22", "reviewer": "codex" }
+  },
+  {
+    "id": "db-019",
+    "domain": "databases",
+    "difficulty": 5,
+    "type": "open",
+    "mode": "comparison",
+    "prompt": "Чем dirty read, non-repeatable read и phantom read отличаются друг от друга?",
+    "tags": ["transactions", "isolation", "anomalies"],
+    "rubric": [
+      {
+        "id": "dirty",
+        "title": "Dirty read",
+        "description": "Чтение незакоммиченных данных другой транзакции.",
+        "required": true,
+        "weight": 1,
+        "keywords": ["dirty", "незакоммич"]
+      },
+      {
+        "id": "non-repeatable",
+        "title": "Non-repeatable read",
+        "description": "Повторное чтение той же строки даёт другое значение после commit другой транзакции.",
+        "required": true,
+        "weight": 1,
+        "keywords": ["non-repeatable", "та же строк", "другое значение"]
+      },
+      {
+        "id": "phantom",
+        "title": "Phantom read",
+        "description": "Повторный запрос по условию видит новый/исчезнувший набор строк.",
+        "required": true,
+        "weight": 1,
+        "keywords": ["phantom", "новые строки", "услов"]
+      }
+    ],
+    "answerGuide": {
+      "short": "Dirty — чужой uncommitted, non-repeatable — изменилась строка, phantom — изменился набор строк по условию.",
+      "normal": "Разница важна для уровней изоляции: чем выше изоляция, тем меньше аномалий, но тем выше цена блокировок/конфликтов.",
+      "traps": ["Путать non-repeatable read с phantom.", "Описывать isolation только абстрактно без аномалий."],
+      "followUps": ["Какой уровень убирает phantom по SQL standard?", "Как MVCC влияет на эти аномалии?"]
+    },
+    "meta": { "verified": true, "source": "enhorse/java-interview topics, paraphrased", "lastReviewedAt": "2026-05-22", "reviewer": "codex" }
+  },
+  {
+    "id": "db-020",
+    "domain": "databases",
+    "difficulty": 4,
+    "type": "single",
+    "mode": "definition",
+    "prompt": "Что обеспечивает foreign key?",
+    "tags": ["sql", "constraints", "foreign-key"],
+    "options": [
+      { "id": "a", "text": "Ссылочную целостность: нельзя сослаться на несуществующую строку другой таблицы" },
+      { "id": "b", "text": "Уникальность всех значений столбца" },
+      { "id": "c", "text": "Ускорение любых запросов к таблице" },
+      { "id": "d", "text": "Автоматическое шифрование связанных данных" }
+    ],
+    "correctOptionIds": ["a"],
+    "answerGuide": {
+      "short": "Foreign key защищает ссылочную целостность между таблицами.",
+      "normal": "Например, order.user_id ссылается на users.id. БД не позволит создать заказ для несуществующего пользователя и применит заданную стратегию при удалении пользователя.",
+      "traps": ["Полагаться только на проверки приложения.", "Забывать индексировать FK в частых join/delete сценариях."],
+      "followUps": ["Когда cascade delete опасен?", "Нужно ли индексировать foreign key?"]
+    },
+    "meta": { "verified": true, "source": "enhorse/java-interview topics, paraphrased", "lastReviewedAt": "2026-05-22", "reviewer": "codex" }
+  },
+  {
+    "id": "db-021",
+    "domain": "databases",
+    "difficulty": 4,
+    "type": "single",
+    "mode": "architecture",
+    "prompt": "Как работает паттерн cache-aside при чтении?",
+    "tags": ["cache", "redis", "architecture"],
+    "options": [
+      { "id": "a", "text": "Сначала читаем кэш; при промахе читаем БД и кладём результат в кэш" },
+      { "id": "b", "text": "Пишем и читаем только из кэша, минуя БД" },
+      { "id": "c", "text": "Кэш обновляется лишь по расписанию раз в сутки" },
+      { "id": "d", "text": "Каждое чтение идёт в БД, а кэш используется только при записи" }
+    ],
+    "correctOptionIds": ["a"],
+    "answerGuide": {
+      "short": "Cache-aside: приложение само читает кэш, при miss идёт в БД и заполняет кэш.",
+      "normal": "Источник истины остаётся БД. Кэш ускоряет чтение, но требует TTL/инвалидации и защиты от одновременного пересчёта популярных ключей.",
+      "traps": ["Считать кэш источником истины.", "Забыть инвалидировать кэш после записи."],
+      "followUps": ["Что такое cache stampede?", "Когда write-through лучше cache-aside?"]
+    },
+    "meta": { "verified": true, "source": "codex", "lastReviewedAt": "2026-05-22", "reviewer": "codex" }
+  },
+  {
+    "id": "db-022",
+    "domain": "databases",
+    "difficulty": 5,
+    "type": "single",
+    "mode": "definition",
+    "prompt": "Что такое cache stampede?",
+    "tags": ["cache", "redis", "ttl", "performance"],
+    "options": [
+      { "id": "a", "text": "Множество запросов одновременно промахиваются по горячему ключу и разом идут в БД" },
+      { "id": "b", "text": "Переполнение кэша из-за слишком большого TTL" },
+      { "id": "c", "text": "Очистка кэша при перезапуске приложения" },
+      { "id": "d", "text": "Шифрование данных, лежащих в кэше" }
+    ],
+    "correctOptionIds": ["a"],
+    "answerGuide": {
+      "short": "Stampede — массовый miss по горячему ключу; лечится jitter, single-flight и stale-while-revalidate.",
+      "normal": "Проблема особенно опасна после одновременного истечения TTL. Один запрос должен пересчитывать значение, остальные ждут или получают старое допустимое значение.",
+      "traps": ["Ставить одинаковый TTL на тысячи горячих ключей.", "Защищать stampede глобальным lock на весь кэш."],
+      "followUps": ["Что такое hot key?", "Как Redis SET NX PX помогает lock-у?"]
+    },
+    "meta": { "verified": true, "source": "codex", "lastReviewedAt": "2026-05-22", "reviewer": "codex" }
+  },
+  {
+    "id": "db-023",
+    "domain": "databases",
+    "difficulty": 4,
+    "type": "open",
+    "mode": "comparison",
+    "prompt": "Когда NoSQL база может быть лучше реляционной?",
+    "tags": ["nosql", "mongodb", "schema-design"],
+    "rubric": [
+      {
+        "id": "use-cases",
+        "title": "Use cases",
+        "description": "Гибкая схема, document агрегаты, key-value доступ, масштабирование записи/шардирование.",
+        "required": true,
+        "weight": 2,
+        "keywords": ["document", "key-value", "shard", "schema"]
+      },
+      {
+        "id": "tradeoffs",
+        "title": "Trade-offs",
+        "description": "Часто меньше ad-hoc join/transaction возможностей и больше ответственности за модель запросов.",
+        "required": true,
+        "weight": 2,
+        "keywords": ["join", "transaction", "trade"]
+      },
+      {
+        "id": "not-fashion",
+        "title": "Not fashion",
+        "description": "Выбор должен идти от access patterns, а не от моды.",
+        "required": false,
+        "weight": 1,
+        "keywords": ["access pattern", "выбор"]
+      }
+    ],
+    "answerGuide": {
+      "short": "NoSQL выбирают под access patterns: документы, key-value, масштабирование, гибкая схема. Trade-off — обычно меньше join/transaction и больше ответственности за модель запросов.",
+      "normal": "Реляционная БД сильна в транзакциях, связях и ad-hoc SQL. NoSQL может быть лучше, когда данные читаются агрегатами или нужен предсказуемый доступ по ключу на большой нагрузке. Trade-off: обычно нет произвольного join, transaction-границы уже, и за модель доступа отвечает разработчик, а не оптимизатор.",
+      "traps": ["Выбирать NoSQL, чтобы «не думать о схеме».", "Пытаться делать сложные join-отчёты в key-value хранилище."],
+      "followUps": ["Что такое eventual consistency?", "Когда MongoDB документ лучше нормализованных таблиц?"]
+    },
+    "meta": { "verified": true, "source": "codex", "lastReviewedAt": "2026-05-22", "reviewer": "codex" }
+  },
+  {
+    "id": "db-024",
+    "domain": "databases",
+    "difficulty": 4,
+    "type": "single",
+    "mode": "definition",
+    "prompt": "Для чего Elasticsearch обычно используют в backend-системах?",
+    "tags": ["elasticsearch", "search", "nosql"],
+    "options": [
+      { "id": "a", "text": "Как основной источник истины для финансовых транзакций" },
+      { "id": "b", "text": "Для полнотекстового поиска, фильтрации и аналитики по индексированным документам" },
+      { "id": "c", "text": "Для замены foreign keys в PostgreSQL" },
+      { "id": "d", "text": "Для компиляции SQL-запросов" }
+    ],
+    "correctOptionIds": ["b"],
+    "answerGuide": {
+      "short": "Elasticsearch обычно используют для полнотекстового поиска и аналитики по индексам.",
+      "normal": "Чаще это read model, которая обновляется из источника истины. Нужно учитывать eventual consistency и задержку индексации.",
+      "traps": ["Делать Elasticsearch единственным источником истины для критичных транзакций.", "Игнорировать mapping и анализаторы."],
+      "followUps": ["Что такое inverted index?", "Как синхронизировать БД и Elasticsearch?"]
+    },
+    "meta": { "verified": true, "source": "codex", "lastReviewedAt": "2026-05-22", "reviewer": "codex" }
+  },
+  {
+    "id": "db-025",
+    "domain": "databases",
+    "difficulty": 3,
+    "type": "open",
+    "mode": "sql",
+    "language": "sql",
+    "starterCode": "-- таблица employee(id, salary)\nSELECT ...",
+    "prompt": "Напиши SQL-запрос, возвращающий вторую по величине зарплату из таблицы employee(id, salary).",
+    "tags": ["coding", "sql"],
+    "rubric": [
+      {
+        "id": "approach",
+        "title": "Корректный подход",
+        "description": "DISTINCT + ORDER BY salary DESC LIMIT 1 OFFSET 1, либо подзапрос MAX < MAX, либо оконная DENSE_RANK.",
+        "required": true,
+        "weight": 2,
+        "keywords": ["offset", "limit", "dense_rank", "distinct", "max"]
+      },
+      {
+        "id": "duplicates",
+        "title": "Дубликаты",
+        "description": "Учитывает одинаковые зарплаты (DISTINCT / DENSE_RANK), а не просто вторую строку.",
+        "required": false,
+        "weight": 1,
+        "keywords": ["distinct", "dense_rank", "дубл"]
+      }
+    ],
+    "answerGuide": {
+      "short": "SELECT DISTINCT salary FROM employee ORDER BY salary DESC LIMIT 1 OFFSET 1;",
+      "normal": "Варианты: (1) DISTINCT + ORDER BY DESC LIMIT 1 OFFSET 1; (2) SELECT MAX(salary) WHERE salary < (SELECT MAX(salary)); (3) оконная функция: DENSE_RANK() OVER (ORDER BY salary DESC) = 2.",
+      "traps": ["LIMIT 1 OFFSET 1 без DISTINCT при дубликатах вернёт ту же зарплату.", "Забыть про NULL."],
+      "followUps": ["Как обобщить до N-й по величине?", "Чем RANK отличается от DENSE_RANK?"]
+    },
+    "meta": { "verified": true, "source": "seed", "lastReviewedAt": "2026-05-22", "reviewer": "seed" }
+  },
+  {
+    "id": "db-026",
+    "domain": "databases",
+    "difficulty": 4,
+    "type": "single",
+    "mode": "definition",
+    "prompt": "Что согласно CAP-теореме приходится выбирать во время сетевого разделения?",
+    "tags": ["cap", "consistency", "distributed"],
+    "options": [
+      { "id": "a", "text": "Между согласованностью (C) и доступностью (A)" },
+      { "id": "b", "text": "Между производительностью и объёмом памяти" },
+      { "id": "c", "text": "Между нормализацией и денормализацией" },
+      { "id": "d", "text": "Между OLTP и OLAP" }
+    ],
+    "correctOptionIds": ["a"],
+    "answerGuide": {
+      "short": "При разделении (P) выбирают между согласованностью и доступностью.",
+      "normal": "Сетевые разделения в распределённой системе неизбежны, поэтому P нельзя «не выбрать». Реальный выбор возникает только во время разделения: CP-система предпочтёт вернуть ошибку, чем устаревшие данные; AP-система ответит из локальной реплики, рискуя отдать устаревшее.",
+      "traps": ["Думать, что можно отказаться от P.", "Считать, что выбор C/A происходит постоянно, а не только при разделении."],
+      "followUps": ["Что добавляет PACELC к CAP?", "Чем CP-система отличается от AP на примере?"]
+    },
+    "meta": { "verified": true, "source": "claude", "lastReviewedAt": "2026-05-23", "reviewer": "claude" }
+  },
+  {
+    "id": "db-027",
+    "domain": "databases",
+    "difficulty": 3,
+    "type": "single",
+    "mode": "definition",
+    "prompt": "Что означает eventual consistency?",
+    "tags": ["eventual-consistency", "consistency", "distributed"],
+    "options": [
+      { "id": "a", "text": "Реплики со временем сходятся, но сразу после записи читатели могут видеть разные версии" },
+      { "id": "b", "text": "Запись синхронно фиксируется на всех репликах до ответа клиенту" },
+      { "id": "c", "text": "Данные никогда не приходят к согласованному состоянию" },
+      { "id": "d", "text": "Транзакция выполняется целиком или не выполняется вовсе" }
+    ],
+    "correctOptionIds": ["a"],
+    "answerGuide": {
+      "short": "Eventual consistency — реплики сходятся со временем; сразу после записи возможны расхождения.",
+      "normal": "Это компромисс ради доступности и скорости: система всегда отвечает, но свежесть данных не гарантируется немедленно. Для лент и счётчиков обычно приемлемо, для денег — часто нет. Промежуточные гарантии (read-your-writes, monotonic reads) смягчают неудобства.",
+      "traps": ["Путать eventual consistency с полным отсутствием согласованности.", "Применять её там, где нужна строгая корректность."],
+      "followUps": ["Что такое read-your-writes consistency?", "Как кворумы влияют на согласованность?"]
+    },
+    "meta": { "verified": true, "source": "claude", "lastReviewedAt": "2026-05-23", "reviewer": "claude" }
+  },
+  {
+    "id": "db-028",
+    "domain": "databases",
+    "difficulty": 5,
+    "type": "single",
+    "mode": "scenario",
+    "prompt": "В кворумной системе из N реплик при каком условии чтение гарантированно увидит последнюю запись?",
+    "tags": ["cap", "consistency", "distributed"],
+    "options": [
+      { "id": "a", "text": "W + R > N (множества подтверждающих запись и опрашиваемых при чтении пересекаются)" },
+      { "id": "b", "text": "W + R < N" },
+      { "id": "c", "text": "W = 1 и R = 1" },
+      { "id": "d", "text": "Только при N = 1" }
+    ],
+    "correctOptionIds": ["a"],
+    "answerGuide": {
+      "short": "Строгую согласованность даёт W + R > N.",
+      "normal": "N — число реплик, W — сколько подтверждают запись, R — сколько опрашивают при чтении. Если W + R > N, наборы гарантированно пересекаются хотя бы на одной свежей реплике. Уменьшая W или R, выбираешь скорость и доступность ценой возможной устаревшей выдачи.",
+      "traps": ["Думать, что кворум всегда означает большинство.", "Забывать, что меньшие W/R дают eventual consistency."],
+      "followUps": ["Как кворум влияет на задержку записи?", "Что такое hinted handoff?"]
+    },
+    "meta": { "verified": true, "source": "claude", "lastReviewedAt": "2026-05-23", "reviewer": "claude" }
+  },
+  {
+    "id": "db-029",
+    "domain": "databases",
+    "difficulty": 4,
+    "type": "single",
+    "mode": "scenario",
+    "prompt": "Какая ошибка моделирования сильнее всего вредит базе временных рядов?",
+    "tags": ["timeseries", "metrics", "schema-design"],
+    "options": [
+      { "id": "a", "text": "Высокая кардинальность тегов (например, уникальный id в теге) — взрывается число рядов" },
+      { "id": "b", "text": "Партиционирование данных по времени" },
+      { "id": "c", "text": "Использование retention policy" },
+      { "id": "d", "text": "Сжатие старых данных" }
+    ],
+    "correctOptionIds": ["a"],
+    "answerGuide": {
+      "short": "Высокая кардинальность тегов убивает производительность TSDB.",
+      "normal": "Теги задают, как ряд разрезается и индексируется. Уникальные значения в теге (request id, user id) порождают миллионы отдельных рядов и взрывают индекс. Партиционирование по времени, retention и сжатие — наоборот, штатные и полезные приёмы.",
+      "traps": ["Класть высококардинальные идентификаторы в теги вместо полей.", "Считать TSDB обычной БД без учёта профиля записи."],
+      "followUps": ["Чем tag отличается от field в InfluxDB?", "Зачем нужен downsampling?"]
+    },
+    "meta": { "verified": true, "source": "claude", "lastReviewedAt": "2026-05-23", "reviewer": "claude" }
+  },
+  {
+    "id": "db-030",
+    "domain": "databases",
+    "difficulty": 3,
+    "type": "single",
+    "mode": "definition",
+    "prompt": "Зачем во временных рядах нужен downsampling?",
+    "tags": ["timeseries", "metrics"],
+    "options": [
+      { "id": "a", "text": "Хранить свежие данные детально, а старые — в агрегированном (сжатом) виде" },
+      { "id": "b", "text": "Чтобы ускорить запись новых точек" },
+      { "id": "c", "text": "Чтобы включить полнотекстовый поиск по метрикам" },
+      { "id": "d", "text": "Чтобы обеспечить ACID-транзакции" }
+    ],
+    "correctOptionIds": ["a"],
+    "answerGuide": {
+      "short": "Downsampling заранее агрегирует старые данные в более грубое разрешение.",
+      "normal": "Хранить посекундные точки годами бессмысленно. Downsampling (continuous queries) считает агрегаты пониженного разрешения: секунды → минуты → часы, а retention policy удаляет устаревшее. Так свежие данные детальны, исторические компактны.",
+      "traps": ["Хранить максимальное разрешение вечно.", "Путать downsampling с обычным сжатием на диске."],
+      "followUps": ["Что такое retention policy?", "Чем TimescaleDB отличается от чистого PostgreSQL?"]
+    },
+    "meta": { "verified": true, "source": "claude", "lastReviewedAt": "2026-05-23", "reviewer": "claude" }
+  },
+  {
+    "id": "db-031",
+    "domain": "databases",
+    "difficulty": 4,
+    "type": "single",
+    "mode": "definition",
+    "prompt": "Из чего состоит первичный ключ в Cassandra?",
+    "tags": ["cassandra", "columnar", "nosql"],
+    "options": [
+      { "id": "a", "text": "Из partition key (узел/партиция) и clustering columns (порядок строк внутри партиции)" },
+      { "id": "b", "text": "Только из одного автоинкрементного id" },
+      { "id": "c", "text": "Из инвертированного индекса по всем колонкам" },
+      { "id": "d", "text": "Из внешнего ключа на другую таблицу" }
+    ],
+    "correctOptionIds": ["a"],
+    "answerGuide": {
+      "short": "Partition key определяет партицию, clustering columns — порядок строк внутри неё.",
+      "normal": "Cassandra моделируется под запросы (query-first): partition key решает, на каком узле лежат данные и обеспечивает доступ по нему, а clustering columns задают сортировку внутри партиции. Эффективны только запросы по этому ключу, поэтому данные часто дублируют в несколько таблиц под разные паттерны.",
+      "traps": ["Ожидать произвольных запросов по любым колонкам.", "Выбирать монотонно растущий partition key (горячая партиция)."],
+      "followUps": ["Что такое LSM-дерево?", "Чем wide-column отличается от колоночной OLAP-БД?"]
+    },
+    "meta": { "verified": true, "source": "claude", "lastReviewedAt": "2026-05-23", "reviewer": "claude" }
+  }
+]

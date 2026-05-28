@@ -1,0 +1,1387 @@
+[
+  {
+    "id": "sb-lesson-ioc",
+    "domain": "spring-boot",
+    "topic": "ioc",
+    "order": 1,
+    "title": "IoC и Dependency Injection",
+    "summary": "Принцип инверсии управления, DI как его форма, три способа внедрения и почему конструктор, разрешение циклических зависимостей.",
+    "relatedTags": ["ioc", "di", "core"],
+    "related": ["sb-lesson-bean", "sb-lesson-context-config"],
+    "sections": [
+      {
+        "heading": "Inversion of Control",
+        "paragraphs": [
+          "Inversion of Control (инверсия управления) — принцип: контроль над созданием, конфигурацией и жизненным циклом объектов передаётся внешнему контейнеру, а не пишется руками в коде. Это «Hollywood principle»: не вы зовёте фреймворк, а он зовёт ваш код.",
+          "В Spring роль контейнера играет ApplicationContext: он создаёт объекты-бины, связывает их зависимости и управляет их жизнью. Ваш код перестаёт делать new для своих зависимостей."
+        ]
+      },
+      {
+        "heading": "Dependency Injection",
+        "paragraphs": [
+          "DI — конкретная форма IoC: зависимости объекта передаются ему извне (контейнером), а не создаются им самим внутри через new. Объект лишь объявляет, что ему нужно, а кто и как это предоставит — забота контейнера.",
+          "Важно не путать понятия: IoC — широкий принцип (управление отдано наружу), DI — один из способов его реализовать (через внедрение зависимостей). На собеседовании это частый уточняющий вопрос."
+        ]
+      },
+      {
+        "heading": "Три способа внедрения",
+        "paragraphs": [
+          "Constructor injection — зависимости приходят параметрами конструктора (рекомендуемый). Setter injection — через сеттеры (для опциональных или переустанавливаемых зависимостей). Field injection — прямо в поле через @Autowired (не рекомендуется).",
+          "С единственным конструктором аннотация @Autowired не нужна — Spring использует его автоматически."
+        ],
+        "code": "@Service\nclass OrderService {\n    private final PaymentGateway gateway; // final — гарантированно установлен\n    OrderService(PaymentGateway gateway) { // один конструктор — @Autowired не нужен\n        this.gateway = gateway;\n    }\n}"
+      },
+      {
+        "heading": "Почему конструктор",
+        "paragraphs": [
+          "Конструкторная инъекция объективно лучше, а не просто «стиль». Поля можно сделать final (иммутабельность и безопасная публикация). Объект всегда создаётся полностью собранным — не бывает промежуточного состояния с null-зависимостями. Обязательные зависимости становятся явными: класс невозможно создать без них (fail-fast уже на старте контекста, а не NPE в рантайме).",
+          "И главное для качества кода — тестируемость: класс с конструкторной инъекцией тестируется обычным new с моками, без поднятия Spring-контекста. Field injection, наоборот, прячет зависимости (по сигнатуре не видно, что нужно классу) и требует рефлексии/контейнера в тестах."
+        ]
+      },
+      {
+        "heading": "Циклические зависимости",
+        "paragraphs": [
+          "Если A зависит от B, а B — от A через конструкторы, контейнер не может их собрать (для создания A нужен готовый B и наоборот) и бросает BeanCurrentlyInCreationException на старте.",
+          "Цикл «лечат» setter/field-инъекцией или @Lazy/ObjectProvider, которые откладывают получение зависимости. Но это симптом: чаще всего циклическая зависимость — признак плохого дизайна, и правильный путь — рефакторинг (выделить третий компонент с общей логикой), а не обход. С Spring Boot 2.6+ циклы по умолчанию запрещены, что подталкивает именно к рефакторингу."
+        ]
+      },
+      {
+        "heading": "На собеседовании",
+        "paragraphs": [
+          "Чётко раздели IoC (принцип: управление отдано контейнеру) и DI (форма IoC: внедрение зависимостей). Перечисли три вида инъекции и аргументируй конструктор по существу (final, полностью собранный объект, явные обязательные зависимости, fail-fast, тестируемость без контекста). Объясни, почему конструкторный цикл неразрешим и что это повод к рефакторингу, а не к обходу."
+        ]
+      }
+    ]
+  },
+  {
+    "id": "sb-lesson-bean",
+    "domain": "spring-boot",
+    "topic": "bean",
+    "order": 2,
+    "title": "Бины: жизненный цикл и scopes",
+    "summary": "Бин и BeanDefinition, полный жизненный цикл, роль BeanPostProcessor, области видимости и их ловушки.",
+    "relatedTags": ["bean", "lifecycle", "scope"],
+    "related": ["sb-lesson-ioc", "sb-lesson-context-config"],
+    "sections": [
+      {
+        "heading": "Бин и BeanDefinition",
+        "paragraphs": [
+          "Бин — объект, созданный и управляемый Spring-контейнером: контейнер решает, когда его создать, как связать зависимости и когда уничтожить.",
+          "Важная деталь: сначала контейнер хранит не сам объект, а BeanDefinition — «рецепт» бина (класс, scope, зависимости, init/destroy-методы, lazy-флаг). Бины создаются из этих определений. Поэтому конфигурацию можно менять до создания объектов (см. BeanFactoryPostProcessor)."
+        ]
+      },
+      {
+        "heading": "Полный жизненный цикл",
+        "paragraphs": [
+          "Стадии создания singleton-бина: инстанцирование (конструктор) → внедрение зависимостей (populate) → Aware-колбэки (BeanNameAware, ApplicationContextAware) → BeanPostProcessor.postProcessBeforeInitialization → инициализация (@PostConstruct → InitializingBean.afterPropertiesSet → init-method) → BeanPostProcessor.postProcessAfterInitialization → бин готов. При остановке контекста: @PreDestroy → DisposableBean.destroy → destroy-method.",
+          "Знать порядок важно: именно на стадии postProcessAfterInitialization бин при необходимости оборачивается в прокси."
+        ],
+        "code": "@Component\nclass Cache {\n    @PostConstruct void init()  { /* прогрев после внедрения зависимостей */ }\n    @PreDestroy  void close() { /* очистка при остановке контекста */ }\n}"
+      },
+      {
+        "heading": "BeanPostProcessor — где живёт «магия»",
+        "paragraphs": [
+          "BeanPostProcessor (BPP) — точка расширения, которая вмешивается до и после инициализации КАЖДОГО бина. Именно BPP оборачивают бины в прокси: так работают AOP, @Transactional, @Async, @Cacheable.",
+          "Это объясняет «магию» Spring: вы получаете не свой объект, а его прокси-обёртку, добавляющую поведение. Отсюда же типичная ловушка — self-invocation: вызов своего @Transactional-метода через this идёт мимо прокси и не открывает транзакцию (подробнее — в уроке про транзакции/AOP)."
+        ]
+      },
+      {
+        "heading": "Scopes",
+        "paragraphs": [
+          "Scope определяет, сколько живёт и сколько экземпляров у бина. singleton (по умолчанию) — один на контейнер, создаётся жадно при старте (fail-fast). prototype — новый объект на каждый запрос из контейнера/инъекцию. Веб-scopes: request, session, application, websocket — привязаны к жизни запроса/сессии.",
+          "singleton ≠ паттерн Singleton из GoF: это «один на контейнер», а не «один на JVM»."
+        ]
+      },
+      {
+        "heading": "Ловушки scope",
+        "paragraphs": [
+          "Для prototype-бинов контейнер НЕ вызывает destroy-колбэк — за освобождение ресурсов отвечаете вы.",
+          "Более коварная ловушка — prototype внутри singleton: prototype-зависимость внедрится в singleton ОДИН раз при его создании, и дальше будет один и тот же экземпляр, а не новый при каждом обращении. Чтобы получать новый, инъектируют ObjectProvider<T> (provider.getObject()), используют @Lookup-метод или scoped proxy."
+        ]
+      },
+      {
+        "heading": "На собеседовании",
+        "paragraphs": [
+          "Объясни роль BeanDefinition (рецепт до объекта), назови порядок жизненного цикла (инстанцирование → DI → Aware → BPP.before → init → BPP.after → готов; destroy в конце) и подчеркни, что прокси (AOP/@Transactional) навешивает BeanPostProcessor — отсюда self-invocation. Перечисли scopes (singleton≠GoF Singleton, prototype без destroy) и ловушку prototype-в-singleton (ObjectProvider/@Lookup)."
+        ]
+      }
+    ]
+  },
+  {
+    "id": "sb-lesson-context-config",
+    "domain": "spring-boot",
+    "topic": "configuration",
+    "order": 2.5,
+    "title": "ApplicationContext и конфигурация",
+    "summary": "BeanFactory против ApplicationContext, способы конфигурации, @Configuration full/lite, профили и Environment, @Conditional.",
+    "relatedTags": ["applicationcontext", "configuration", "profiles"],
+    "related": ["sb-lesson-bean", "sb-lesson-boot"],
+    "sections": [
+      {
+        "heading": "BeanFactory против ApplicationContext",
+        "paragraphs": [
+          "BeanFactory — базовый контейнер с ленивым созданием бинов по запросу. ApplicationContext — его надстройка, которую и используют на практике: он жадно создаёт синглтоны на старте (ошибки конфигурации видны сразу — fail-fast), публикует события (ApplicationEvent), поддерживает i18n, автоматически находит BeanPostProcessor/BeanFactoryPostProcessor и интегрируется с AOP.",
+          "Практически всегда работают с ApplicationContext; BeanFactory — это его «ядро» для понимания."
+        ]
+      },
+      {
+        "heading": "Способы конфигурации",
+        "paragraphs": [
+          "Бины объявляют тремя путями: Java-config (@Configuration + методы @Bean), аннотации + component-scan (@Component на классе) и XML (легаси). Современный стандарт — Java-config плюс сканирование компонентов; XML встречается в старых проектах.",
+          "Свой класс помечают @Component/@Bean-стереотипом, чужой/библиотечный регистрируют через @Bean-метод (подробнее — в уроке про стереотипы)."
+        ]
+      },
+      {
+        "heading": "@Configuration: full против lite",
+        "paragraphs": [
+          "Класс с @Configuration Spring проксирует через CGLIB (full mode). Зачем: если один @Bean-метод вызывает другой @Bean-метод, прокси перехватывает вызов и возвращает тот же singleton из контейнера, а не создаёт новый объект.",
+          "Если же поставить @Bean в обычном классе без @Configuration (lite mode), такого проксирования нет — прямой вызов @Bean-метода создаст НОВЫЙ объект мимо контейнера. Это классический источник тонких багов с «двумя экземплярами синглтона»."
+        ],
+        "code": "@Configuration\nclass AppConfig {\n    @Bean DataSource ds() { return new HikariDataSource(); }\n    @Bean OrderRepo repo() { return new OrderRepo(ds()); } // ds() вернёт тот же singleton (full mode)\n}"
+      },
+      {
+        "heading": "Профили и Environment",
+        "paragraphs": [
+          "@Profile(\"dev\") делает бин/конфигурацию активными только в указанном профиле (spring.profiles.active=dev) — так разводят dev/test/prod-инфраструктуру. Environment абстрагирует источники свойств (переменные окружения, application.yml, аргументы запуска) с приоритетами.",
+          "Свойства внедряют через @Value(\"${...}\") (точечно) или, что предпочтительнее, через типобезопасные @ConfigurationProperties-классы (группа свойств с валидацией)."
+        ]
+      },
+      {
+        "heading": "@Conditional и BeanFactoryPostProcessor",
+        "paragraphs": [
+          "@Conditional регистрирует бин только при выполнении условия. На его основе построены @ConditionalOnProperty/OnMissingBean/OnClass — фундамент Boot-автоконфигурации (отдельный урок): «создай бин, только если его ещё нет / есть нужный класс / включено свойство».",
+          "BeanFactoryPostProcessor (BFPP), в отличие от BeanPostProcessor, работает раньше — над BeanDefinition'ами до создания бинов (пример — подстановка плейсхолдеров свойств). Порядок «BFPP правит определения → бины создаются → BPP правят объекты» полезно держать в голове."
+        ]
+      },
+      {
+        "heading": "На собеседовании",
+        "paragraphs": [
+          "Противопоставь BeanFactory (ленивый) и ApplicationContext (жадные синглтоны/события/fail-fast). Объясни full vs lite @Configuration (CGLIB-прокси → межбиновые вызовы дают тот же singleton; в lite — новый объект). Назови профили и @ConfigurationProperties, и различи BFPP (над определениями) и BPP (над объектами), с @Conditional как мостом к автоконфигурации."
+        ]
+      }
+    ]
+  },
+  {
+    "id": "sb-lesson-stereotypes",
+    "domain": "spring-boot",
+    "topic": "stereotypes",
+    "order": 3,
+    "title": "Стереотипы, @Bean и автосвязывание",
+    "summary": "Стереотипные аннотации и их семантика, @Bean против @Component, component-scan, @Autowired и разрешение неоднозначности.",
+    "relatedTags": ["beans", "di", "qualifier"],
+    "related": ["sb-lesson-ioc", "sb-lesson-context-config"],
+    "sections": [
+      {
+        "heading": "Стереотипы",
+        "paragraphs": [
+          "@Component помечает класс как бин — Spring находит его через component-scan и сам инстанцирует. @Service, @Repository, @Controller/@RestController — специализации @Component: технически тот же эффект, но семантически обозначают слой.",
+          "У @Repository есть и реальное поведение, а не только семантика: он включает exception translation — перевод низкоуровневых исключений JDBC/JPA в единую иерархию Spring DataAccessException (unchecked), чтобы код доступа к данным не зависел от конкретной технологии."
+        ]
+      },
+      {
+        "heading": "@Bean против @Component",
+        "paragraphs": [
+          "@Component (и специализации) — для СВОИХ классов, которые можно пометить аннотацией. @Bean-метод в @Configuration — для ЧУЖИХ/библиотечных классов, которые пометить нельзя: вы сами создаёте объект и отдаёте контейнеру.",
+          "Так конфигурация остаётся явной: свой код сканируется, внешние объекты регистрируются руками (и помните про full mode @Configuration из урока про контекст)."
+        ],
+        "code": "@Configuration\nclass AppConfig {\n    @Bean ObjectMapper objectMapper() { return new ObjectMapper(); } // сторонний класс\n}"
+      },
+      {
+        "heading": "Component scan",
+        "paragraphs": [
+          "Чтобы стереотипы нашлись, нужен component-scan. В Spring Boot он включён через @SpringBootApplication, который сканирует пакет главного класса и все вложенные — поэтому компоненты обычно держат в том же или нижележащем пакете.",
+          "Область и правила настраивают @ComponentScan (basePackages, include/excludeFilters). Частая ошибка новичка — положить бин вне сканируемого пакета и удивляться, что его «нет»."
+        ]
+      },
+      {
+        "heading": "Автосвязывание @Autowired",
+        "paragraphs": [
+          "Внедрение по умолчанию идёт by type: контейнер ищет бин подходящего типа. Если кандидат один — всё просто; на конструкторе с одним вариантом @Autowired даже не нужен.",
+          "Если по типу подходящих несколько, Spring пытается разрешить by name (по имени поля/параметра). Если и это не помогает — ошибка NoUniqueBeanDefinitionException на старте."
+        ]
+      },
+      {
+        "heading": "Разрешение неоднозначности",
+        "paragraphs": [
+          "Когда бинов одного типа несколько, выбор уточняют: @Primary помечает кандидата по умолчанию, а @Qualifier(\"name\") в точке инъекции выбирает конкретного. Можно внедрить и ВСЕ бины типа сразу — как List<Handler> или Map<String, Handler> (имя бина → бин), что удобно для паттерна «стратегия/реестр».",
+          "Существуют и стандартные аналоги: @Resource (JSR-250, by name) и @Inject (JSR-330, как @Autowired) — но в Spring-проектах обычно используют @Autowired + @Qualifier."
+        ],
+        "code": "@Service\nclass Dispatcher {\n    private final Map<String, Handler> handlers; // имя бина -> Handler, все реализации\n    Dispatcher(Map<String, Handler> handlers) { this.handlers = handlers; }\n}"
+      },
+      {
+        "heading": "На собеседовании",
+        "paragraphs": [
+          "Назови стереотипы и подчеркни, что @Repository не просто семантика, а exception translation в DataAccessException. Различи @Component (свой класс, скан) и @Bean (чужой класс, @Configuration). Объясни автосвязывание (by type → by name) и разрешение конфликтов (@Primary/@Qualifier, а также инъекцию List/Map всех бинов типа). Упомяни типичную ошибку с пакетом вне component-scan."
+        ]
+      }
+    ]
+  },
+  {
+    "id": "sb-lesson-web",
+    "domain": "spring-boot",
+    "topic": "web",
+    "order": 4,
+    "title": "Spring MVC: DispatcherServlet и обработка запроса",
+    "summary": "Конвейер обработки запроса, @Controller против @RestController, маппинги, извлечение данных и контроль ответа.",
+    "relatedTags": ["web", "rest", "mvc"],
+    "related": ["sb-lesson-rest-api", "sb-lesson-mvc-advanced"],
+    "sections": [
+      {
+        "heading": "Конвейер обработки запроса",
+        "paragraphs": [
+          "В центре Spring MVC стоит DispatcherServlet — единый front controller, через который проходят все запросы. Он не обрабатывает запрос сам, а оркеструет: по URL находит обработчик через HandlerMapping, вызывает его через подходящий HandlerAdapter, а результат превращает в ответ.",
+          "Дальше развилка: для @RestController возвращённый объект сериализуется в тело ответа через HttpMessageConverter (обычно Jackson → JSON); для @Controller с именем представления подключается ViewResolver и рендерит шаблон. Понимание этого конвейера снимает вопрос «как Spring находит и вызывает мой метод»."
+        ]
+      },
+      {
+        "heading": "@Controller против @RestController",
+        "paragraphs": [
+          "@RestController = @Controller + @ResponseBody: возвращаемые объекты сериализуются прямо в тело ответа, без @ResponseBody на каждом методе. Это выбор для REST API.",
+          "Обычный @Controller по умолчанию трактует возвращённую строку как ИМЯ ПРЕДСТАВЛЕНИЯ (view) и ищет шаблон — частый источник путаницы у тех, кто ждёт JSON, а получает 404 по несуществующему шаблону."
+        ]
+      },
+      {
+        "heading": "Маппинг запросов",
+        "paragraphs": [
+          "@RequestMapping задаёт базовый путь и общие атрибуты, а @GetMapping/@PostMapping/@PutMapping/@PatchMapping/@DeleteMapping — это его сокращения под конкретный HTTP-метод.",
+          "Маппинг можно сузить по типу содержимого: consumes (какой Content-Type принимает) и produces (какой отдаёт) — основа content negotiation."
+        ],
+        "code": "@RestController\n@RequestMapping(\"/users\")\nclass UserController {\n    @GetMapping(\"/{id}\")\n    User byId(@PathVariable long id) { /* ... */ }\n}"
+      },
+      {
+        "heading": "Извлечение данных из запроса",
+        "paragraphs": [
+          "Параметры метода связываются с частями запроса аннотациями: @PathVariable (часть пути /users/{id}), @RequestParam (query-параметр ?page=2), @RequestBody (тело запроса — десериализуется из JSON в объект), @RequestHeader (заголовок).",
+          "@RequestBody превращает JSON в объект через тот же HttpMessageConverter; @ModelAttribute собирает объект из параметров формы. Типы конвертируются автоматически (строка пути → long)."
+        ]
+      },
+      {
+        "heading": "Контроль ответа",
+        "paragraphs": [
+          "По умолчанию успешный метод возвращает 200 и тело-объект. Когда нужен явный контроль статуса и заголовков, возвращают ResponseEntity (например, 201 Created с заголовком Location) или ставят @ResponseStatus.",
+          "Это граница: бизнес-логику не стоит завязывать на ResponseEntity повсюду — обычно контроллер тонкий, а статус-коды и ошибки централизуют (см. урок про валидацию и обработку ошибок)."
+        ]
+      },
+      {
+        "heading": "На собеседовании",
+        "paragraphs": [
+          "Опиши конвейер DispatcherServlet → HandlerMapping → HandlerAdapter → контроллер → HttpMessageConverter/ViewResolver. Различи @RestController (тело через converter) и @Controller (имя view — частая ловушка). Назови аннотации извлечения (@PathVariable/@RequestParam/@RequestBody) и контроль ответа через ResponseEntity."
+        ]
+      }
+    ]
+  },
+  {
+    "id": "sb-lesson-rest-api",
+    "domain": "spring-boot",
+    "topic": "web",
+    "order": 4.1,
+    "title": "REST API: статусы, согласование и семантика",
+    "summary": "Ресурсы и HTTP-глаголы, статус-коды как контракт, content negotiation и message converters, идемпотентность и версионирование.",
+    "relatedTags": ["rest", "http", "api"],
+    "related": ["sb-lesson-web", "sb-lesson-mvc-advanced"],
+    "sections": [
+      {
+        "heading": "Ресурсы и HTTP-глаголы",
+        "paragraphs": [
+          "REST моделирует домен как ресурсы (существительные в URL: /orders/42), а действия выражает HTTP-методами: GET (прочитать), POST (создать), PUT (заменить целиком), PATCH (частично обновить), DELETE (удалить).",
+          "Глаголы в URL (/getOrder, /createOrder) — антипаттерн: глагол несёт сам HTTP-метод, а путь именует ресурс."
+        ]
+      },
+      {
+        "heading": "Статус-коды как часть контракта",
+        "paragraphs": [
+          "Код ответа — это контракт, а не украшение. 2xx: 200 OK, 201 Created (новый ресурс, обычно + заголовок Location), 204 No Content (успех без тела). 4xx — вина клиента: 400 (некорректный запрос), 401 (не аутентифицирован), 403 (нет прав), 404 (нет ресурса), 409 (конфликт), 422 (валидация). 5xx — вина сервера.",
+          "Частые ошибки: возвращать 200 с телом-ошибкой, или 500 на невалидный ввод (это 400/422). Явный статус задают через ResponseEntity или @ResponseStatus."
+        ],
+        "code": "@PostMapping\nResponseEntity<Order> create(@RequestBody NewOrder req) {\n    Order o = service.create(req);\n    return ResponseEntity.created(URI.create(\"/orders/\" + o.id())).body(o); // 201 + Location\n}"
+      },
+      {
+        "heading": "Content negotiation и конвертеры",
+        "paragraphs": [
+          "Клиент сообщает желаемый формат заголовком Accept, а формат тела — Content-Type. Spring подбирает HttpMessageConverter под эти заголовки; для JSON это Jackson, который сериализует/десериализует объекты автоматически.",
+          "produces/consumes на маппинге сужают, какие типы метод отдаёт/принимает. Поведение Jackson настраивают аннотациями (@JsonProperty, @JsonIgnore) и глобально (ObjectMapper bean)."
+        ]
+      },
+      {
+        "heading": "Идемпотентность и семантика методов",
+        "paragraphs": [
+          "Идемпотентность — повтор запроса даёт тот же эффект. GET, PUT, DELETE идемпотентны (повторный PUT с теми же данными не меняет результата), а POST — нет (два POST создадут два ресурса). Это важно для ретраев: безопасно повторять идемпотентные методы.",
+          "PUT заменяет ресурс целиком, PATCH меняет частично. Для небезопасного POST при ненадёжной сети применяют ключ идемпотентности (Idempotency-Key), чтобы повтор не создал дубль."
+        ]
+      },
+      {
+        "heading": "Версионирование и HATEOAS",
+        "paragraphs": [
+          "API эволюционирует, поэтому его версионируют: через путь (/api/v1/...), заголовок или media type. Путь — самый простой и распространённый вариант.",
+          "HATEOAS (гиперссылки на связанные действия в ответе) — высшая ступень REST по Ричардсону; на практике применяется редко, но знать концепцию полезно: ответ несёт не только данные, но и доступные переходы."
+        ]
+      },
+      {
+        "heading": "На собеседовании",
+        "paragraphs": [
+          "Свяжи ресурсы + HTTP-глаголы и подчеркни статус-коды как контракт (201+Location, 400/422 на валидацию, 409 на конфликт — не 200/500 на всё). Объясни content negotiation через Accept/Content-Type и Jackson-конвертеры, идемпотентность GET/PUT/DELETE vs POST (важно для ретраев) и способы версионирования."
+        ]
+      }
+    ]
+  },
+  {
+    "id": "sb-lesson-transactions",
+    "domain": "spring-boot",
+    "topic": "transactions",
+    "order": 5.2,
+    "title": "@Transactional: propagation, isolation, rollback",
+    "summary": "Декларативные транзакции через прокси, ловушка self-invocation, уровни распространения, правила отката и readOnly/isolation.",
+    "relatedTags": ["transactions", "aop", "rollback"],
+    "related": ["sb-lesson-aop", "sb-lesson-data"],
+    "sections": [
+      {
+        "heading": "Декларативные транзакции через прокси",
+        "paragraphs": [
+          "@Transactional — это AOP поверх бина: Spring оборачивает его в прокси, который на входе в метод открывает транзакцию, при штатном возврате коммитит, а при исключении откатывает. Сам метод о транзакции «не знает» — управление декларативно.",
+          "Под капотом работает PlatformTransactionManager, а соединение/EntityManager привязываются к текущему потоку через TransactionSynchronizationManager (ThreadLocal). Отсюда важное следствие: при уходе в другой поток (@Async, реактивный код) транзакционный контекст теряется."
+        ]
+      },
+      {
+        "heading": "Ловушка self-invocation",
+        "paragraphs": [
+          "Поскольку транзакцию открывает ПРОКСИ, она срабатывает только при вызове через него. Если @Transactional-метод вызывается изнутри того же класса через this, вызов идёт мимо прокси — и транзакции не будет. Это самая частая «загадочная» ошибка с транзакциями.",
+          "Обходы: вынести метод в отдельный бин (вызов через его прокси), внедрить самого себя через прокси, или перейти на AspectJ weaving. По той же причине @Transactional на private-методах не работает — прокси перехватывает только public."
+        ],
+        "code": "@Service\nclass BillingService {\n    @Transactional public void charge() { /* ... */ }\n    public void process() {\n        charge(); // вызов через this — мимо прокси, транзакции НЕТ!\n    }\n}"
+      },
+      {
+        "heading": "Propagation",
+        "paragraphs": [
+          "Propagation управляет поведением при вложенных транзакционных вызовах. REQUIRED (по умолчанию) — присоединиться к существующей или создать новую. REQUIRES_NEW — приостановить текущую и открыть независимую новую. NESTED — точка сохранения (savepoint) внутри текущей. Есть и SUPPORTS/MANDATORY/NEVER/NOT_SUPPORTED для тонких случаев.",
+          "Подводный камень REQUIRES_NEW: он берёт ВТОРОЕ соединение из пула, удерживая первое приостановленным — два занятых соединения на один запрос при нагрузке могут исчерпать пул и привести к взаимоблокировке. Используют его осознанно (например, для аудита, который должен сохраниться независимо от отката основной операции)."
+        ]
+      },
+      {
+        "heading": "Правила отката",
+        "paragraphs": [
+          "Ключевая ловушка собеседований: по умолчанию Spring откатывает транзакцию только на unchecked-исключениях (RuntimeException и Error). На checked-исключении транзакция по умолчанию КОММИТИТСЯ — чтобы откатывать, указывают rollbackFor (а noRollbackFor — наоборот).",
+          "Ещё нюанс: если внутренняя транзакция помечена «rollback-only», внешняя при попытке коммита получит UnexpectedRollbackException. И помните — commit/flush происходит уже на выходе из метода, поэтому нарушение constraint БД может «прилететь» исключением после тела."
+        ],
+        "code": "@Transactional(rollbackFor = IOException.class) // иначе checked не откатит\nvoid importFile() throws IOException { /* ... */ }"
+      },
+      {
+        "heading": "Isolation и readOnly",
+        "paragraphs": [
+          "Атрибут isolation задаёт уровень изоляции (READ_COMMITTED, REPEATABLE_READ, SERIALIZABLE) — его обеспечивает БД, а не Spring (см. урок про транзакции в разделе баз данных). timeout ограничивает длительность транзакции.",
+          "readOnly = true — это оптимизация: подсказка Hibernate не делать dirty checking и flush (нечего сохранять) и драйверу/БД — что запись не планируется. Для чисто читающих методов это снижает накладные расходы. readOnly не «запрещает запись» жёстко — это оптимизирующий флаг."
+        ]
+      },
+      {
+        "heading": "На собеседовании",
+        "paragraphs": [
+          "Объясни @Transactional как прокси-AOP (открыть/коммит/откат вокруг метода, контекст в ThreadLocal). Обязательно — self-invocation (вызов через this мимо прокси → нет транзакции; и про private). Разбери propagation (REQUIRED vs REQUIRES_NEW + риск пула) и главную ловушку отката (checked не откатывается по умолчанию → rollbackFor). Добавь readOnly как оптимизацию и потерю контекста при @Async."
+        ]
+      }
+    ]
+  },
+  {
+    "id": "sb-lesson-aop",
+    "domain": "spring-boot",
+    "topic": "aop",
+    "order": 5.1,
+    "title": "AOP: прокси и аспекты",
+    "summary": "Сквозная функциональность, понятия aspect/advice/pointcut/join point, JDK против CGLIB прокси, self-invocation и что на AOP построено.",
+    "relatedTags": ["aop", "proxy"],
+    "related": ["sb-lesson-bean", "sb-lesson-transactions"],
+    "sections": [
+      {
+        "heading": "Сквозная функциональность",
+        "paragraphs": [
+          "Логирование, транзакции, безопасность, кэширование, метрики пронизывают множество классов и не относятся к их бизнес-логике. AOP (аспектно-ориентированное программирование) позволяет вынести такую сквозную (cross-cutting) логику в отдельные модули — аспекты — и применять декларативно, не дублируя в каждом методе."
+        ]
+      },
+      {
+        "heading": "Ключевые понятия",
+        "paragraphs": [
+          "Aspect — модуль сквозной логики. Advice — что и когда выполнить: before, afterReturning, afterThrowing, after (finally) и around (оборачивает вызов, может изменить аргументы/результат и решить, вызывать ли целевой метод). Pointcut — выражение-выборка «где применять» (например, execution(...)). Join point — конкретная точка выполнения; в Spring AOP это всегда ВЫЗОВ метода (не доступ к полю).",
+          "around — самый мощный advice: он получает ProceedingJoinPoint и сам решает, вызвать ли pjp.proceed()."
+        ],
+        "code": "@Aspect @Component\nclass TimingAspect {\n    @Around(\"execution(* com.app.service..*(..))\")\n    Object time(ProceedingJoinPoint pjp) throws Throwable {\n        long t = System.nanoTime();\n        try { return pjp.proceed(); }\n        finally { metrics.record(pjp.getSignature(), System.nanoTime() - t); }\n    }\n}"
+      },
+      {
+        "heading": "JDK proxy против CGLIB",
+        "paragraphs": [
+          "Spring AOP — proxy-based: бин оборачивается в прокси-объект. Если у бина есть интерфейс, по умолчанию создаётся JDK dynamic proxy (реализует интерфейс); если интерфейса нет — CGLIB-прокси (наследует класс подклассом).",
+          "Отсюда ограничения: проксируются только public-методы (CGLIB вдобавок не может проксировать final-классы и final-методы — их некому переопределить). Понимание «прокси = обёртка» объясняет всю «магию» декларативных аннотаций."
+        ]
+      },
+      {
+        "heading": "Self-invocation",
+        "paragraphs": [
+          "Раз advice живёт в прокси, он срабатывает только на вызовах ЧЕРЕЗ прокси. Вызов метода изнутри того же объекта через this идёт мимо прокси, и аспект не применяется — ровно та же ловушка, что у @Transactional.",
+          "Обходы: вынести метод в отдельный бин, внедрить self-прокси или перейти на AspectJ weaving (он вплетает аспекты в байткод и не зависит от прокси, перехватывая в том числе внутренние вызовы)."
+        ]
+      },
+      {
+        "heading": "Что построено на AOP",
+        "paragraphs": [
+          "AOP — не экзотика, а фундамент Spring: @Transactional, @Async, @Cacheable, @PreAuthorize/@Secured, @Retryable, @Timed — всё это аспекты, навешиваемые BeanPostProcessor'ом при создании бина (см. урок про бины).",
+          "Поэтому, столкнувшись с «почему аннотация не сработала», первым делом проверяют: вызов идёт через прокси (не self-invocation), метод public, бин действительно управляется Spring."
+        ]
+      },
+      {
+        "heading": "На собеседовании",
+        "paragraphs": [
+          "Определи cross-cutting concerns и термины (aspect/advice с видами/pointcut/join point=вызов метода; around с proceed). Объясни proxy-based модель (JDK по интерфейсу vs CGLIB подклассом; только public, не final) и self-invocation. Подчеркни, что @Transactional/@Async/@Cacheable/@PreAuthorize — это AOP через BeanPostProcessor, отсюда и их общие ограничения."
+        ]
+      }
+    ]
+  },
+  {
+    "id": "sb-lesson-data",
+    "domain": "spring-boot",
+    "topic": "data",
+    "order": 5,
+    "title": "Spring Data JPA: репозитории и Hibernate",
+    "summary": "Абстракция репозитория, derived queries и @Query, persistence context и dirty checking, lazy/N+1 и почему DTO, а не entity.",
+    "relatedTags": ["spring-data", "jpa", "databases"],
+    "related": ["sb-lesson-transactions", "sb-lesson-aop"],
+    "sections": [
+      {
+        "heading": "Абстракция репозитория",
+        "paragraphs": [
+          "Достаточно объявить интерфейс-наследник JpaRepository<T, ID> — Spring Data на старте генерирует его реализацию (прокси) с CRUD, пагинацией и сортировкой. Своего кода доступа писать не нужно.",
+          "Иерархия абстракций: Repository (маркер) → CrudRepository (CRUD) → PagingAndSortingRepository → JpaRepository (плюс JPA-специфика: flush, batch, saveAll). Выбирают самый узкий, достаточный для задачи."
+        ],
+        "code": "interface UserRepository extends JpaRepository<User, Long> {\n    Optional<User> findByEmail(String email);\n}"
+      },
+      {
+        "heading": "Derived queries и @Query",
+        "paragraphs": [
+          "Простые запросы выводятся из имени метода: findByEmail, findByAgeGreaterThan, existsByLogin, countByStatus — Spring парсит имя и строит JPQL. Удобно, но длинные имена-«простыни» — сигнал, что пора на @Query.",
+          "@Query задаёт запрос явно (JPQL или, с nativeQuery=true, нативный SQL); параметры связывают @Param; для изменяющих запросов нужен @Modifying (и транзакция). Пагинацию/сортировку передают параметром Pageable/Sort."
+        ]
+      },
+      {
+        "heading": "Persistence context и dirty checking",
+        "paragraphs": [
+          "За репозиториями стоит JPA/Hibernate с EntityManager и его кэшем первого уровня — persistence context. В пределах транзакции загруженная сущность становится managed: Hibernate отслеживает изменения её полей и на flush сам выгружает UPDATE — без явного вызова save (это dirty checking).",
+          "Отсюда практическое следствие: внутри транзакции достаточно загрузить сущность и поменять поля. save() нужен в основном для НОВЫХ сущностей. Вне транзакции/сессии сущность становится detached, и её изменения не отслеживаются."
+        ],
+        "code": "@Transactional\nvoid rename(long id, String name) {\n    User u = repo.findById(id).orElseThrow();\n    u.setName(name); // dirty checking сам сделает UPDATE на flush — save() не нужен\n}"
+      },
+      {
+        "heading": "Lazy-связи и N+1",
+        "paragraphs": [
+          "Коллекции (@OneToMany) по умолчанию lazy и подгружаются прокси при первом обращении; @ManyToOne по умолчанию eager. Обход lazy-коллекции в цикле порождает проблему N+1: 1 запрос за списком + по запросу на связь каждого элемента.",
+          "Лечат тем же набором, что в разделе баз данных: JOIN FETCH, @EntityGraph, batch fetching (hibernate.default_batch_fetch_size), DTO-проекции. Отдельная боль — LazyInitializationException при обращении к lazy-связи уже вне транзакции; «лечить» это включением Open-Session-In-View — антипаттерн (он маскирует N+1 и держит соединение дольше)."
+        ]
+      },
+      {
+        "heading": "DTO против entity",
+        "paragraphs": [
+          "Сущности JPA не стоит возвращать прямо из контроллера: при сериализации Hibernate-прокси и lazy-связей легко получить лишние запросы, LazyInitializationException или бесконечную рекурсию по двусторонним связям. Плюс это завязывает API на модель хранения.",
+          "Поэтому наружу отдают DTO/проекции (отдельные record-классы или интерфейсные проекции Spring Data), а entity остаётся внутренней моделью персистентности."
+        ]
+      },
+      {
+        "heading": "На собеседовании",
+        "paragraphs": [
+          "Объясни генерируемые репозитории и иерархию, derived queries vs @Query/@Modifying, и обязательно persistence context + dirty checking (managed-сущность сохраняется без save, save — для новых; detached вне сессии). Разбери lazy/eager и N+1 с лечением (JOIN FETCH/EntityGraph/batch), LazyInitializationException и почему Open-Session-In-View — антипаттерн. Заверши «DTO наружу, entity внутри»."
+        ]
+      }
+    ]
+  },
+  {
+    "id": "sb-lesson-boot",
+    "domain": "spring-boot",
+    "topic": "boot",
+    "order": 8,
+    "title": "Spring Boot: автоконфигурация и starters",
+    "summary": "@SpringBootApplication и starters, механизм автоконфигурации по условиям, переопределение через @ConditionalOnMissingBean, внешняя конфигурация и её приоритеты.",
+    "relatedTags": ["spring-boot", "autoconfiguration", "configuration"],
+    "related": ["sb-lesson-actuator", "sb-lesson-context-config"],
+    "sections": [
+      {
+        "heading": "@SpringBootApplication и запуск",
+        "paragraphs": [
+          "@SpringBootApplication — это мета-аннотация, объединяющая три: @SpringBootConfiguration (вариант @Configuration), @EnableAutoConfiguration (включает автоконфигурацию) и @ComponentScan (сканирует пакет приложения и ниже).",
+          "SpringApplication.run поднимает ApplicationContext, запускает встроенный сервер и применяет автоконфигурацию. Философия Boot — convention over configuration: разумные умолчания из коробки, которые при необходимости переопределяются."
+        ]
+      },
+      {
+        "heading": "Starters и версии зависимостей",
+        "paragraphs": [
+          "Starter (spring-boot-starter-web, -data-jpa, -security…) — это курируемый набор согласованных зависимостей под задачу: подключив один, вы получаете все нужные библиотеки совместимых версий.",
+          "Версии при этом не указывают вручную — ими управляет Spring Boot BOM (dependency management). Это убирает «ад зависимостей» и несовместимости версий, типичные для ручной сборки classpath."
+        ]
+      },
+      {
+        "heading": "Механизм автоконфигурации",
+        "paragraphs": [
+          "@EnableAutoConfiguration загружает список классов-автоконфигураций из META-INF/spring/org.springframework.boot.autoconfigure.AutoConfiguration.imports (в старых версиях — из spring.factories). Каждая автоконфигурация — это обычный @Configuration, обвешанный условиями: @ConditionalOnClass (нужный класс есть на classpath), @ConditionalOnMissingBean, @ConditionalOnProperty.",
+          "Логика проста и предсказуема: «если на classpath есть, например, H2 и Spring JDBC, а пользователь сам не настроил DataSource — настрой его за него». Никакой магии: всё это обычные бины под условиями."
+        ]
+      },
+      {
+        "heading": "Переопределение умолчаний",
+        "paragraphs": [
+          "Ключ к управляемости — @ConditionalOnMissingBean: автоконфигурация создаёт бин ТОЛЬКО если такого бина ещё нет. Поэтому, объявив свой бин (например, собственный ObjectMapper или DataSource), вы автоматически замещаете дефолт Boot — без отключения чего-либо.",
+          "Если нужно убрать конкретную автоконфигурацию целиком — её исключают через @SpringBootApplication(exclude = ...). Так «convention over configuration» остаётся под контролем."
+        ]
+      },
+      {
+        "heading": "Внешняя конфигурация и приоритеты",
+        "paragraphs": [
+          "Настройки задают в application.yml/properties, а читают точечно через @Value(\"${...}\") или, предпочтительно, типобезопасно через @ConfigurationProperties (группа свойств в объект, с валидацией и relaxed binding: APP_NAME, app.name, app-name связываются с одним полем).",
+          "Источники свойств имеют приоритет (от высшего к низшему, упрощённо): аргументы командной строки → переменные окружения → application-{profile} → application. Профили (@Profile, spring.profiles.active) переключают наборы бинов и файлы application-{profile}.yml под dev/test/prod без правки кода."
+        ],
+        "code": "@ConfigurationProperties(prefix = \"app\")\nrecord AppProps(String name, int retries) {} // app.name, app.retries из yml"
+      },
+      {
+        "heading": "Отладка автоконфигурации",
+        "paragraphs": [
+          "Когда непонятно, почему бин появился или нет, запускают с флагом --debug (или свойством debug=true): Boot печатает ConditionsEvaluationReport — какие автоконфигурации применились (positive matches) и какие отклонены и по какому условию (negative matches).",
+          "Это превращает «магию» в читаемый отчёт и снимает большинство вопросов «откуда взялся этот бин»."
+        ]
+      },
+      {
+        "heading": "На собеседовании",
+        "paragraphs": [
+          "Разложи @SpringBootApplication на три аннотации, объясни starters + BOM (согласованные версии). Главное — механизм автоконфигурации: список из AutoConfiguration.imports + @ConditionalOnClass/OnMissingBean/OnProperty, и переопределение через @ConditionalOnMissingBean (свой бин замещает дефолт). Добавь приоритеты источников конфигурации и @ConfigurationProperties с relaxed binding, и упомяни --debug/ConditionsEvaluationReport."
+        ]
+      }
+    ]
+  },
+  {
+    "id": "sb-lesson-actuator",
+    "domain": "spring-boot",
+    "topic": "boot",
+    "order": 8.1,
+    "title": "Actuator и наблюдаемость",
+    "summary": "Production-эндпоинты, health-проверки и probes, метрики через Micrometer, трассировка и безопасность эндпоинтов.",
+    "relatedTags": ["actuator", "observability", "metrics"],
+    "related": ["sb-lesson-boot", "sb-lesson-resilience-observability"],
+    "sections": [
+      {
+        "heading": "Что такое Actuator",
+        "paragraphs": [
+          "spring-boot-starter-actuator добавляет готовые production-эндпоинты под /actuator: health (состояние), info (метаданные), metrics (метрики), env (свойства), beans, mappings, threaddump, heapdump, loggers и др. Это «приборная панель» приложения без написания кода.",
+          "По умолчанию наружу (по HTTP) выставлен минимум; что показывать, настраивают через management.endpoints.web.exposure.include — выставлять всё подряд небезопасно."
+        ]
+      },
+      {
+        "heading": "Health checks и probes",
+        "paragraphs": [
+          "/actuator/health — составной статус из отдельных HealthIndicator'ов (БД, диск, брокер, внешние сервисы); можно писать свои. Статус агрегируется в UP/DOWN.",
+          "Для Kubernetes Actuator отдаёт liveness и readiness probes: liveness («жив ли процесс» — иначе перезапуск) и readiness («готов ли принимать трафик» — иначе исключают из балансировки). Их разделение критично для корректного деплоя без потери запросов."
+        ]
+      },
+      {
+        "heading": "Метрики и Micrometer",
+        "paragraphs": [
+          "Метрики Boot собирает через Micrometer — это фасад метрик (как SLF4J для логов): код пишет метрики против Micrometer, а экспортёр отправляет их в конкретную систему (Prometheus, Graphite, CloudWatch).",
+          "Основные типы: counter (монотонный счётчик), gauge (мгновенное значение), timer (длительность + частота). Из коробки собираются JVM/HTTP/датасорс-метрики; свои добавляют через MeterRegistry или аннотацию @Timed."
+        ],
+        "code": "@Timed(\"orders.create\") // длительность и частота вызова как метрика\n@PostMapping(\"/orders\")\nOrder create(@RequestBody NewOrder req) { /* ... */ }"
+      },
+      {
+        "heading": "Логи и трассировка",
+        "paragraphs": [
+          "Actuator позволяет менять уровни логирования в рантайме (эндпоинт loggers) — удобно для диагностики без перезапуска. Это часть наблюдаемости вместе с метриками.",
+          "Третий столп — распределённая трассировка: Micrometer Tracing (с OpenTelemetry/Zipkin) проставляет trace/span id и связывает запрос через цепочку сервисов. Логи + метрики + трейсы вместе дают полную картину поведения системы."
+        ]
+      },
+      {
+        "heading": "Безопасность эндпоинтов",
+        "paragraphs": [
+          "Actuator-эндпоинты содержат чувствительное: env раскрывает свойства (включая возможные секреты), heapdump/threaddump — внутренности процесса. Их нельзя выставлять в публичный интернет без защиты.",
+          "Практика: наружу отдавать только health (и то ограниченно), остальное — на отдельном порту/сети и под аутентификацией (Spring Security). Управляют экспозицией и доступом раздельно для web и для отдельных эндпоинтов."
+        ]
+      },
+      {
+        "heading": "На собеседовании",
+        "paragraphs": [
+          "Назови Actuator как набор production-эндпоинтов и подчеркни управление экспозицией. Разбери health + разницу liveness/readiness probes (перезапуск vs балансировка) для Kubernetes. Объясни Micrometer как фасад метрик (counter/gauge/timer, экспортёр Prometheus) и упомяни трассировку (trace/span). Обязательно — безопасность: env/heapdump не выставлять наружу."
+        ]
+      }
+    ]
+  },
+  {
+    "id": "sb-lesson-http-security",
+    "domain": "spring-boot",
+    "topic": "http-security",
+    "order": 9,
+    "title": "HTTP, cookies и сессии",
+    "summary": "Семантика HTTP-методов и кэширование, cookies и их флаги безопасности, stateful против stateless сессий, HTTPS и граница authn/authz.",
+    "relatedTags": ["http", "cookies", "session"],
+    "related": ["sb-lesson-rest-api", "sb-lesson-spring-security-deep"],
+    "sections": [
+      {
+        "heading": "Семантика HTTP",
+        "paragraphs": [
+          "Методы несут смысл: GET/HEAD безопасны (safe — только чтение, без побочных эффектов); GET, PUT, DELETE идемпотентны (повтор не меняет результат), а POST — нет. Это важно для кэширования и ретраев (см. урок про REST API для статус-кодов и идемпотентности).",
+          "GET-ответы кэшируемы, и кэшированием управляют заголовки: Cache-Control (можно ли и сколько кэшировать), ETag/If-None-Match и Last-Modified/If-Modified-Since для условных запросов (сервер отвечает 304 Not Modified, экономя трафик)."
+        ]
+      },
+      {
+        "heading": "Cookies",
+        "paragraphs": [
+          "Cookie хранится у клиента и автоматически прикрепляется браузером к запросам на подходящий домен/path. Это удобно для сессий, но именно автоматичность делает cookie мишенью атак.",
+          "Флаги безопасности обязательны: HttpOnly (cookie недоступна из JS — снижает кражу при XSS), Secure (отправляется только по HTTPS), SameSite=Lax/Strict (ограничивает отправку в кросс-сайтовых запросах — защита от части CSRF). Плюс Domain/Path/Max-Age/Expires управляют областью и сроком жизни."
+        ],
+        "code": "ResponseCookie c = ResponseCookie.from(\"SESSION\", id)\n    .httpOnly(true).secure(true).sameSite(\"Lax\").path(\"/\").build();"
+      },
+      {
+        "heading": "Сессии: stateful против stateless",
+        "paragraphs": [
+          "Stateful (server-side session): состояние пользователя хранится на сервере, а cookie несёт только session id. Просто, но плохо масштабируется — при нескольких инстансах нужны sticky sessions или общий стор сессий (Redis), плюс расход памяти.",
+          "Stateless: сервер не хранит сессию, а доверие подтверждается токеном (обычно JWT) в заголовке Authorization при каждом запросе. Масштабируется горизонтально без общего хранилища, но отзыв/инвалидация токена сложнее (это разбирается в уроке про JWT/OAuth2)."
+        ]
+      },
+      {
+        "heading": "HTTPS/TLS",
+        "paragraphs": [
+          "HTTP передаётся открытым текстом, поэтому в проде используют HTTPS (HTTP поверх TLS): шифрование транзита защищает от перехвата и подмены, а сертификат подтверждает подлинность сервера.",
+          "Заголовок HSTS (Strict-Transport-Security) заставляет браузер всегда ходить по HTTPS. Без TLS любые токены и cookie можно перехватить — поэтому Secure-cookie и bearer-токены имеют смысл только поверх HTTPS."
+        ]
+      },
+      {
+        "heading": "Аутентификация против авторизации",
+        "paragraphs": [
+          "Это два разных вопроса. Authentication — «кто ты» (пароль, токен, сертификат, session id). Authorization — «что тебе можно» (роль, право, владение конкретным ресурсом). Сначала authn, потом authz.",
+          "Типичная ошибка уровня senior — проверить только роль и забыть про ownership: пользователь с ролью USER не должен редактировать ЧУЖОЙ заказ, даже имея право редактировать заказы вообще. Реализацию обоих в Spring разбираем в следующих уроках."
+        ]
+      },
+      {
+        "heading": "На собеседовании",
+        "paragraphs": [
+          "Назови safe/idempotent методы и кэширование (Cache-Control/ETag/304). Разбери флаги cookie (HttpOnly/Secure/SameSite) и зачем каждый. Сравни stateful (общий стор/sticky) и stateless (токен, масштаб, но отзыв сложнее) сессии. Подчеркни HTTPS как основу и чёткую границу authn/authz с ловушкой ownership."
+        ]
+      }
+    ]
+  },
+  {
+    "id": "sb-lesson-servlet-runtime",
+    "domain": "spring-boot",
+    "topic": "servlet",
+    "order": 4.3,
+    "title": "Сервлеты, фильтры и встроенный контейнер",
+    "summary": "Сервлет и встроенный Tomcat, модель thread-per-request, потокобезопасность контроллеров, Filter против Interceptor и forward/redirect.",
+    "relatedTags": ["servlet", "web", "filter"],
+    "related": ["sb-lesson-web", "sb-lesson-mvc-advanced"],
+    "sections": [
+      {
+        "heading": "Сервлет и встроенный контейнер",
+        "paragraphs": [
+          "Сервлет-контейнер управляет жизненным циклом сервлета: init() при загрузке, service() (→ doGet/doPost) на каждый запрос, destroy() при выгрузке. В Spring MVC единственный центральный сервлет — DispatcherServlet, через него проходят все запросы.",
+          "Ключевой сдвиг Spring Boot: контейнер встроен (по умолчанию Tomcat; альтернативы — Jetty, Undertow). Приложение собирается в самодостаточный исполняемый jar со встроенным сервером, а не разворачивается WAR-файлом на внешний сервер приложений — это упрощает деплой и контейнеризацию."
+        ]
+      },
+      {
+        "heading": "Модель thread-per-request",
+        "paragraphs": [
+          "Контейнер держит пул рабочих потоков (у Tomcat по умолчанию ~200). Каждый входящий запрос берёт один поток из пула и держит его всё время обработки, включая блокирующие ожидания (БД, внешние вызовы).",
+          "Отсюда потолок: при блокирующем IO число одновременных запросов ограничено размером пула — потоки простаивают в ожидании. Это и есть мотивация WebFlux (неблокирующая модель) и виртуальных потоков (дешёвые потоки), которым посвящены отдельные уроки."
+        ]
+      },
+      {
+        "heading": "Потокобезопасность контроллеров",
+        "paragraphs": [
+          "Один экземпляр сервлета (и singleton-контроллера Spring) обслуживает множество запросов параллельно разными потоками. Поэтому состояние конкретного запроса НЕЛЬЗЯ хранить в полях контроллера/сервлета — это гонка данных.",
+          "Правило: в полях держат только потокобезопасные зависимости (другие бины), а данные запроса живут в параметрах метода, локальных переменных или request-scope бинах. Мутабельное поле-«состояние» в singleton-контроллере — классический баг."
+        ]
+      },
+      {
+        "heading": "Filter против Interceptor",
+        "paragraphs": [
+          "Servlet Filter работает на уровне контейнера ДО DispatcherServlet и оборачивает всю обработку: CORS, security, сжатие, логирование, correlation id. Фильтры образуют цепочку (FilterChain), а порядок задают через @Order или FilterRegistrationBean.",
+          "HandlerInterceptor работает ВНУТРИ MVC, вокруг выбранного обработчика: preHandle/postHandle/afterCompletion, с доступом к тому, какой handler выбран. Выбор: нужна низкоуровневая обработка любого запроса и доступ к сырым servlet API — Filter; нужна логика, привязанная к MVC-обработчику — Interceptor."
+        ]
+      },
+      {
+        "heading": "forward и redirect",
+        "paragraphs": [
+          "forward — серверная передача обработки другому ресурсу в рамках ТОГО ЖЕ запроса: новый запрос браузера не делается, URL не меняется. redirect — ответ 3xx, после которого клиент делает НОВЫЙ запрос на другой URL (URL в адресной строке меняется).",
+          "Отсюда паттерн PRG (Post/Redirect/Get): после успешного POST отвечают редиректом на GET-страницу, чтобы перезагрузка (F5) не повторяла отправку формы/платежа."
+        ]
+      },
+      {
+        "heading": "На собеседовании",
+        "paragraphs": [
+          "Объясни встроенный контейнер (jar вместо WAR) и модель thread-per-request (поток из пула на запрос, блокировка на IO → мотивация WebFlux/виртуальных потоков). Подчеркни потокобезопасность singleton-контроллеров (нет состояния запроса в полях). Различи Filter (до DispatcherServlet, контейнерный, цепочка) и Interceptor (внутри MVC, вокруг handler), и forward vs redirect с паттерном PRG."
+        ]
+      }
+    ]
+  },
+  {
+    "id": "sb-lesson-reactive-webflux",
+    "domain": "spring-boot",
+    "topic": "reactive",
+    "order": 11,
+    "title": "Reactive и Spring WebFlux",
+    "summary": "Неблокирующая модель и event loop, Reactive Streams и Reactor (Mono/Flux), backpressure, реактивный стек целиком, выбор MVC/WebFlux и цена сложности.",
+    "relatedTags": ["reactive", "webflux", "backpressure"],
+    "related": ["sb-lesson-servlet-runtime", "sb-lesson-web"],
+    "sections": [
+      {
+        "heading": "Зачем неблокирующая модель",
+        "paragraphs": [
+          "В модели thread-per-request (MVC на Tomcat) поток держится всё время запроса, включая блокирующие ожидания IO, поэтому число одновременных запросов ограничено размером пула (см. урок про сервлеты).",
+          "Реактивная модель строится на event loop: небольшое число потоков (примерно по числу ядер) обслуживает тысячи соединений. Поток не блокируется на IO — он инициирует операцию и переключается на другую работу, а продолжение выполняется по готовности. Цель — высокая конкуренция на IO при малом числе потоков и памяти."
+        ]
+      },
+      {
+        "heading": "Reactive Streams и Reactor",
+        "paragraphs": [
+          "В основе — стандарт Reactive Streams (Publisher, Subscriber, Subscription, Processor) с асинхронным обменом и backpressure. В Spring его реализует Project Reactor, дающий два типа Publisher: Mono (0..1 значение) и Flux (0..N значений).",
+          "Ключевое свойство — ленивость: пока на поток не подписались (subscribe), не происходит НИЧЕГО. В WebFlux подписывается сам фреймворк, когда отдаёт ответ; вызывать subscribe/block в коде контроллера обычно не нужно и вредно."
+        ]
+      },
+      {
+        "heading": "Операторы и пайплайн",
+        "paragraphs": [
+          "Поток обрабатывают декларативно операторами: map (преобразовать), flatMap (вложенная асинхронная операция, возвращающая свой Mono/Flux), filter, zip (объединить), onErrorResume (обработка ошибок). Они лишь СТРОЯТ конвейер — он выполнится при подписке.",
+          "Мышление здесь иное, чем в императивном коде: вы описываете трансформации потока, а не последовательность шагов."
+        ],
+        "code": "Mono<UserDto> result = userClient.getUser(id) // неблокирующий вызов\n    .map(UserDto::from)\n    .onErrorResume(NotFoundException.class, e -> Mono.empty());"
+      },
+      {
+        "heading": "Backpressure",
+        "paragraphs": [
+          "Главное отличие от «просто async» — backpressure: subscriber через request(n) сообщает, сколько элементов готов принять, и быстрый продюсер не зальёт его данными сверх возможностей. Это встроенный механизм защиты от перегрузки.",
+          "Когда данные всё же прибывают быстрее, чем обрабатываются, применяют стратегии: буферизация (с лимитом), drop (отбрасывать новые), latest (хранить только последнее). Без управления backpressure быстрый источник вызвал бы OOM или деградацию."
+        ]
+      },
+      {
+        "heading": "Реактивный стек целиком",
+        "paragraphs": [
+          "WebFlux по умолчанию работает на Netty (event loop), а не на Tomcat. Для неблокирующих зависимостей есть WebClient (неблокирующий HTTP-клиент, замена RestTemplate) и R2DBC (реактивный доступ к БД вместо блокирующего JDBC).",
+          "Критическое правило: вся цепочка должна быть неблокирующей. Один блокирующий вызов в request path — JDBC, Thread.sleep, .block() — занимает поток event loop, и поскольку этих потоков единицы, пропускная способность обрушивается. Неизбежно блокирующую работу выносят на отдельный планировщик (Schedulers.boundedElastic)."
+        ]
+      },
+      {
+        "heading": "MVC, WebFlux и виртуальные потоки",
+        "paragraphs": [
+          "MVC проще, привычнее и отлаживаемее; thread-per-request отлично подходит большинству CRUD-сервисов с JPA/JDBC. WebFlux оправдан при измеримой проблеме IO-concurrency, когда ВСЯ цепочка умеет non-blocking, а также для стриминга (Server-Sent Events, потоковые ответы) и явного backpressure.",
+          "Важный современный сдвиг: виртуальные потоки (Java 21) дают блокирующему MVC-коду масштаб реактивного без его сложности. Поэтому ради ОДНОГО ЛИШЬ масштаба на блокирующем IO WebFlux теперь берут реже — его уникальная ниша смещается к стримингу и backpressure, а не к «просто много соединений»."
+        ]
+      },
+      {
+        "heading": "Цена сложности",
+        "paragraphs": [
+          "Реактивный код труднее: stacktrace-ы малоинформативны (нужны onErrorContinue/checkpoint/reactor-tools), привычный ThreadLocal не работает (контекст пробрасывают через Reactor Context / Micrometer context propagation), и очень легко случайно заблокировать поток, не заметив этого.",
+          "Поэтому WebFlux — осознанный выбор под задачу, а не дефолт «чтобы было быстро». Команда должна уметь мыслить декларативными потоками и отлаживать их."
+        ]
+      },
+      {
+        "heading": "На собеседовании",
+        "paragraphs": [
+          "Не сводись к «WebFlux быстрее». Объясни event loop (мало потоков на много соединений) против thread-per-request, Reactive Streams/Reactor (Mono/Flux, ленивость до subscribe), backpressure (request(n) против перегрузки) и требование сквозной неблокирующести (JDBC/.block убивают event loop → boundedElastic). Дай формулу выбора: MVC по умолчанию; WebFlux — при доказанной IO-concurrency и end-to-end non-blocking или ради стриминга/backpressure; и что виртуальные потоки забрали у WebFlux аргумент «просто масштаб»."
+        ]
+      }
+    ]
+  },
+  {
+    "id": "sb-lesson-resilience-observability",
+    "domain": "spring-boot",
+    "topic": "resilience-observability",
+    "order": 12,
+    "title": "Resilience: таймауты, ретраи и circuit breaker",
+    "summary": "Защита от каскадных отказов: таймауты, безопасные ретраи, состояния circuit breaker, bulkhead и rate limiter, fallback и порядок паттернов.",
+    "relatedTags": ["resilience", "circuit-breaker", "retries"],
+    "related": ["sb-lesson-actuator", "sb-lesson-data"],
+    "sections": [
+      {
+        "heading": "Зачем resilience",
+        "paragraphs": [
+          "В распределённой системе внешние вызовы неизбежно падают и тормозят. Без защиты медленная или упавшая зависимость исчерпывает потоки/соединения вызывающего сервиса, и сбой каскадно валит всю систему (cascading failure).",
+          "Цель resilience-паттернов — локализовать сбой: быстро отказать, не дёргать упавшую зависимость и деградировать управляемо. В Spring стандарт — библиотека Resilience4j (лёгкая, функциональная; пришла на смену устаревшему Hystrix), интегрируется аннотациями и метриками."
+        ]
+      },
+      {
+        "heading": "Таймауты — основа",
+        "paragraphs": [
+          "Самое важное правило: у каждого внешнего вызова должен быть таймаут (на установление соединения и на чтение ответа). Без таймаута поток/соединение/event loop виснет до исчерпания ресурса — и это первый шаг к каскаду.",
+          "Таймаут важнее ретраев: бессмысленно повторять то, что может висеть вечно. В Resilience4j за ограничение времени отвечает TimeLimiter (особенно для асинхронных вызовов)."
+        ]
+      },
+      {
+        "heading": "Безопасные ретраи",
+        "paragraphs": [
+          "Ретрай помогает ТОЛЬКО при временной (transient) ошибке и только для идемпотентных операций — повтор неидемпотентного POST создаёт дубликаты. У ретраев обязателен лимит попыток.",
+          "Между попытками — экспоненциальный backoff с jitter (случайной добавкой): без них тысячи клиентов синхронно повторят запрос в один момент и добьют уже шатающуюся зависимость (retry storm / thundering herd). Ретрай без таймаута и идемпотентности обычно усиливает инцидент, а не лечит его."
+        ]
+      },
+      {
+        "heading": "Circuit breaker",
+        "paragraphs": [
+          "Circuit breaker (предохранитель) отслеживает долю ошибок к зависимости и имеет три состояния. CLOSED — вызовы проходят, считается частота сбоев. При превышении порога он переходит в OPEN — на время вызовы НЕ идут вовсе, а сразу падают (fail fast), давая зависимости восстановиться и не тратя на неё потоки. Через паузу — HALF-OPEN: пропускается несколько пробных вызовов; успех → CLOSED, провал → снова OPEN.",
+          "Это ключевая защита от каскада: вместо того чтобы 10 000 запросов висели на таймаутах упавшего сервиса, предохранитель мгновенно отклоняет их."
+        ],
+        "code": "@CircuitBreaker(name = \"payments\", fallbackMethod = \"fallback\")\n@Retry(name = \"payments\")\nPayment charge(Order o) { return paymentsClient.charge(o); }\n\nPayment fallback(Order o, Throwable t) { return Payment.pending(); } // деградация"
+      },
+      {
+        "heading": "Bulkhead и rate limiter",
+        "paragraphs": [
+          "Bulkhead («переборка», как отсеки корабля) изолирует ресурсы под каждую зависимость — отдельный пул потоков или семафор с лимитом одновременных вызовов. Тогда зависшая зависимость съедает только свой отсек, а не все потоки сервиса.",
+          "Rate limiter ограничивает частоту вызовов (входящих или исходящих) — не берёт работы больше, чем система/зависимость способна переварить, обеспечивая backpressure и соблюдение чужих лимитов."
+        ]
+      },
+      {
+        "heading": "Fallback и комбинирование",
+        "paragraphs": [
+          "Когда паттерн срабатывает (open breaker, исчерпаны ретраи, таймаут), нужен fallback — управляемая деградация: вернуть закэшированное/дефолтное/частичное значение вместо ошибки, если домен это допускает. Молчаливый fallback опасен — его обязательно логируют и мониторят.",
+          "Паттерны комбинируют, и порядок важен: обычно Bulkhead → TimeLimiter → RateLimiter → CircuitBreaker → Retry → Fallback (ретрай внутри предохранителя, чтобы повторы учитывались в его статистике). Все эти паттерны экспортируют метрики в Micrometer/Actuator — мониторинг устойчивости разбирается в уроке про Actuator."
+        ]
+      },
+      {
+        "heading": "На собеседовании",
+        "paragraphs": [
+          "Начни с проблемы каскадного отказа и тезиса «таймаут важнее ретрая». Объясни безопасные ретраи (transient + идемпотентность + backoff/jitter против retry storm) и три состояния circuit breaker (CLOSED/OPEN/HALF-OPEN) как защиту от каскада. Добавь bulkhead (изоляция ресурсов) и rate limiter (backpressure), fallback как деградацию, и упомяни Resilience4j + порядок комбинирования и метрики."
+        ]
+      }
+    ]
+  },
+  {
+    "id": "sb-lesson-testcontainers-contracts",
+    "domain": "spring-boot",
+    "topic": "testcontainers-contracts",
+    "order": 13,
+    "title": "Тестирование Spring Boot",
+    "summary": "Пирамида тестов, unit без Spring, slice-тесты, @SpringBootTest и @MockBean, MockMvc/WebTestClient, Testcontainers и контрактные тесты.",
+    "relatedTags": ["testing", "testcontainers", "integration-test"],
+    "related": ["sb-lesson-data", "sb-lesson-ioc"],
+    "sections": [
+      {
+        "heading": "Пирамида тестов",
+        "paragraphs": [
+          "Здоровая стратегия — пирамида: много быстрых unit-тестов в основании, меньше интеграционных (срезы и Testcontainers) посередине и совсем немного сквозных (end-to-end) сверху.",
+          "Причина — скорость и стабильность: unit-тесты исполняются за миллисекунды и почти не «флакуют», а тяжёлые сквозные тесты медленны и хрупки. Антипаттерн «перевёрнутая пирамида» (всё через @SpringBootTest) делает сборку медленной и ненадёжной."
+        ]
+      },
+      {
+        "heading": "Unit без Spring",
+        "paragraphs": [
+          "Чистую бизнес-логику тестируют обычным JUnit + Mockito, БЕЗ поднятия Spring-контекста: создают объект через new, передают моки зависимостей. Это самые быстрые и многочисленные тесты.",
+          "Возможность так тестировать — прямое следствие конструкторной инъекции (см. урок про IoC): класс собирается без контейнера. Field injection эту возможность ломает."
+        ]
+      },
+      {
+        "heading": "Slice-тесты",
+        "paragraphs": [
+          "Когда нужен Spring, но не весь, используют срезы — они поднимают только часть контекста и потому быстры. @WebMvcTest — только web-слой (контроллеры + MockMvc), сервисы подменяют @MockBean. @DataJpaTest — только JPA-слой с БД (встроенной или Testcontainers), каждый тест по умолчанию в транзакции с откатом. Есть и @JsonTest, @RestClientTest и др.",
+          "Срез грузит ровно нужные бины (например, @WebMvcTest не создаёт сервисы и репозитории), что и даёт выигрыш по скорости против полного контекста."
+        ],
+        "code": "@WebMvcTest(UserController.class)\nclass UserControllerTest {\n    @Autowired MockMvc mvc;\n    @MockBean UserService service; // зависимость контроллера — мок\n}"
+      },
+      {
+        "heading": "@SpringBootTest и моки",
+        "paragraphs": [
+          "@SpringBootTest поднимает весь (или большой) контекст для сквозных сценариев. webEnvironment задаёт режим: MOCK (без сервера, с MockMvc) или RANDOM_PORT (реальный встроенный сервер + TestRestTemplate/WebTestClient). Это самые дорогие тесты — их держат точечно.",
+          "@MockBean заменяет бин в контексте моком (например, внешний клиент), но важно: добавление @MockBean меняет контекст и ломает его кэширование между тестами (каждая уникальная конфигурация контекста поднимается заново) — это частая причина медленных тест-сьютов. MockMvc гоняет MVC без реального сокета; WebTestClient — для WebFlux и реального порта."
+        ]
+      },
+      {
+        "heading": "Testcontainers",
+        "paragraphs": [
+          "Testcontainers запускает РЕАЛЬНУЮ инфраструктуру в Docker-контейнерах (PostgreSQL, Kafka, Redis) на время теста. Это убирает расхождение с production по SQL-диалекту, драйверу и поведению брокера, которое дают H2/embedded-заглушки.",
+          "С Spring Boot 3.1 связка упростилась: @ServiceConnection автоматически прописывает контейнер как источник данных/брокер в контекст — не нужно вручную пробрасывать url/credentials. Такие тесты дороже unit, поэтому их держат фокусными: миграции, репозитории, транзакции, wiring продюсеров/консьюмеров."
+        ],
+        "code": "@Testcontainers @DataJpaTest\nclass RepoTest {\n    @Container @ServiceConnection\n    static PostgreSQLContainer<?> db = new PostgreSQLContainer<>(\"postgres:16\");\n}"
+      },
+      {
+        "heading": "Контрактные тесты",
+        "paragraphs": [
+          "Контрактные тесты проверяют ДОГОВОР между сервисами: HTTP-схема, статус-коды, обязательные поля, схема сообщений и совместимость событий. Инструменты — Spring Cloud Contract, Pact.",
+          "Они особенно ценны, когда команды развивают producer и consumer независимо: контракт ловит несовместимое изменение (удалили поле, сменили тип) ДО интеграции и продакшена, не поднимая оба сервиса вместе."
+        ]
+      },
+      {
+        "heading": "На собеседовании",
+        "paragraphs": [
+          "Объясни пирамиду (много unit без Spring → срезы/Testcontainers → мало e2e) и почему перевёрнутая пирамида плоха. Свяжи unit без контекста с конструкторной инъекцией. Различи @WebMvcTest/@DataJpaTest (срезы, быстро) и @SpringBootTest (весь контекст, дорого) и предупреди про @MockBean, ломающий кэш контекста. Подчеркни Testcontainers (реальная БД/брокер вместо H2, @ServiceConnection) и контрактные тесты для независимых команд."
+        ]
+      }
+    ]
+  },
+  {
+    "id": "sb-lesson-container-advanced",
+    "domain": "spring-boot",
+    "topic": "container-advanced",
+    "order": 3.5,
+    "title": "Контейнер: события, FactoryBean и тонкое связывание",
+    "summary": "События приложения и @EventListener, FactoryBean, Aware-интерфейсы, порядок бинов (@Order/@DependsOn) и отложенное получение (ObjectProvider/@Lazy/@Lookup).",
+    "relatedTags": ["applicationcontext", "lifecycle"],
+    "related": ["sb-lesson-bean", "sb-lesson-context-config"],
+    "sections": [
+      {
+        "heading": "События приложения",
+        "paragraphs": [
+          "ApplicationContext умеет публиковать события: ApplicationEventPublisher.publishEvent(event) рассылает их, а методы с @EventListener их принимают (в Spring Boot событием может быть любой объект, не обязательно наследник ApplicationEvent). Это способ развязать модули ВНУТРИ одного приложения — издатель не знает о подписчиках.",
+          "Важные нюансы: по умолчанию слушатели СИНХРОННЫ — выполняются в том же потоке и той же транзакции, что и publishEvent (исключение в слушателе откатит транзакцию издателя). Для асинхронности ставят @Async, а чтобы реагировать только после успешного коммита — @TransactionalEventListener(phase = AFTER_COMMIT). Это не межсервисная шина (для неё — брокеры из уроков про messaging)."
+        ],
+        "code": "publisher.publishEvent(new OrderPaid(orderId));\n\n@TransactionalEventListener(phase = AFTER_COMMIT)\nvoid onPaid(OrderPaid e) { notifications.send(e); } // после commit"
+      },
+      {
+        "heading": "FactoryBean",
+        "paragraphs": [
+          "FactoryBean<T> — это бин, чья задача — СОЗДАТЬ другой бин: контейнер вызывает его getObject() и кладёт в контекст продукт, а не сам FactoryBean. Его применяют, когда создание объекта сложное/условное или интегрирует чужую фабрику.",
+          "Тонкость доступа: getBean(\"x\") вернёт ПРОДУКТ фабрики, а getBean(\"&x\") — сам объект FactoryBean. Многие интеграции Spring (прокси для репозиториев, клиентов, JNDI) внутри устроены именно как FactoryBean."
+        ]
+      },
+      {
+        "heading": "Aware-интерфейсы",
+        "paragraphs": [
+          "Реализовав Aware-интерфейс, бин получает ссылку на инфраструктуру контейнера на соответствующей стадии жизненного цикла: BeanNameAware (своё имя), ApplicationContextAware (сам контекст), EnvironmentAware (Environment), BeanFactoryAware и др.",
+          "Пользоваться ими стоит осторожно — они жёстко связывают код со Spring и усложняют тестирование. В большинстве случаев нужное получают обычной инъекцией зависимости; Aware оправдан в инфраструктурном коде."
+        ]
+      },
+      {
+        "heading": "Порядок бинов",
+        "paragraphs": [
+          "Когда важна последовательность, её задают явно. @Order (или интерфейс Ordered) управляет ПОРЯДКОМ в коллекциях бинов: инъекция List<Handler> придёт в этом порядке, как и цепочки фильтров, аспектов, CommandLineRunner/ApplicationRunner.",
+          "@DependsOn — про другое: он форсирует порядок СОЗДАНИЯ бинов, когда между ними есть неявная зависимость инициализации, не выраженная через прямую инъекцию (например, бин должен подняться после того, как другой зарегистрировал что-то глобально)."
+        ]
+      },
+      {
+        "heading": "Отложенное и опциональное получение",
+        "paragraphs": [
+          "ObjectProvider<T> — современный способ получать зависимость лениво, опционально или во множественном числе: provider.getObject() (каждый раз новый prototype), getIfAvailable() (может отсутствовать), orderedStream() (все реализации по порядку). Это аккуратная замена устаревшему @Lookup и решение проблемы «prototype внутри singleton» (см. урок про бины).",
+          "@Lazy откладывает создание бина до первого обращения (и иногда помогает разорвать цикл зависимостей), а @Lookup — легаси-приём method injection. По возможности предпочитают ObjectProvider как самый явный и тестируемый вариант."
+        ]
+      },
+      {
+        "heading": "На собеседовании",
+        "paragraphs": [
+          "Объясни события (@EventListener для развязки модулей; СИНХРОННЫ и в транзакции издателя по умолчанию → @Async/@TransactionalEventListener AFTER_COMMIT). Расскажи FactoryBean (создаёт другой бин, getBean(\"&x\") — сам фабрика) и Aware-интерфейсы (доступ к контейнеру, но осторожно). Различи @Order (порядок в коллекциях/цепочках) и @DependsOn (порядок создания), и назови ObjectProvider как современный способ ленивого/опционального/prototype-получения вместо @Lookup."
+        ]
+      }
+    ]
+  },
+  {
+    "id": "sb-lesson-mvc-advanced",
+    "domain": "spring-boot",
+    "topic": "mvc-advanced",
+    "order": 4.2,
+    "title": "Валидация и обработка ошибок",
+    "summary": "Bean Validation и @Valid/@Validated, превращение ошибок в ответ, @ControllerAdvice и единый контракт, ProblemDetail (RFC 7807), multipart и interceptors.",
+    "relatedTags": ["validation", "exception-handler", "mvc"],
+    "related": ["sb-lesson-web", "sb-lesson-rest-api"],
+    "sections": [
+      {
+        "heading": "Bean Validation",
+        "paragraphs": [
+          "Декларативную валидацию даёт Bean Validation (jakarta.validation): аннотации @NotNull, @NotBlank, @Size, @Email, @Pattern, @Min/@Max и собственные constraints прямо на полях DTO. В контроллере валидацию запускает @Valid на @RequestBody-параметре.",
+          "@Validated (на классе/параметре) добавляет группы валидации — разные правила для create и update. Вложенные объекты валидируются каскадно, если поле помечено @Valid. Важно: DTO входа отделяют от JPA-сущности — контракт API и модель хранения меняются по разным причинам и не должны быть связаны."
+        ]
+      },
+      {
+        "heading": "Как ошибка валидации становится ответом",
+        "paragraphs": [
+          "Если @Valid @RequestBody не проходит проверки, Spring бросает MethodArgumentNotValidException, который по умолчанию превращается в 400 Bad Request. Детали (какие поля и почему не прошли) лежат в BindingResult и их собирают в ответ.",
+          "Поэтому валидацию НЕ пишут вручную в начале каждого метода — её декларируют аннотациями, а единый обработчик формирует понятный ответ со списком ошибок по полям."
+        ],
+        "code": "record CreateUser(@NotBlank String name, @Email String email, @Min(18) int age) {}\n\n@PostMapping\nUser create(@Valid @RequestBody CreateUser req) { /* при ошибке — 400 */ }"
+      },
+      {
+        "heading": "@ExceptionHandler и @ControllerAdvice",
+        "paragraphs": [
+          "@ExceptionHandler обрабатывает исключение в пределах одного контроллера, а @RestControllerAdvice выносит обработку на всё приложение — это место для единого error-contract.",
+          "Хороший контракт ошибки стабилен и машиночитаем: статус, код ошибки, сообщение, ошибки по полям, correlation id для поиска в логах. Stacktrace и внутренние детали наружу не отдают — это и неудобно клиенту, и риск утечки информации."
+        ],
+        "code": "@RestControllerAdvice\nclass ApiErrors {\n    @ExceptionHandler(EntityNotFoundException.class)\n    ProblemDetail notFound(EntityNotFoundException e) {\n        return ProblemDetail.forStatusAndDetail(HttpStatus.NOT_FOUND, e.getMessage());\n    }\n}"
+      },
+      {
+        "heading": "ProblemDetail (RFC 7807)",
+        "paragraphs": [
+          "Вместо самодельного ErrorDto современный стандарт ответа об ошибке — ProblemDetail по RFC 7807 (media type application/problem+json) с полями type, title, status, detail, instance и произвольными расширениями.",
+          "Spring 6 / Boot 3 поддерживают его из коробки (класс ProblemDetail, базовый ResponseEntityExceptionHandler уже отдаёт ошибки в этом формате). Единый стандартный формат удобнее клиентам и инструментам, чем зоопарк кастомных структур."
+        ]
+      },
+      {
+        "heading": "Multipart, локализация и перехватчики",
+        "paragraphs": [
+          "Загрузку файлов (multipart/form-data) принимают через MultipartFile; для больших файлов настраивают лимиты и стриминг, чтобы не читать всё в память. MessageSource + LocaleResolver дают локализованные сообщения (locale, например, из Accept-Language).",
+          "Сквозную логику вокруг обработчика (correlation id, аудит, tenant context) вешают на HandlerInterceptor (работает внутри MVC, вокруг handler), а более низкоуровневую — на Servlet Filter (срабатывает раньше, до DispatcherServlet). Их разницу разбираем в уроке про сервлеты."
+        ]
+      },
+      {
+        "heading": "На собеседовании",
+        "paragraphs": [
+          "Объясни декларативную валидацию (@Valid/@Validated + группы, каскад, отдельный DTO от entity) и путь ошибки: MethodArgumentNotValidException → 400 с field errors. Расскажи про @RestControllerAdvice как единую точку error-contract (status/code/message/field errors/correlation id, без stacktrace) и про современный ProblemDetail (RFC 7807) из Boot 3. Различи Interceptor (вокруг handler) и Filter (ниже, до DispatcherServlet)."
+        ]
+      }
+    ]
+  },
+  {
+    "id": "sb-lesson-cloud-platform",
+    "domain": "spring-boot",
+    "topic": "spring-cloud",
+    "order": 16,
+    "title": "Spring Cloud: config, discovery, gateway, tracing",
+    "summary": "Config Server, Eureka/DiscoveryClient, Spring Cloud Gateway и распределённая трассировка.",
+    "relatedTags": ["spring-cloud", "config-server", "gateway", "eureka", "service-discovery", "distributed-tracing"],
+    "related": ["sb-lesson-resilience-observability", "sb-lesson-http-security"],
+    "sections": [
+      {
+        "heading": "Config Server",
+        "paragraphs": [
+          "Spring Cloud Config Server централизует конфигурацию для нескольких приложений и окружений. Источником часто выступает Git-репозиторий.",
+          "Это помогает менять настройки без пересборки артефакта, но секреты всё равно требуют отдельной стратегии: Vault, KMS, sealed secrets или аналог."
+        ]
+      },
+      {
+        "heading": "Service discovery",
+        "paragraphs": [
+          "Service discovery позволяет сервисам находить друг друга по логическому имени, а не по статическому host:port.",
+          "Eureka — классический компонент Netflix OSS. В Kubernetes ту же роль часто закрывают Service/DNS, поэтому Eureka нужна не всегда."
+        ]
+      },
+      {
+        "heading": "API Gateway",
+        "paragraphs": [
+          "Spring Cloud Gateway принимает внешний трафик и маршрутизирует его к backend-сервисам. На gateway часто живут TLS termination, auth, rate limiting, routing, canary rules.",
+          "Gateway не должен превращаться в второй монолит с бизнес-логикой. Его задача — сетевой и cross-cutting слой."
+        ],
+        "code": "spring:\n  cloud:\n    gateway:\n      routes:\n        - id: orders\n          uri: lb://orders-service\n          predicates:\n            - Path=/orders/**"
+      },
+      {
+        "heading": "Tracing",
+        "paragraphs": [
+          "Distributed tracing связывает один пользовательский запрос через цепочку сервисов. Trace id и span id помогают понять, где именно появилась задержка или ошибка.",
+          "В новых Spring Boot приложениях tracing обычно строят через Micrometer Tracing/OpenTelemetry; старые материалы часто упоминают Spring Cloud Sleuth."
+        ]
+      },
+      {
+        "heading": "На собеседовании",
+        "paragraphs": [
+          "Разбери компоненты по назначению: Config Server (централизованная конфигурация, но секреты — отдельно: Vault/KMS), service discovery (поиск по логическому имени; в Kubernetes часто заменяется Service/DNS, поэтому Eureka нужна не всегда), API Gateway (единая точка входа: TLS termination, auth, rate limiting, routing — без бизнес-логики), distributed tracing (trace/span id через цепочку, Micrometer Tracing/OpenTelemetry; Sleuth устарел).",
+          "Зрелый акцент: значительную часть Spring Cloud в k8s-окружении перекрывают платформа и service mesh (Istio) — выбирай по тому, что уже даёт инфраструктура, а не тащи всё подряд."
+        ]
+      }
+    ]
+  },
+  {
+    "id": "sb-lesson-integration-batch-api",
+    "domain": "spring-boot",
+    "topic": "integration-batch-api",
+    "order": 17,
+    "title": "Spring Batch, Integration и API styles",
+    "summary": "Batch jobs, enterprise integration patterns, Spring Data REST, HATEOAS и GraphQL.",
+    "relatedTags": ["spring-batch", "spring-integration", "spring-data-rest", "hateoas", "graphql"],
+    "related": ["sb-lesson-data", "sb-lesson-cloud-platform"],
+    "sections": [
+      {
+        "heading": "Spring Batch",
+        "paragraphs": [
+          "Spring Batch нужен для пакетной обработки: большие файлы, nightly jobs, миграции, отчёты, регулярная синхронизация.",
+          "Модель строится вокруг Job, Step, ItemReader, ItemProcessor и ItemWriter. Важные свойства: restartability, chunk processing, skip/retry и job repository."
+        ],
+        "code": "read chunk -> process items -> write chunk -> commit"
+      },
+      {
+        "heading": "Spring Integration",
+        "paragraphs": [
+          "Spring Integration реализует enterprise integration patterns: channels, endpoints, transformers, routers, filters, adapters.",
+          "Его выбирают, когда нужно связать разные транспортные и доменные системы декларативным pipeline, а не писать ручной glue-code в сервисах."
+        ]
+      },
+      {
+        "heading": "Spring Data REST и HATEOAS",
+        "paragraphs": [
+          "Spring Data REST может быстро публиковать repository как REST API. Это удобно для admin/internal CRUD, но опасно как публичный API без контроля контракта.",
+          "HATEOAS добавляет ссылки в представления ресурсов, чтобы клиент мог обнаруживать доступные действия. На практике важно не перегрузить API ссылками без реальной пользы."
+        ]
+      },
+      {
+        "heading": "GraphQL",
+        "paragraphs": [
+          "GraphQL позволяет клиенту запросить ровно нужные поля и объединить связанные данные одним запросом.",
+          "Главные backend-риски: N+1 на resolvers, сложность authorization на уровне полей и защита от слишком дорогих запросов."
+        ]
+      },
+      {
+        "heading": "На собеседовании",
+        "paragraphs": [
+          "Различай инструменты по задаче. Spring Batch — пакетная обработка (Job/Step/ItemReader-Processor-Writer, chunk-processing с коммитом по пачкам, restartability, skip/retry, job repository) для больших файлов и ночных задач. Spring Integration — enterprise integration patterns (channels/endpoints/adapters/routers) для декларативной связки систем вместо ручного glue-code.",
+          "По стилям API: Spring Data REST быстро публикует репозитории как REST (удобно для internal CRUD, рискованно как публичный контракт), а GraphQL даёт клиенту выбирать поля одним запросом ценой N+1 на резолверах, field-level авторизации и защиты от дорогих запросов. Выбор — от клиента и нужного контроля над контрактом."
+        ]
+      }
+    ]
+  },
+  {
+    "id": "sb-lesson-spring-kafka",
+    "domain": "spring-boot",
+    "topic": "spring-kafka",
+    "order": 18,
+    "title": "Spring Kafka",
+    "summary": "KafkaTemplate, @KafkaListener, listener containers, offset ack, error handling, retries и DLT.",
+    "relatedTags": ["spring-kafka", "kafkatemplate", "kafkalistener", "dlt", "offset"],
+    "related": ["sb-lesson-integration-batch-api", "mb-lesson-kafka-consumer"],
+    "sections": [
+      {
+        "heading": "Producer: KafkaTemplate",
+        "paragraphs": [
+          "KafkaTemplate — high-level API Spring Kafka для отправки records. Он скрывает низкоуровневый producer lifecycle и интегрируется с сериализацией, transactions и callbacks.",
+          "В production обычно явно задают key, topic, headers и correlation id. Key нужен не только для routing, но и для порядка событий одной бизнес-сущности."
+        ],
+        "code": "kafkaTemplate.send(\"orders.events\", orderId, new OrderPaid(orderId));"
+      },
+      {
+        "heading": "Consumer: @KafkaListener",
+        "paragraphs": [
+          "@KafkaListener создаёт listener method, а listener container управляет poll loop, threads, assignment, commits и error handling.",
+          "Concurrency у listener-а не может эффективно превысить число partitions для одной consumer group: лишние threads будут простаивать."
+        ],
+        "code": "@KafkaListener(topics = \"orders.events\", groupId = \"billing\")\nvoid on(OrderPaid event, Acknowledgment ack) {\n    billing.handle(event);\n    ack.acknowledge();\n}"
+      },
+      {
+        "heading": "Ack modes и offset",
+        "paragraphs": [
+          "Ack mode определяет, когда Spring Kafka коммитит offsets: автоматически по batch/time/count или вручную через Acknowledgment.",
+          "Для at-least-once обычно обрабатывают сообщение, фиксируют бизнес-эффект, затем коммитят offset. Если упасть до commit, сообщение придёт повторно."
+        ]
+      },
+      {
+        "heading": "Retries, DLT и идемпотентность",
+        "paragraphs": [
+          "DefaultErrorHandler может ретраить обработку с backoff, а после исчерпания попыток отправлять запись в DLT через DeadLetterPublishingRecoverer.",
+          "DLT не заменяет идемпотентность consumer-а. Любой retry/ре-баланс/падение между business commit и offset commit может дать повтор."
+        ]
+      },
+      {
+        "heading": "Transactions",
+        "paragraphs": [
+          "Kafka transactions полезны, когда нужно атомарно consume-process-produce внутри Kafka. Для связки БД + Kafka чаще применяют transactional outbox, потому что одна транзакция на БД и Kafka сложно поддерживается надёжно.",
+          "Если listener пишет в БД, думайте о порядке: DB transaction, idempotency key и offset commit должны образовывать понятную гарантию."
+        ]
+      },
+      {
+        "heading": "Гарантии доставки",
+        "paragraphs": [
+          "Семантика доставки определяется порядком «обработка ↔ commit offset». At-most-once: сначала commit, потом обработка — при падении сообщение теряется (зато без дублей). At-least-once: сначала обработка и бизнес-эффект, потом commit — при падении до commit сообщение придёт повторно (дубли возможны → нужна идемпотентность). Это разумный дефолт для большинства систем.",
+          "Exactly-once в пределах Kafka даёт транзакционный consume-process-produce (read_committed + транзакции продюсера). Но как только в цепочке появляется внешняя БД, «ровно один раз» обеспечивают не распределённой транзакцией, а идемпотентностью потребителя и/или transactional outbox."
+        ]
+      },
+      {
+        "heading": "На собеседовании",
+        "paragraphs": [
+          "Свяжи producer (KafkaTemplate, key → партиционирование и порядок внутри партиции) и consumer (@KafkaListener + listener container, concurrency ≤ числа партиций в группе). Разбери три семантики доставки через момент commit offset (at-most/at-least/exactly-once) и почему at-least-once требует идемпотентности. Назови ретраи + DLT (DefaultErrorHandler/DeadLetterPublishingRecoverer) и что DLT не заменяет идемпотентность; для БД+Kafka — transactional outbox, а не 2PC. Упомяни rebalancing при изменении состава группы."
+        ]
+      }
+    ]
+  },
+  {
+    "id": "sb-lesson-spring-amqp",
+    "domain": "spring-boot",
+    "topic": "spring-amqp",
+    "order": 19,
+    "title": "Spring AMQP и RabbitMQ",
+    "summary": "RabbitTemplate, @RabbitListener, exchanges, bindings, manual ack, retries, DLQ и prefetch.",
+    "relatedTags": ["spring-amqp", "rabbittemplate", "rabbitlistener", "rabbitmq", "prefetch", "dlq"],
+    "related": ["sb-lesson-spring-kafka", "mb-lesson-rabbitmq-sqs"],
+    "sections": [
+      {
+        "heading": "RabbitTemplate",
+        "paragraphs": [
+          "RabbitTemplate отправляет сообщения в exchange с routing key. В отличие от Kafka, producer обычно не пишет напрямую в queue: exchange маршрутизирует по bindings.",
+          "Для JSON payload настраивают MessageConverter, например Jackson2JsonMessageConverter, и следят за совместимостью формата."
+        ],
+        "code": "rabbitTemplate.convertAndSend(\n    \"orders.exchange\",\n    \"order.paid\",\n    new OrderPaid(orderId)\n);"
+      },
+      {
+        "heading": "@RabbitListener",
+        "paragraphs": [
+          "@RabbitListener подписывает метод на queue, а listener container управляет consumers, concurrency, prefetch, ack и ошибками.",
+          "Prefetch ограничивает число сообщений, которые consumer получил, но ещё не подтвердил. Это важный регулятор fairness и памяти."
+        ],
+        "code": "@RabbitListener(queues = \"billing.order-paid\")\nvoid on(OrderPaid event) {\n    billing.handle(event);\n}"
+      },
+      {
+        "heading": "Ack, nack и requeue",
+        "paragraphs": [
+          "При auto ack сообщение подтверждается контейнером после успешного выполнения listener-а. При manual ack приложение само решает, когда basicAck/basicNack.",
+          "Опасная настройка — бесконечно requeue poison message. Обычно нужны ограниченные retries, backoff и DLQ."
+        ]
+      },
+      {
+        "heading": "DLQ через DLX",
+        "paragraphs": [
+          "В RabbitMQ dead lettering обычно строится через Dead Letter Exchange: queue настраивают с x-dead-letter-exchange и, при необходимости, x-dead-letter-routing-key.",
+          "В DLQ полезно сохранять исходные headers и причину отказа, а также иметь redrive-процесс после исправления ошибки."
+        ]
+      },
+      {
+        "heading": "Kafka или RabbitMQ в Spring",
+        "paragraphs": [
+          "Spring Kafka удобен для event log, replay и независимых consumer groups. Spring AMQP удобен для work queues, routing, DLQ/delay patterns и командной обработки.",
+          "Выбор должен идти от семантики: событие-история или задача-команда, нужен ли replay, порядок, routing, TTL и delay."
+        ]
+      },
+      {
+        "heading": "На собеседовании",
+        "paragraphs": [
+          "Подчеркни ключевое отличие от Kafka: продюсер пишет в EXCHANGE (типы direct/topic/fanout/headers), а тот по bindings маршрутизирует в очереди — продюсер не знает про очереди. Объясни prefetch (число неподтверждённых сообщений у consumer — регулятор fairness и памяти), manual ack/nack и опасность бесконечного requeue poison-сообщения → ограниченные ретраи + DLQ через Dead Letter Exchange. Для надёжной отправки назови publisher confirms. Заверши выбором Kafka (event log/replay/порядок в партиции) vs RabbitMQ (work queue/routing/DLQ/TTL/delay)."
+        ]
+      }
+    ]
+  },
+  {
+    "id": "sb-lesson-cloud-stream",
+    "domain": "spring-boot",
+    "topic": "cloud-stream",
+    "order": 20,
+    "title": "Spring Cloud Stream",
+    "summary": "Binder abstraction, functional model, bindings, consumer groups, partitioning и trade-offs поверх Kafka/RabbitMQ.",
+    "relatedTags": ["spring-cloud-stream", "binder", "bindings", "functional-bean", "partitioning"],
+    "related": ["sb-lesson-spring-kafka", "sb-lesson-spring-amqp"],
+    "sections": [
+      {
+        "heading": "Binder abstraction",
+        "paragraphs": [
+          "Spring Cloud Stream отделяет бизнес-функцию от конкретного брокера через binder. Один и тот же код может работать поверх Kafka или RabbitMQ, если укладывается в общую модель.",
+          "Абстракция полезна для типовых event-driven сервисов, но broker-specific возможности всё равно иногда нужно настраивать явно."
+        ]
+      },
+      {
+        "heading": "Functional model",
+        "paragraphs": [
+          "Современная модель строится вокруг Supplier, Function и Consumer beans. Binding names связывают input/output функции с broker destinations.",
+          "Это делает pipeline компактным, но важно держать имена bindings и конфигурацию понятными: иначе flow становится трудно читать."
+        ],
+        "code": "@Bean\nConsumer<OrderPaid> bill() {\n    return event -> billing.handle(event);\n}"
+      },
+      {
+        "heading": "Groups и destinations",
+        "paragraphs": [
+          "destination — логическое имя topic/exchange/queue, group — consumer group semantics. Для Kafka group.id определяет независимый прогресс чтения.",
+          "Если group не задан, поведение может стать anonymous/ephemeral и не тем, что нужно production consumer-у."
+        ]
+      },
+      {
+        "heading": "Partitioning",
+        "paragraphs": [
+          "Cloud Stream поддерживает partition key expression и partition count, чтобы события одной сущности попадали в один partition/consumer lane.",
+          "Это не отменяет понимания брокера: для Kafka порядок всё равно только внутри partition, а для RabbitMQ routing и queues имеют другую семантику."
+        ]
+      },
+      {
+        "heading": "Когда не использовать",
+        "paragraphs": [
+          "Если сервис активно использует специфичные возможности Kafka listener container, manual offset control, transactions или тонкие DLT-настройки, прямой Spring Kafka может быть прозрачнее.",
+          "Cloud Stream хорош как уровень унификации, но плох как способ не понимать брокер."
+        ]
+      },
+      {
+        "heading": "На собеседовании",
+        "paragraphs": [
+          "Объясни binder как абстракцию над брокером (один и тот же код поверх Kafka/RabbitMQ) и современную функциональную модель (бины Supplier/Function/Consumer + bindings, связывающие их с destinations). Подчеркни destination + group (group.id = независимый прогресс чтения; без group поведение anonymous/ephemeral — не для прода) и partitioning (порядок в Kafka гарантирован только внутри партиции). Главный нюанс: Cloud Stream — слой унификации, а не замена пониманию брокера; для тонких возможностей (manual offset, Kafka-транзакции, точные DLT) берут прямой Spring Kafka."
+        ]
+      }
+    ]
+  },
+  {
+    "id": "sb-lesson-spring-security-deep",
+    "domain": "spring-boot",
+    "topic": "spring-security-deep",
+    "order": 9.1,
+    "title": "Spring Security: фильтр-цепочка и авторизация",
+    "summary": "SecurityFilterChain, аутентификация (UserDetailsService/PasswordEncoder), SecurityContext, авторизация запросов и CSRF/CORS/сессии.",
+    "relatedTags": ["spring-security", "security-filter-chain", "csrf"],
+    "related": ["sb-lesson-http-security", "sb-lesson-security-auth"],
+    "sections": [
+      {
+        "heading": "SecurityFilterChain",
+        "paragraphs": [
+          "Spring Security — это цепочка сервлет-фильтров ПЕРЕД DispatcherServlet (а не MVC-interceptor!). Запрос проходит через фильтры, каждый из которых отвечает за свой аспект: извлечь credentials, построить Authentication, проверить авторизацию, обработать отказ. Поэтому security срабатывает раньше контроллеров.",
+          "Современная конфигурация — это бин SecurityFilterChain (через HttpSecurity DSL). Старый WebSecurityConfigurerAdapter удалён в Spring Security 6, поэтому актуальные примеры — на бинах."
+        ],
+        "code": "@Bean\nSecurityFilterChain api(HttpSecurity http) throws Exception {\n    return http\n        .csrf(c -> c.disable())                 // stateless API\n        .sessionManagement(s -> s.sessionCreationPolicy(STATELESS))\n        .authorizeHttpRequests(a -> a\n            .requestMatchers(\"/actuator/health\").permitAll()\n            .requestMatchers(\"/admin/**\").hasRole(\"ADMIN\")\n            .anyRequest().authenticated())\n        .oauth2ResourceServer(o -> o.jwt(Customizer.withDefaults()))\n        .build();\n}"
+      },
+      {
+        "heading": "Аутентификация",
+        "paragraphs": [
+          "За проверку «кто ты» отвечает AuthenticationManager, делегирующий AuthenticationProvider'ам. Для логина по логину/паролю UserDetailsService загружает пользователя (из БД), а PasswordEncoder сверяет пароль.",
+          "Пароли ВСЕГДА хранят хешированными медленным алгоритмом с солью — BCrypt (или Argon2/scrypt). Никогда не хранить в открытом виде и не использовать быстрые хеши (MD5/SHA) — их перебирают мгновенно."
+        ]
+      },
+      {
+        "heading": "SecurityContext",
+        "paragraphs": [
+          "После успешной аутентификации результат — Authentication (с principal и authorities) — кладётся в SecurityContextHolder, который по умолчанию держит его в ThreadLocal текущего запроса. Отсюда его берут и фильтры авторизации, и прикладной код (@AuthenticationPrincipal).",
+          "В stateless API контекст не хранится между запросами в сессии — он восстанавливается на КАЖДЫЙ запрос из bearer-токена соответствующим фильтром. Из-за ThreadLocal контекст не «переезжает» в другой поток (@Async) без специальной настройки."
+        ]
+      },
+      {
+        "heading": "Авторизация запросов",
+        "paragraphs": [
+          "authorizeHttpRequests задаёт правила доступа по матчерам: requestMatchers(\"/admin/**\").hasRole(\"ADMIN\"), .authenticated(), .permitAll(). Правила проверяются по порядку — от частных к общему, а anyRequest() идёт последним.",
+          "Тонкость roles vs authorities: hasRole(\"ADMIN\") внутри проверяет authority \"ROLE_ADMIN\" (префикс ROLE_ добавляется автоматически), а hasAuthority(\"...\") сверяет строку как есть. Путаница с префиксом ROLE_ — частая причина «почему доступ не работает»."
+        ]
+      },
+      {
+        "heading": "CSRF, CORS, сессии",
+        "paragraphs": [
+          "CSRF-защита включена по умолчанию и нужна для stateful-сценариев (cookie/сессия, формы), где браузер сам шлёт credentials. Для stateless bearer-API (токен в заголовке Authorization, браузер не добавляет его автоматически) CSRF обычно отключают — и одновременно ставят session policy STATELESS.",
+          "CORS — это браузерная политика кросс-доменных запросов, а не авторизация; её настраивают в Security/MVC. XSS предотвращают на уровне вывода (экранирование, CSP) и тем, что чувствительные токены не кладут в доступное JS место."
+        ]
+      },
+      {
+        "heading": "На собеседовании",
+        "paragraphs": [
+          "Объясни, что Security — цепочка фильтров до DispatcherServlet (не interceptor), и конфигурируется бином SecurityFilterChain (адаптер удалён в SS6). Разбери аутентификацию (UserDetailsService + PasswordEncoder=BCrypt, пароли только хешированные), SecurityContext в ThreadLocal, авторизацию запросов с ловушкой ROLE_-префикса, и когда отключать CSRF (stateless bearer)."
+        ]
+      }
+    ]
+  },
+  {
+    "id": "sb-lesson-security-auth",
+    "domain": "spring-boot",
+    "topic": "spring-security-deep",
+    "order": 9.2,
+    "title": "Аутентификация: JWT, OAuth2/OIDC и method security",
+    "summary": "Структура и валидация JWT, проблема отзыва, роли OAuth2 и authorization code flow, OIDC, и авторизация на уровне методов.",
+    "relatedTags": ["jwt", "oauth2", "method-security"],
+    "related": ["sb-lesson-spring-security-deep", "sb-lesson-http-security"],
+    "sections": [
+      {
+        "heading": "JWT: структура и валидация",
+        "paragraphs": [
+          "JWT — самодостаточный токен из трёх частей через точку: header.payload.signature (каждая — base64url). В payload лежат claims (sub, iss, aud, exp, роли), а signature — подпись (HMAC на секрете или RSA/EC на паре ключей).",
+          "Resource server (ваше API) проверяет подпись, issuer (iss), audience (aud) и срок (exp), а затем маппит claims в authorities. Важно: payload ПОДПИСАН, но НЕ зашифрован — его может прочитать любой. Поэтому секреты в JWT не кладут."
+        ]
+      },
+      {
+        "heading": "Отзыв и refresh",
+        "paragraphs": [
+          "Цена stateless-самодостаточности: выданный JWT нельзя «отозвать» до истечения — сервер его не хранит и не отслеживает. Если токен украли, он валиден до exp.",
+          "Поэтому на практике используют короткоживущий access-токен (минуты) плюс долгоживущий refresh-токен, который хранится и может быть отозван на сервере; access обновляют по refresh. Для немедленного отзыва ведут blacklist/версионирование — это уже добавляет состояние, размывая «чистый stateless»."
+        ]
+      },
+      {
+        "heading": "OAuth2: роли и flow",
+        "paragraphs": [
+          "OAuth2 — протокол делегированного доступа с тремя ролями: authorization server выдаёт токены, resource server защищает API и проверяет токены (это типичная роль Spring-приложения, oauth2ResourceServer), client получает токен от имени пользователя.",
+          "Базовый сценарий — authorization code flow: пользователь логинится у authorization server, приложение получает короткоживущий code, меняет его на токены на бэкенде. Так пароль пользователя не проходит через ваше приложение."
+        ]
+      },
+      {
+        "heading": "OIDC",
+        "paragraphs": [
+          "OpenID Connect (OIDC) — слой identity поверх OAuth2. Если чистый OAuth2 — про ДОСТУП (authorization), то OIDC добавляет id_token (тоже JWT) с информацией о пользователе и нужен для ЛОГИНА (authentication) через внешнего провайдера (Google, Keycloak, Okta).",
+          "Различай: access_token — для вызова API, id_token — чтобы узнать, кто вошёл. Spring поддерживает обе роли (oauth2Login для клиента, oauth2ResourceServer для API)."
+        ]
+      },
+      {
+        "heading": "Method security",
+        "paragraphs": [
+          "Кроме авторизации по URL, права проверяют на уровне методов: @EnableMethodSecurity включает @PreAuthorize/@PostAuthorize (с выражениями SpEL) и @Secured. Это полезно, когда один сервисный метод вызывается из разных точек входа (REST, очередь, шедулер) — защита в одном месте.",
+          "Method security работает через AOP-прокси, поэтому наследует ту же ловушку self-invocation (вызов через this мимо прокси не проверяется). И не ограничивайтесь ролями — часто нужна проверка владения объектом (ownership)."
+        ],
+        "code": "@PreAuthorize(\"hasAuthority('ORDER_READ') and @acl.canReadOrder(#id)\") // роль + ownership\nOrderDto getOrder(long id) { /* ... */ }"
+      },
+      {
+        "heading": "На собеседовании",
+        "paragraphs": [
+          "Опиши JWT (header.payload.signature, подписан но не зашифрован → без секретов; сервер проверяет подпись/iss/aud/exp) и главную проблему — отзыв (короткий access + refresh). Различи роли OAuth2 (resource server/client/authorization server) и authorization code flow, и OIDC как identity-слой (id_token, логин) против OAuth2 (доступ). Заверши method security через AOP (@PreAuthorize, self-invocation, ownership, а не только роли)."
+        ]
+      }
+    ]
+  }
+]

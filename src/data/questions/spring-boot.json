@@ -1,0 +1,3161 @@
+[
+  {
+    "id": "sb-001",
+    "domain": "spring-boot",
+    "difficulty": 1,
+    "type": "single",
+    "mode": "definition",
+    "prompt": "Как соотносятся IoC и DI в Spring?",
+    "tags": [
+      "ioc",
+      "di",
+      "core"
+    ],
+    "options": [
+      {
+        "id": "a",
+        "text": "DI — это форма IoC: контейнер внедряет зависимости извне, а не объект создаёт их сам"
+      },
+      {
+        "id": "b",
+        "text": "IoC — это частный случай DI"
+      },
+      {
+        "id": "c",
+        "text": "Это полные синонимы"
+      },
+      {
+        "id": "d",
+        "text": "IoC про базы данных, DI про web-слой"
+      }
+    ],
+    "correctOptionIds": [
+      "a"
+    ],
+    "answerGuide": {
+      "short": "IoC — контейнер управляет объектами; DI — конкретный способ передать зависимости извне.",
+      "normal": "IoC — общий принцип (контроль создания объектов инвертирован контейнеру). DI — реализация: Spring внедряет зависимости в бины. Выгода — слабая связанность и тестируемость.",
+      "traps": [
+        "Ставить знак равенства между IoC и DI.",
+        "Сводить DI только к @Autowired на поле."
+      ],
+      "followUps": [
+        "Почему constructor injection лучше field injection?",
+        "Что такое scope бина?"
+      ]
+    },
+    "meta": {
+      "verified": true,
+      "source": "seed",
+      "lastReviewedAt": "2026-05-21",
+      "reviewer": "seed"
+    }
+  },
+  {
+    "id": "sb-002",
+    "domain": "spring-boot",
+    "difficulty": 2,
+    "type": "single",
+    "mode": "definition",
+    "prompt": "Какая аннотация объединяет @Controller и @ResponseBody, чтобы методы возвращали данные прямо в тело ответа?",
+    "tags": [
+      "web",
+      "rest",
+      "annotations"
+    ],
+    "options": [
+      {
+        "id": "a",
+        "text": "@Controller"
+      },
+      {
+        "id": "b",
+        "text": "@RestController"
+      },
+      {
+        "id": "c",
+        "text": "@RequestMapping"
+      },
+      {
+        "id": "d",
+        "text": "@Service"
+      }
+    ],
+    "correctOptionIds": [
+      "b"
+    ],
+    "answerGuide": {
+      "short": "@RestController = @Controller + @ResponseBody.",
+      "normal": "@RestController помечает класс как REST-контроллер: возвращаемые объекты сериализуются (обычно в JSON) прямо в тело ответа, без отдельного @ResponseBody на каждом методе.",
+      "traps": [
+        "Путать @RestController с @Controller (последний по умолчанию резолвит view)."
+      ],
+      "followUps": [
+        "Чем @RestController отличается от @Controller?",
+        "Как настроить сериализацию в JSON?"
+      ]
+    },
+    "meta": {
+      "verified": true,
+      "source": "seed",
+      "lastReviewedAt": "2026-05-21",
+      "reviewer": "seed"
+    }
+  },
+  {
+    "id": "sb-003",
+    "domain": "spring-boot",
+    "difficulty": 3,
+    "type": "multiple",
+    "mode": "comparison",
+    "prompt": "Какие преимущества у constructor injection по сравнению с field injection? Выберите все верные.",
+    "tags": [
+      "di",
+      "best-practices"
+    ],
+    "options": [
+      {
+        "id": "a",
+        "text": "Позволяет объявлять зависимости как final"
+      },
+      {
+        "id": "b",
+        "text": "Гарантирует полностью инициализированный объект сразу после создания"
+      },
+      {
+        "id": "c",
+        "text": "Упрощает unit-тесты: зависимости передаются без Spring-контекста"
+      },
+      {
+        "id": "d",
+        "text": "Позволяет внедрять зависимости в приватные поля без конструктора через рефлексию"
+      }
+    ],
+    "correctOptionIds": [
+      "a",
+      "b",
+      "c"
+    ],
+    "answerGuide": {
+      "short": "Constructor injection: final-поля, полностью готовый объект, лёгкие тесты без контекста.",
+      "normal": "Плюсы: неизменяемость (final), отсутствие наполовину собранных объектов, явные обязательные зависимости и простое тестирование (new + моки). Вариант d описывает именно field injection, а не его преимущество.",
+      "traps": [
+        "Считать field injection удобнее из-за меньшего кода — это скрывает зависимости и усложняет тесты."
+      ],
+      "followUps": [
+        "Как тестировать бин без поднятия контекста?",
+        "Что делать с циклическими зависимостями?"
+      ]
+    },
+    "meta": {
+      "verified": true,
+      "source": "seed",
+      "lastReviewedAt": "2026-05-21",
+      "reviewer": "seed"
+    }
+  },
+  {
+    "id": "sb-004",
+    "domain": "spring-boot",
+    "difficulty": 2,
+    "type": "single",
+    "mode": "definition",
+    "prompt": "Что такое Spring Bean?",
+    "tags": [
+      "bean",
+      "lifecycle",
+      "core"
+    ],
+    "options": [
+      {
+        "id": "a",
+        "text": "Любой Java-объект, созданный через new"
+      },
+      {
+        "id": "b",
+        "text": "Объект, созданный и управляемый контейнером (создание, внедрение зависимостей, init/destroy)"
+      },
+      {
+        "id": "c",
+        "text": "Только класс с аннотацией @Entity"
+      },
+      {
+        "id": "d",
+        "text": "Поток выполнения внутри Spring"
+      }
+    ],
+    "correctOptionIds": [
+      "b"
+    ],
+    "answerGuide": {
+      "short": "Бин — объект под управлением контейнера; цикл: создание → DI → init → работа → destroy.",
+      "normal": "Опиши, что контейнер создаёт бин, внедряет зависимости, вызывает @PostConstruct, держит его согласно scope и при остановке вызывает @PreDestroy.",
+      "traps": [
+        "Считать, что prototype-бины уничтожаются контейнером.",
+        "Путать жизненный цикл бина и контекста."
+      ],
+      "followUps": [
+        "Чем @PostConstruct отличается от InitializingBean?",
+        "Что такое BeanPostProcessor?"
+      ]
+    },
+    "meta": {
+      "verified": true,
+      "source": "seed",
+      "lastReviewedAt": "2026-05-22",
+      "reviewer": "seed"
+    }
+  },
+  {
+    "id": "sb-005",
+    "domain": "spring-boot",
+    "difficulty": 4,
+    "type": "open",
+    "mode": "scenario",
+    "prompt": "Как работает @Transactional и почему вызов метода внутри того же класса (self-invocation) может не открыть транзакцию?",
+    "tags": [
+      "transactions",
+      "aop",
+      "proxy"
+    ],
+    "rubric": [
+      {
+        "id": "proxy",
+        "title": "Прокси-механизм",
+        "description": "Spring оборачивает бин в прокси (AOP); транзакция начинается, когда вызов идёт через прокси.",
+        "required": true,
+        "weight": 2,
+        "keywords": [
+          "прокси",
+          "proxy",
+          "aop",
+          "обёртка"
+        ]
+      },
+      {
+        "id": "self-invocation",
+        "title": "Self-invocation",
+        "description": "Вызов this.method() идёт мимо прокси, поэтому аспект транзакции не срабатывает.",
+        "required": true,
+        "weight": 2,
+        "keywords": [
+          "this",
+          "self",
+          "мимо прокси",
+          "не срабатывает"
+        ]
+      },
+      {
+        "id": "fix",
+        "title": "Как обойти",
+        "description": "Вынести метод в отдельный бин, self-inject прокси или использовать AspectJ.",
+        "required": false,
+        "weight": 1,
+        "keywords": [
+          "отдельный бин",
+          "self-inject",
+          "aspectj"
+        ]
+      }
+    ],
+    "answerGuide": {
+      "short": "@Transactional работает через прокси; this.method() обходит прокси — транзакция не стартует.",
+      "normal": "Объясни проксирование (по умолчанию JDK/CGLIB), что аспект перехватывает внешний вызов, а внутренний вызов того же объекта идёт напрямую. Решение — вызвать через другой бин/прокси.",
+      "traps": [
+        "Ставить @Transactional на private-метод.",
+        "Ожидать новую транзакцию при self-invocation с REQUIRES_NEW."
+      ],
+      "followUps": [
+        "Какие бывают propagation?",
+        "Чем отличается JDK-прокси от CGLIB?"
+      ]
+    },
+    "meta": {
+      "verified": true,
+      "source": "seed",
+      "lastReviewedAt": "2026-05-22",
+      "reviewer": "seed"
+    }
+  },
+  {
+    "id": "sb-006",
+    "domain": "spring-boot",
+    "difficulty": 3,
+    "type": "single",
+    "mode": "definition",
+    "prompt": "Какой scope у Spring-бина по умолчанию?",
+    "tags": [
+      "bean",
+      "scope"
+    ],
+    "options": [
+      {
+        "id": "a",
+        "text": "prototype"
+      },
+      {
+        "id": "b",
+        "text": "singleton"
+      },
+      {
+        "id": "c",
+        "text": "request"
+      },
+      {
+        "id": "d",
+        "text": "session"
+      }
+    ],
+    "correctOptionIds": [
+      "b"
+    ],
+    "answerGuide": {
+      "short": "По умолчанию singleton — один экземпляр на контейнер.",
+      "normal": "Singleton-бин создаётся один раз на ApplicationContext и переиспользуется. prototype создаёт новый экземпляр на каждый запрос из контейнера; request/session — веб-scope.",
+      "traps": [
+        "Путать singleton Spring с паттерном Singleton (один на JVM)."
+      ],
+      "followUps": [
+        "Чем prototype отличается от singleton?",
+        "Как singleton-бин держит prototype-зависимость?"
+      ]
+    },
+    "meta": {
+      "verified": true,
+      "source": "seed",
+      "lastReviewedAt": "2026-05-22",
+      "reviewer": "seed"
+    }
+  },
+  {
+    "id": "sb-007",
+    "domain": "spring-boot",
+    "difficulty": 3,
+    "type": "single",
+    "mode": "comparison",
+    "prompt": "Чем @Component отличается от @Bean?",
+    "tags": [
+      "beans",
+      "configuration"
+    ],
+    "options": [
+      {
+        "id": "a",
+        "text": "@Component для чужих классов, @Bean для своих"
+      },
+      {
+        "id": "b",
+        "text": "Это одно и то же"
+      },
+      {
+        "id": "c",
+        "text": "@Component — на своём классе (через component-scan); @Bean — метод в @Configuration для чужого/библиотечного класса"
+      },
+      {
+        "id": "d",
+        "text": "@Bean можно ставить только на интерфейс"
+      }
+    ],
+    "correctOptionIds": [
+      "c"
+    ],
+    "answerGuide": {
+      "short": "@Component — на своём классе через scan; @Bean — фабричный метод в конфиге, удобен для чужих классов.",
+      "normal": "Сравни: @Component автоматически детектируется сканированием, @Bean даёт явный контроль над созданием объекта в @Configuration. Для библиотечных типов остаётся @Bean.",
+      "traps": [
+        "Думать, что @Bean можно ставить на класс.",
+        "Сканировать пакеты, где лежат только сторонние классы."
+      ],
+      "followUps": [
+        "Что делает @Configuration?",
+        "Как зарегистрировать сторонний класс как бин?"
+      ]
+    },
+    "meta": {
+      "verified": true,
+      "source": "seed",
+      "lastReviewedAt": "2026-05-22",
+      "reviewer": "seed"
+    }
+  },
+  {
+    "id": "sb-008",
+    "domain": "spring-boot",
+    "difficulty": 4,
+    "type": "single",
+    "mode": "scenario",
+    "prompt": "При каком исключении @Transactional по умолчанию откатывает транзакцию?",
+    "tags": [
+      "transactions",
+      "rollback"
+    ],
+    "options": [
+      {
+        "id": "a",
+        "text": "При любом исключении, включая checked"
+      },
+      {
+        "id": "b",
+        "text": "Только при unchecked (RuntimeException) и Error"
+      },
+      {
+        "id": "c",
+        "text": "Только при checked-исключениях"
+      },
+      {
+        "id": "d",
+        "text": "Никогда автоматически — нужно вызывать rollback вручную"
+      }
+    ],
+    "correctOptionIds": [
+      "b"
+    ],
+    "answerGuide": {
+      "short": "По умолчанию rollback на RuntimeException и Error; на checked — нет.",
+      "normal": "Spring откатывает транзакцию при unchecked-исключениях. Для отката на checked нужно указать rollbackFor. Это частая ловушка: checked-исключение по умолчанию коммитит транзакцию.",
+      "traps": [
+        "Ожидать rollback на checked без rollbackFor."
+      ],
+      "followUps": [
+        "Как настроить rollback на checked?",
+        "Что делает noRollbackFor?"
+      ]
+    },
+    "meta": {
+      "verified": true,
+      "source": "seed",
+      "lastReviewedAt": "2026-05-22",
+      "reviewer": "seed"
+    }
+  },
+  {
+    "id": "sb-009",
+    "domain": "spring-boot",
+    "difficulty": 3,
+    "type": "single",
+    "mode": "scenario",
+    "prompt": "Как разрешить неоднозначность, когда для внедрения подходят несколько бинов одного типа?",
+    "tags": [
+      "di",
+      "annotations"
+    ],
+    "options": [
+      {
+        "id": "a",
+        "text": "Сделать поле static"
+      },
+      {
+        "id": "b",
+        "text": "Использовать @Qualifier или пометить один бин @Primary"
+      },
+      {
+        "id": "c",
+        "text": "Это всегда ошибка, обойти нельзя"
+      },
+      {
+        "id": "d",
+        "text": "Переименовать класс реализации"
+      }
+    ],
+    "correctOptionIds": [
+      "b"
+    ],
+    "answerGuide": {
+      "short": "@Qualifier указывает конкретный бин; @Primary задаёт бин по умолчанию.",
+      "normal": "При нескольких кандидатах одного типа Spring не знает, какой внедрить. @Primary помечает предпочтительный, @Qualifier(\"name\") выбирает конкретный в точке внедрения.",
+      "traps": [
+        "Полагаться на имя поля как на @Qualifier неявно.",
+        "Иметь два @Primary одного типа."
+      ],
+      "followUps": [
+        "Чем @Qualifier отличается от @Primary?",
+        "Как внедрить все бины типа списком?"
+      ]
+    },
+    "meta": {
+      "verified": true,
+      "source": "seed",
+      "lastReviewedAt": "2026-05-22",
+      "reviewer": "seed"
+    }
+  },
+  {
+    "id": "sb-010",
+    "domain": "spring-boot",
+    "difficulty": 3,
+    "type": "single",
+    "mode": "definition",
+    "prompt": "Как работает автоконфигурация Spring Boot?",
+    "tags": [
+      "spring-boot",
+      "autoconfiguration"
+    ],
+    "options": [
+      {
+        "id": "a",
+        "text": "Boot случайно подбирает бины при старте"
+      },
+      {
+        "id": "b",
+        "text": "Все возможные бины создаются всегда"
+      },
+      {
+        "id": "c",
+        "text": "Конфигурация читается только из XML"
+      },
+      {
+        "id": "d",
+        "text": "Список авто-конфигов из AutoConfiguration.imports применяется по условиям @ConditionalOnClass/OnMissingBean/OnProperty"
+      }
+    ],
+    "correctOptionIds": [
+      "d"
+    ],
+    "answerGuide": {
+      "short": "Boot по условиям подключает готовые конфигурации; твой бин переопределяет дефолт.",
+      "normal": "Объясни цепочку: @SpringBootApplication → @EnableAutoConfiguration → набор авто-конфигов, каждый под @Conditional. Если нужного класса нет или бин уже определён — авто-настройка отступает.",
+      "traps": [
+        "Думать, что автоконфигурация — это магия без правил.",
+        "Дублировать бины, конфликтуя с авто."
+      ],
+      "followUps": [
+        "Как отключить конкретную автоконфигурацию?",
+        "Где Boot ищет список автоконфигураций?"
+      ]
+    },
+    "meta": {
+      "verified": true,
+      "source": "seed",
+      "lastReviewedAt": "2026-05-22",
+      "reviewer": "seed"
+    }
+  },
+  {
+    "id": "sb-011",
+    "domain": "spring-boot",
+    "difficulty": 4,
+    "type": "open",
+    "mode": "definition",
+    "prompt": "Что такое AOP в Spring и его ключевые понятия?",
+    "tags": [
+      "aop"
+    ],
+    "rubric": [
+      {
+        "id": "aspect",
+        "title": "Aspect и advice",
+        "description": "Aspect — модуль сквозной логики; advice — что и когда выполнить (before/after/around).",
+        "required": true,
+        "weight": 2,
+        "keywords": [
+          "aspect",
+          "advice",
+          "before",
+          "after",
+          "around"
+        ]
+      },
+      {
+        "id": "pointcut",
+        "title": "Pointcut и join point",
+        "description": "Pointcut — где применять advice; join point — конкретная точка выполнения (вызов метода).",
+        "required": true,
+        "weight": 2,
+        "keywords": [
+          "pointcut",
+          "join point",
+          "точка"
+        ]
+      },
+      {
+        "id": "proxy",
+        "title": "Реализация",
+        "description": "Spring AOP работает через прокси, поэтому действует на вызовы через бин-прокси.",
+        "required": false,
+        "weight": 1,
+        "keywords": [
+          "прокси",
+          "proxy"
+        ]
+      }
+    ],
+    "answerGuide": {
+      "short": "AOP выносит сквозную логику в аспекты: advice (что/когда), pointcut (где), join point (точка).",
+      "normal": "Опиши aspect/advice/pointcut/join point на примере логирования или транзакций. Подчеркни, что Spring AOP — прокси-основанный, отсюда ограничения (self-invocation).",
+      "traps": [
+        "Ожидать перехвата self-invocation.",
+        "Путать advice и pointcut."
+      ],
+      "followUps": [
+        "Чем around отличается от before/after?",
+        "Где типично применяют AOP?"
+      ]
+    },
+    "meta": {
+      "verified": true,
+      "source": "seed",
+      "lastReviewedAt": "2026-05-22",
+      "reviewer": "seed"
+    }
+  },
+  {
+    "id": "sb-012",
+    "domain": "spring-boot",
+    "difficulty": 3,
+    "type": "single",
+    "mode": "definition",
+    "prompt": "Зачем нужны Spring profiles?",
+    "tags": [
+      "spring-boot",
+      "profiles"
+    ],
+    "options": [
+      {
+        "id": "a",
+        "text": "Ускорять старт приложения"
+      },
+      {
+        "id": "b",
+        "text": "Активировать разные наборы бинов и настроек под окружение (dev/test/prod)"
+      },
+      {
+        "id": "c",
+        "text": "Управлять памятью JVM"
+      },
+      {
+        "id": "d",
+        "text": "Полностью заменять Maven-профили"
+      }
+    ],
+    "correctOptionIds": [
+      "b"
+    ],
+    "answerGuide": {
+      "short": "Profiles переключают бины и конфигурацию под окружение.",
+      "normal": "Profile (@Profile, spring.profiles.active) включает свой набор бинов и application-{profile}.yml. Так dev и prod используют разные настройки без правки кода.",
+      "traps": [
+        "Хранить секреты prod в общем профиле.",
+        "Путать с Maven-профилями сборки."
+      ],
+      "followUps": [
+        "Как задать активный профиль?",
+        "Что такое application-{profile}.yml?"
+      ]
+    },
+    "meta": {
+      "verified": true,
+      "source": "seed",
+      "lastReviewedAt": "2026-05-22",
+      "reviewer": "seed"
+    }
+  },
+  {
+    "id": "sb-013",
+    "domain": "spring-boot",
+    "difficulty": 4,
+    "type": "open",
+    "mode": "scenario",
+    "prompt": "Как централизованно обрабатывать исключения в REST API на Spring?",
+    "tags": [
+      "web",
+      "rest",
+      "exceptions"
+    ],
+    "rubric": [
+      {
+        "id": "advice",
+        "title": "Глобальный обработчик",
+        "description": "@RestControllerAdvice (или @ControllerAdvice) собирает обработку исключений в одном месте.",
+        "required": true,
+        "weight": 2,
+        "keywords": [
+          "controlleradvice",
+          "restcontrolleradvice",
+          "глобальн"
+        ]
+      },
+      {
+        "id": "handler",
+        "title": "@ExceptionHandler",
+        "description": "Метод с @ExceptionHandler ловит конкретный тип исключения и формирует ответ.",
+        "required": true,
+        "weight": 2,
+        "keywords": [
+          "exceptionhandler",
+          "обработчик",
+          "тип исключения"
+        ]
+      },
+      {
+        "id": "status",
+        "title": "Статус и формат",
+        "description": "Возвращай корректный HTTP-статус (ResponseEntity/@ResponseStatus) и единый формат ошибки.",
+        "required": false,
+        "weight": 1,
+        "keywords": [
+          "responseentity",
+          "responsestatus",
+          "статус",
+          "формат ошибки"
+        ]
+      }
+    ],
+    "answerGuide": {
+      "short": "@RestControllerAdvice + @ExceptionHandler — глобально ловят исключения и отдают нужный статус.",
+      "normal": "Опиши: класс с @RestControllerAdvice, методы @ExceptionHandler(SomeException.class), маппинг на HTTP-статус через ResponseEntity или @ResponseStatus, единый JSON ошибки.",
+      "traps": [
+        "Обрабатывать исключения в каждом контроллере по отдельности.",
+        "Возвращать 200 при ошибке."
+      ],
+      "followUps": [
+        "Что такое ProblemDetail?",
+        "Как залогировать ошибку, но не отдать её детали клиенту?"
+      ]
+    },
+    "meta": {
+      "verified": true,
+      "source": "seed",
+      "lastReviewedAt": "2026-05-22",
+      "reviewer": "seed"
+    }
+  },
+  {
+    "id": "sb-014",
+    "domain": "spring-boot",
+    "difficulty": 3,
+    "type": "single",
+    "mode": "definition",
+    "prompt": "Что даёт Spring Data JPA?",
+    "tags": [
+      "spring-data",
+      "jpa",
+      "databases"
+    ],
+    "options": [
+      {
+        "id": "a",
+        "text": "Генерирует реализацию репозитория из интерфейса; запросы выводятся из имени метода (findByEmail) или задаются @Query"
+      },
+      {
+        "id": "b",
+        "text": "Заменяет базу данных встроенным хранилищем"
+      },
+      {
+        "id": "c",
+        "text": "Требует писать SQL вручную для каждой операции"
+      },
+      {
+        "id": "d",
+        "text": "Работает только с NoSQL"
+      }
+    ],
+    "correctOptionIds": [
+      "a"
+    ],
+    "answerGuide": {
+      "short": "Репозитории-интерфейсы дают CRUD и запросы по имени метода (findByX); сложное — через @Query.",
+      "normal": "Объясни, что наследование JpaRepository<T, ID> даёт готовый CRUD, а методы вида findByEmail парсятся в запрос. Для нетривиального — @Query, для страниц — Pageable.",
+      "traps": [
+        "Тащить целые сущности там, где нужна проекция.",
+        "Игнорировать N+1 в репозиторных выборках."
+      ],
+      "followUps": [
+        "Как сделать постраничную выборку?",
+        "Чем JpaRepository отличается от CrudRepository?"
+      ]
+    },
+    "meta": {
+      "verified": true,
+      "source": "seed",
+      "lastReviewedAt": "2026-05-22",
+      "reviewer": "seed"
+    }
+  },
+  {
+    "id": "sb-015",
+    "domain": "spring-boot",
+    "difficulty": 3,
+    "type": "single",
+    "mode": "definition",
+    "prompt": "Что такое starter в Spring Boot?",
+    "tags": [
+      "spring-boot",
+      "autoconfiguration"
+    ],
+    "options": [
+      {
+        "id": "a",
+        "text": "Класс с методом main"
+      },
+      {
+        "id": "b",
+        "text": "Набор согласованных зависимостей, подключаемых одним пакетом"
+      },
+      {
+        "id": "c",
+        "text": "Аннотация запуска приложения"
+      },
+      {
+        "id": "d",
+        "text": "Профиль окружения"
+      }
+    ],
+    "correctOptionIds": [
+      "b"
+    ],
+    "answerGuide": {
+      "short": "Starter — это набор согласованных зависимостей (например, spring-boot-starter-web).",
+      "normal": "Starter одним пакетом подтягивает совместимые библиотеки под задачу (web, data-jpa, security), избавляя от ручного подбора версий. Вместе с автоконфигурацией это и есть «магия» Boot.",
+      "traps": [
+        "Путать starter с @SpringBootApplication.",
+        "Думать, что starter содержит код приложения."
+      ],
+      "followUps": [
+        "Как starter связан с автоконфигурацией?",
+        "Можно ли сделать свой starter?"
+      ]
+    },
+    "meta": {
+      "verified": true,
+      "source": "seed",
+      "lastReviewedAt": "2026-05-22",
+      "reviewer": "seed"
+    }
+  },
+  {
+    "id": "sb-016",
+    "domain": "spring-boot",
+    "difficulty": 3,
+    "type": "single",
+    "mode": "definition",
+    "prompt": "Как Spring Boot работает с внешней конфигурацией?",
+    "tags": [
+      "spring-boot",
+      "configuration"
+    ],
+    "options": [
+      {
+        "id": "a",
+        "text": "Только из application.properties, без переменных окружения"
+      },
+      {
+        "id": "b",
+        "text": "Свойства из application.yml/env/аргументов с приоритетами; читаются через @Value или @ConfigurationProperties"
+      },
+      {
+        "id": "c",
+        "text": "Конфигурация зашита в код и меняется пересборкой"
+      },
+      {
+        "id": "d",
+        "text": "Только через системные переменные JVM"
+      }
+    ],
+    "correctOptionIds": [
+      "b"
+    ],
+    "answerGuide": {
+      "short": "Свойства из yml/env/args читают через @Value (точечно) или @ConfigurationProperties (в объект).",
+      "normal": "Опиши источники и их приоритет (env и аргументы переопределяют файл), @Value для отдельных значений и @ConfigurationProperties для типобезопасной привязки группы настроек.",
+      "traps": [
+        "Хардкодить конфигурацию в коде.",
+        "Тащить десятки @Value вместо одного @ConfigurationProperties."
+      ],
+      "followUps": [
+        "Каков порядок переопределения источников?",
+        "Как валидировать конфигурацию?"
+      ]
+    },
+    "meta": {
+      "verified": true,
+      "source": "seed",
+      "lastReviewedAt": "2026-05-22",
+      "reviewer": "seed"
+    }
+  },
+  {
+    "id": "sb-017",
+    "domain": "spring-boot",
+    "difficulty": 3,
+    "type": "single",
+    "mode": "comparison",
+    "prompt": "Чем @ConfigurationProperties удобнее @Value для группы настроек?",
+    "tags": [
+      "spring-boot",
+      "configuration"
+    ],
+    "options": [
+      {
+        "id": "a",
+        "text": "Работает быстрее в рантайме"
+      },
+      {
+        "id": "b",
+        "text": "Привязывает целую группу свойств к типобезопасному объекту с поддержкой валидации"
+      },
+      {
+        "id": "c",
+        "text": "Не требует геттеров и сеттеров"
+      },
+      {
+        "id": "d",
+        "text": "Единственный способ читать application.yml"
+      }
+    ],
+    "correctOptionIds": [
+      "b"
+    ],
+    "answerGuide": {
+      "short": "@ConfigurationProperties связывает целый префикс настроек с объектом и поддерживает валидацию.",
+      "normal": "@Value хорош для одиночных значений, но для группы настроек (app.*) удобнее @ConfigurationProperties: одна типобезопасная структура, релаксированная привязка имён и валидация через @Validated.",
+      "traps": [
+        "Использовать множество @Value там, где напрашивается объект настроек."
+      ],
+      "followUps": [
+        "Как включить валидацию свойств?",
+        "Что такое relaxed binding?"
+      ]
+    },
+    "meta": {
+      "verified": true,
+      "source": "seed",
+      "lastReviewedAt": "2026-05-22",
+      "reviewer": "seed"
+    }
+  },
+  {
+    "id": "sb-018",
+    "domain": "spring-boot",
+    "difficulty": 3,
+    "type": "single",
+    "mode": "comparison",
+    "prompt": "Чем HTTP GET отличается от POST?",
+    "tags": [
+      "web",
+      "http",
+      "rest"
+    ],
+    "options": [
+      {
+        "id": "a",
+        "text": "GET изменяет данные, POST читает"
+      },
+      {
+        "id": "b",
+        "text": "Оба идемпотентны и кэшируются одинаково"
+      },
+      {
+        "id": "c",
+        "text": "GET — безопасный идемпотентный запрос на чтение (кэшируем); POST отправляет данные на обработку и не идемпотентен"
+      },
+      {
+        "id": "d",
+        "text": "POST можно только из формы, GET — только из JS"
+      }
+    ],
+    "correctOptionIds": [
+      "c"
+    ],
+    "answerGuide": {
+      "short": "GET читает ресурс и должен быть safe/idempotent; POST отправляет данные на обработку и не обязан быть идемпотентным.",
+      "normal": "GET не должен менять состояние сервера по смыслу HTTP. POST часто используют для создания или команд. Конфиденциальность даёт HTTPS, а не выбор метода.",
+      "traps": [
+        "Считать POST автоматически безопасным.",
+        "Менять состояние через GET endpoint."
+      ],
+      "followUps": [
+        "Чем PUT отличается от PATCH?",
+        "Что значит idempotent?"
+      ]
+    },
+    "meta": {
+      "verified": true,
+      "source": "enhorse/java-interview topics, paraphrased",
+      "lastReviewedAt": "2026-05-22",
+      "reviewer": "codex"
+    }
+  },
+  {
+    "id": "sb-019",
+    "domain": "spring-boot",
+    "difficulty": 4,
+    "type": "single",
+    "mode": "comparison",
+    "prompt": "Чем аутентификация отличается от авторизации?",
+    "tags": [
+      "web",
+      "security",
+      "auth"
+    ],
+    "options": [
+      {
+        "id": "a",
+        "text": "Аутентификация про права, авторизация про личность"
+      },
+      {
+        "id": "b",
+        "text": "Это синонимы"
+      },
+      {
+        "id": "c",
+        "text": "Авторизация всегда выполняется до аутентификации"
+      },
+      {
+        "id": "d",
+        "text": "Аутентификация — «кто ты» (личность); авторизация — «что тебе можно» (права и доступ)"
+      }
+    ],
+    "correctOptionIds": [
+      "d"
+    ],
+    "answerGuide": {
+      "short": "Аутентификация отвечает «кто ты?», авторизация — «что тебе можно?».",
+      "normal": "Логин/пароль, token или certificate подтверждают identity. После этого система проверяет роли, permissions или ownership ресурса.",
+      "traps": [
+        "Называть выдачу прав аутентификацией.",
+        "Проверять только роль и забывать ownership конкретного ресурса."
+      ],
+      "followUps": [
+        "Чем session auth отличается от JWT?",
+        "Что такое RBAC и ABAC?"
+      ]
+    },
+    "meta": {
+      "verified": true,
+      "source": "enhorse/java-interview topics, paraphrased",
+      "lastReviewedAt": "2026-05-22",
+      "reviewer": "codex"
+    }
+  },
+  {
+    "id": "sb-020",
+    "domain": "spring-boot",
+    "difficulty": 4,
+    "type": "single",
+    "mode": "comparison",
+    "prompt": "Чем cookie отличается от server-side session?",
+    "tags": [
+      "web",
+      "cookies",
+      "session"
+    ],
+    "options": [
+      {
+        "id": "a",
+        "text": "Cookie хранится у клиента и шлётся браузером; server-side session хранит состояние на сервере, а cookie несёт лишь session id"
+      },
+      {
+        "id": "b",
+        "text": "Session хранится у клиента, cookie — на сервере"
+      },
+      {
+        "id": "c",
+        "text": "Это одно и то же"
+      },
+      {
+        "id": "d",
+        "text": "Cookie нельзя использовать для сессий"
+      }
+    ],
+    "correctOptionIds": [
+      "a"
+    ],
+    "answerGuide": {
+      "short": "Cookie хранится у клиента; session state обычно хранится на сервере и связывается cookie с session id.",
+      "normal": "В cookie не стоит хранить секреты в открытом виде. Для session-cookie важны HttpOnly, Secure, SameSite и корректный срок жизни.",
+      "traps": [
+        "Класть чувствительные данные в cookie без защиты.",
+        "Считать session stateless."
+      ],
+      "followUps": [
+        "Что такое CSRF?",
+        "Как работает JWT auth?"
+      ]
+    },
+    "meta": {
+      "verified": true,
+      "source": "enhorse/java-interview topics, paraphrased",
+      "lastReviewedAt": "2026-05-22",
+      "reviewer": "codex"
+    }
+  },
+  {
+    "id": "sb-021",
+    "domain": "spring-boot",
+    "difficulty": 3,
+    "type": "single",
+    "mode": "definition",
+    "prompt": "Что делает HTTP status 404?",
+    "tags": [
+      "web",
+      "http",
+      "status-code"
+    ],
+    "options": [
+      {
+        "id": "a",
+        "text": "Успешное создание ресурса"
+      },
+      {
+        "id": "b",
+        "text": "Ресурс не найден"
+      },
+      {
+        "id": "c",
+        "text": "Ошибка сервера при обработке"
+      },
+      {
+        "id": "d",
+        "text": "Клиент не аутентифицирован"
+      }
+    ],
+    "correctOptionIds": [
+      "b"
+    ],
+    "answerGuide": {
+      "short": "404 Not Found означает, что запрошенный ресурс не найден.",
+      "normal": "404 относится к 4xx client errors. Для успешного создания обычно 201, для серверной ошибки 500, для отсутствующей аутентификации 401.",
+      "traps": [
+        "Возвращать 500 на обычный not found.",
+        "Путать 401 и 403."
+      ],
+      "followUps": [
+        "Чем 401 отличается от 403?",
+        "Когда возвращать 409 Conflict?"
+      ]
+    },
+    "meta": {
+      "verified": true,
+      "source": "enhorse/java-interview topics, paraphrased",
+      "lastReviewedAt": "2026-05-22",
+      "reviewer": "codex"
+    }
+  },
+  {
+    "id": "sb-022",
+    "domain": "spring-boot",
+    "difficulty": 4,
+    "type": "single",
+    "mode": "definition",
+    "prompt": "Каков жизненный цикл сервлета?",
+    "tags": [
+      "servlet",
+      "web",
+      "lifecycle"
+    ],
+    "options": [
+      {
+        "id": "a",
+        "text": "Новый сервлет создаётся на каждый запрос"
+      },
+      {
+        "id": "b",
+        "text": "Контейнер вызывает init() один раз → service()/doGet/doPost на каждый запрос → destroy() при выгрузке"
+      },
+      {
+        "id": "c",
+        "text": "init() вызывается на каждый запрос"
+      },
+      {
+        "id": "d",
+        "text": "destroy() вызывается после каждого запроса"
+      }
+    ],
+    "correctOptionIds": [
+      "b"
+    ],
+    "answerGuide": {
+      "short": "Servlet — обработчик запросов в контейнере; lifecycle: init, service/doGet/doPost, destroy.",
+      "normal": "Servlet container управляет созданием, маппингом, потоками и вызовами lifecycle methods. Поля servlet должны быть потокобезопасны, потому что запросы идут параллельно.",
+      "traps": [
+        "Хранить request-specific mutable state в поле servlet.",
+        "Думать, что на каждый запрос создаётся новый servlet instance."
+      ],
+      "followUps": [
+        "Чем ServletConfig отличается от ServletContext?",
+        "Что делает filter?"
+      ]
+    },
+    "meta": {
+      "verified": true,
+      "source": "enhorse/java-interview topics, paraphrased",
+      "lastReviewedAt": "2026-05-22",
+      "reviewer": "codex"
+    }
+  },
+  {
+    "id": "sb-023",
+    "domain": "spring-boot",
+    "difficulty": 4,
+    "type": "single",
+    "mode": "comparison",
+    "prompt": "Чем forward отличается от sendRedirect?",
+    "tags": [
+      "servlet",
+      "web",
+      "redirect"
+    ],
+    "options": [
+      {
+        "id": "a",
+        "text": "forward меняет URL, redirect — нет"
+      },
+      {
+        "id": "b",
+        "text": "Оба делают новый запрос браузера"
+      },
+      {
+        "id": "c",
+        "text": "forward — серверная передача в рамках того же запроса (URL не меняется); redirect — ответ 3xx, клиент делает новый запрос (URL меняется)"
+      },
+      {
+        "id": "d",
+        "text": "redirect работает только внутри сервера"
+      }
+    ],
+    "correctOptionIds": [
+      "c"
+    ],
+    "answerGuide": {
+      "short": "forward происходит внутри сервера без смены URL; redirect заставляет клиента сделать новый запрос.",
+      "normal": "Forward удобен для передачи внутри приложения. Redirect используют после POST (PRG pattern), смены URL или перехода на другой домен.",
+      "traps": [
+        "Ожидать request attributes после redirect.",
+        "Использовать forward для внешнего URL."
+      ],
+      "followUps": [
+        "Что такое PRG pattern?",
+        "Какие бывают 3xx статусы?"
+      ]
+    },
+    "meta": {
+      "verified": true,
+      "source": "enhorse/java-interview topics, paraphrased",
+      "lastReviewedAt": "2026-05-22",
+      "reviewer": "codex"
+    }
+  },
+  {
+    "id": "sb-024",
+    "domain": "spring-boot",
+    "difficulty": 5,
+    "type": "open",
+    "mode": "definition",
+    "prompt": "Что такое reactive programming и backpressure?",
+    "tags": [
+      "reactive",
+      "webflux",
+      "backpressure"
+    ],
+    "rubric": [
+      {
+        "id": "reactive",
+        "title": "Reactive",
+        "description": "Асинхронная обработка потоков данных и событий через publishers/subscribers/operators.",
+        "required": true,
+        "weight": 2,
+        "keywords": [
+          "reactive",
+          "publisher",
+          "subscriber",
+          "stream"
+        ]
+      },
+      {
+        "id": "backpressure",
+        "title": "Backpressure",
+        "description": "Механизм, позволяющий consumer сообщать producer, сколько данных он готов принять.",
+        "required": true,
+        "weight": 2,
+        "keywords": [
+          "backpressure",
+          "consumer",
+          "producer",
+          "demand"
+        ]
+      },
+      {
+        "id": "spring",
+        "title": "Spring WebFlux",
+        "description": "В Spring WebFlux это выражается через Mono/Flux и неблокирующий runtime.",
+        "required": false,
+        "weight": 1,
+        "keywords": [
+          "webflux",
+          "mono",
+          "flux"
+        ]
+      }
+    ],
+    "answerGuide": {
+      "short": "Reactive — работа с асинхронными потоками; backpressure защищает consumer от перегрузки.",
+      "normal": "Producer не должен безлимитно заливать данные быстрее, чем consumer способен обработать. Backpressure передаёт demand назад по цепочке.",
+      "traps": [
+        "Блокировать поток внутри reactive pipeline.",
+        "Использовать WebFlux без end-to-end неблокирующих драйверов."
+      ],
+      "followUps": [
+        "Чем Mono отличается от Flux?",
+        "Что такое hot и cold publisher?"
+      ]
+    },
+    "meta": {
+      "verified": true,
+      "source": "enhorse/java-interview topics, paraphrased",
+      "lastReviewedAt": "2026-05-22",
+      "reviewer": "codex"
+    }
+  },
+  {
+    "id": "sb-025",
+    "domain": "spring-boot",
+    "difficulty": 5,
+    "type": "open",
+    "mode": "comparison",
+    "prompt": "Чем Spring MVC отличается от Spring WebFlux?",
+    "tags": [
+      "spring",
+      "mvc",
+      "webflux",
+      "reactive"
+    ],
+    "rubric": [
+      {
+        "id": "mvc",
+        "title": "Spring MVC",
+        "description": "Servlet stack, обычно thread-per-request и blocking IO.",
+        "required": true,
+        "weight": 2,
+        "keywords": [
+          "mvc",
+          "servlet",
+          "blocking",
+          "thread"
+        ]
+      },
+      {
+        "id": "webflux",
+        "title": "WebFlux",
+        "description": "Reactive stack на Mono/Flux, event-loop и неблокирующий IO.",
+        "required": true,
+        "weight": 2,
+        "keywords": [
+          "webflux",
+          "mono",
+          "flux",
+          "non-blocking"
+        ]
+      },
+      {
+        "id": "choice",
+        "title": "Выбор",
+        "description": "MVC проще для обычных CRUD; WebFlux полезен при высоком IO-concurrency и неблокирующих зависимостях.",
+        "required": false,
+        "weight": 1,
+        "keywords": [
+          "crud",
+          "io",
+          "concurrency"
+        ]
+      }
+    ],
+    "answerGuide": {
+      "short": "MVC — servlet/blocking модель; WebFlux — reactive/non-blocking модель.",
+      "normal": "WebFlux раскрывается, когда весь путь неблокирующий: HTTP client, DB driver, broker client. Если внутри блокирующий JDBC, преимущество часто теряется.",
+      "traps": [
+        "Считать WebFlux автоматическим ускорителем любого приложения.",
+        "Блокировать event loop вызовом .block()."
+      ],
+      "followUps": [
+        "Что такое event loop?",
+        "Как работать с blocking кодом в WebFlux?"
+      ]
+    },
+    "meta": {
+      "verified": true,
+      "source": "enhorse/java-interview topics, paraphrased",
+      "lastReviewedAt": "2026-05-22",
+      "reviewer": "codex"
+    }
+  },
+  {
+    "id": "sb-026",
+    "domain": "spring-boot",
+    "difficulty": 5,
+    "type": "open",
+    "mode": "architecture",
+    "prompt": "Что такое circuit breaker и какую проблему он решает?",
+    "tags": [
+      "resilience",
+      "circuit-breaker",
+      "microservices"
+    ],
+    "rubric": [
+      {
+        "id": "purpose",
+        "title": "Purpose",
+        "description": "Останавливает вызовы к деградировавшей зависимости, чтобы не усугублять отказ.",
+        "required": true,
+        "weight": 2,
+        "keywords": [
+          "circuit breaker",
+          "dependency",
+          "отказ",
+          "деград"
+        ]
+      },
+      {
+        "id": "states",
+        "title": "States",
+        "description": "Closed, open, half-open состояния и пробные запросы для восстановления.",
+        "required": true,
+        "weight": 1,
+        "keywords": [
+          "closed",
+          "open",
+          "half-open"
+        ]
+      },
+      {
+        "id": "fallback",
+        "title": "Fallback",
+        "description": "Может возвращать fallback/degraded response, но fallback должен быть осознанным.",
+        "required": false,
+        "weight": 1,
+        "keywords": [
+          "fallback",
+          "degraded"
+        ]
+      }
+    ],
+    "answerGuide": {
+      "short": "Circuit breaker временно прекращает вызовы к плохой зависимости и предотвращает каскадный отказ.",
+      "normal": "В closed всё работает, при большом числе ошибок breaker открывается, затем half-open пропускает пробные запросы. Нужен вместе с timeout, метриками и ограничением retries.",
+      "traps": [
+        "Ставить retry без circuit breaker и усилить нагрузку на упавший сервис.",
+        "Делать fallback, который скрывает потерю критичных данных."
+      ],
+      "followUps": [
+        "Чем circuit breaker отличается от retry?",
+        "Что такое bulkhead?"
+      ]
+    },
+    "meta": {
+      "verified": true,
+      "source": "codex",
+      "lastReviewedAt": "2026-05-22",
+      "reviewer": "codex"
+    }
+  },
+  {
+    "id": "sb-027",
+    "domain": "spring-boot",
+    "difficulty": 4,
+    "type": "single",
+    "mode": "comparison",
+    "prompt": "Чем liveness probe отличается от readiness probe?",
+    "tags": [
+      "actuator",
+      "observability",
+      "health-check"
+    ],
+    "options": [
+      {
+        "id": "a",
+        "text": "Liveness про трафик, readiness про перезапуск"
+      },
+      {
+        "id": "b",
+        "text": "Это одно и то же"
+      },
+      {
+        "id": "c",
+        "text": "Readiness перезапускает контейнер при провале"
+      },
+      {
+        "id": "d",
+        "text": "Liveness — жив ли процесс (иначе перезапуск); readiness — готов ли принимать трафик (иначе исключают из балансировки)"
+      }
+    ],
+    "correctOptionIds": [
+      "d"
+    ],
+    "answerGuide": {
+      "short": "Liveness решает рестартить ли процесс; readiness — пускать ли в него трафик.",
+      "normal": "Если БД временно недоступна, сервис может быть жив, но не готов принимать часть запросов. Неправильная liveness-проверка по БД может перезапустить все pods одновременно.",
+      "traps": [
+        "Проверять все внешние зависимости в liveness.",
+        "Считать health endpoint полноценным мониторингом бизнес-функции."
+      ],
+      "followUps": [
+        "Что даёт Spring Boot Actuator?",
+        "Какие метрики важны для readiness?"
+      ]
+    },
+    "meta": {
+      "verified": true,
+      "source": "codex",
+      "lastReviewedAt": "2026-05-22",
+      "reviewer": "codex"
+    }
+  },
+  {
+    "id": "sb-028",
+    "domain": "spring-boot",
+    "difficulty": 4,
+    "type": "single",
+    "mode": "definition",
+    "prompt": "Что проверяют контрактные тесты между сервисами?",
+    "tags": [
+      "contract-test",
+      "testing",
+      "integration-test"
+    ],
+    "options": [
+      {
+        "id": "a",
+        "text": "Договор producer/consumer: схему, статус-коды, обязательные поля и совместимость событий — до интеграции"
+      },
+      {
+        "id": "b",
+        "text": "Покрытие кода unit-тестами"
+      },
+      {
+        "id": "c",
+        "text": "Скорость работы базы данных"
+      },
+      {
+        "id": "d",
+        "text": "Соответствие UI макетам"
+      }
+    ],
+    "correctOptionIds": [
+      "a"
+    ],
+    "answerGuide": {
+      "short": "Контрактные тесты проверяют, что provider не ломает ожидания consumer-а.",
+      "normal": "Они полезны для HTTP и событий: поля, типы, статус-коды, форматы ошибок, совместимость схем. Это не замена e2e, а более дешёвый контроль интеграционного договора.",
+      "traps": [
+        "Проверять только happy path.",
+        "Думать, что OpenAPI-файл сам гарантирует совместимость без тестов."
+      ],
+      "followUps": [
+        "Чем contract test отличается от e2e?",
+        "Где хранить consumer contracts?"
+      ]
+    },
+    "meta": {
+      "verified": true,
+      "source": "codex",
+      "lastReviewedAt": "2026-05-22",
+      "reviewer": "codex"
+    }
+  },
+  {
+    "id": "sb-029",
+    "domain": "spring-boot",
+    "difficulty": 4,
+    "type": "single",
+    "mode": "definition",
+    "prompt": "Что лучше всего описывает метрику p99 latency?",
+    "tags": [
+      "observability",
+      "metrics",
+      "latency"
+    ],
+    "options": [
+      {
+        "id": "a",
+        "text": "Среднее время ответа всех запросов"
+      },
+      {
+        "id": "b",
+        "text": "Время, быстрее которого завершились 99% запросов"
+      },
+      {
+        "id": "c",
+        "text": "Максимально возможное время ответа"
+      },
+      {
+        "id": "d",
+        "text": "Количество ошибок за секунду"
+      }
+    ],
+    "correctOptionIds": [
+      "b"
+    ],
+    "answerGuide": {
+      "short": "p99 — latency, быстрее которого уложились 99% запросов.",
+      "normal": "Percentiles лучше показывают хвост задержек, чем average. Для пользовательского опыта p95/p99 часто важнее среднего значения.",
+      "traps": [
+        "Оптимизировать только average.",
+        "Сравнивать p99 без одинакового окна и нагрузки."
+      ],
+      "followUps": [
+        "Чем histogram отличается от timer?",
+        "Какие RED metrics вы знаете?"
+      ]
+    },
+    "meta": {
+      "verified": true,
+      "source": "codex",
+      "lastReviewedAt": "2026-05-22",
+      "reviewer": "codex"
+    }
+  },
+  {
+    "id": "sb-030",
+    "domain": "spring-boot",
+    "difficulty": 4,
+    "type": "single",
+    "mode": "comparison",
+    "prompt": "Чем ApplicationContext отличается от BeanFactory?",
+    "tags": [
+      "beanfactory",
+      "applicationcontext",
+      "ioc"
+    ],
+    "options": [
+      {
+        "id": "a",
+        "text": "BeanFactory мощнее ApplicationContext"
+      },
+      {
+        "id": "b",
+        "text": "ApplicationContext — надстройка: жадные синглтоны (fail-fast), события, i18n, автодетект BPP/BFPP, интеграция с AOP"
+      },
+      {
+        "id": "c",
+        "text": "ApplicationContext только ленивый, BeanFactory жадный"
+      },
+      {
+        "id": "d",
+        "text": "Это одно и то же"
+      }
+    ],
+    "correctOptionIds": [
+      "b"
+    ],
+    "answerGuide": {
+      "short": "BeanFactory — базовый контейнер; ApplicationContext добавляет enterprise-функции и используется почти всегда.",
+      "normal": "ApplicationContext наследует BeanFactory и добавляет события, i18n MessageSource, Resource loading, интеграцию с AOP и автоматическую регистрацию post-processors.",
+      "traps": [
+        "Считать это двумя несвязанными контейнерами.",
+        "Выбирать BeanFactory для обычного Spring Boot приложения."
+      ],
+      "followUps": [
+        "Когда создаются singleton beans?",
+        "Что такое BeanPostProcessor?"
+      ]
+    },
+    "meta": {
+      "verified": true,
+      "source": "DEBAGanov/interview_questions topics, paraphrased",
+      "lastReviewedAt": "2026-05-22",
+      "reviewer": "codex"
+    }
+  },
+  {
+    "id": "sb-031",
+    "domain": "spring-boot",
+    "difficulty": 4,
+    "type": "single",
+    "mode": "definition",
+    "prompt": "Что такое BeanPostProcessor и зачем он нужен?",
+    "tags": [
+      "beanpostprocessor",
+      "bean",
+      "lifecycle"
+    ],
+    "options": [
+      {
+        "id": "a",
+        "text": "Класс, создающий пул соединений к БД"
+      },
+      {
+        "id": "b",
+        "text": "Аннотация для валидации DTO"
+      },
+      {
+        "id": "c",
+        "text": "Точка расширения, вмешивающаяся до/после инициализации каждого бина; через неё навешиваются прокси (AOP, @Transactional)"
+      },
+      {
+        "id": "d",
+        "text": "Механизм только для логирования"
+      }
+    ],
+    "correctOptionIds": [
+      "c"
+    ],
+    "answerGuide": {
+      "short": "BeanPostProcessor вмешивается в lifecycle бина до/после инициализации.",
+      "normal": "Это расширение контейнера: можно заменить бин proxy-объектом, обработать аннотации или добавить cross-cutting поведение. Многие механизмы Spring построены именно так.",
+      "traps": [
+        "Путать BeanPostProcessor с BeanFactoryPostProcessor.",
+        "Ожидать, что он сработает только для одного класса без условия."
+      ],
+      "followUps": [
+        "Чем BeanFactoryPostProcessor отличается?",
+        "Почему @Transactional создаёт proxy?"
+      ]
+    },
+    "meta": {
+      "verified": true,
+      "source": "DEBAGanov/interview_questions topics, paraphrased",
+      "lastReviewedAt": "2026-05-22",
+      "reviewer": "codex"
+    }
+  },
+  {
+    "id": "sb-032",
+    "domain": "spring-boot",
+    "difficulty": 3,
+    "type": "single",
+    "mode": "scenario",
+    "prompt": "Есть два бина одного интерфейса. Как явно выбрать один из них в конкретном constructor injection?",
+    "tags": [
+      "qualifier",
+      "primary",
+      "di"
+    ],
+    "options": [
+      {
+        "id": "a",
+        "text": "Поставить @Qualifier на параметр конструктора"
+      },
+      {
+        "id": "b",
+        "text": "Переименовать интерфейс"
+      },
+      {
+        "id": "c",
+        "text": "Добавить @Transactional"
+      },
+      {
+        "id": "d",
+        "text": "Сделать оба бина prototype"
+      }
+    ],
+    "correctOptionIds": [
+      "a"
+    ],
+    "answerGuide": {
+      "short": "@Qualifier явно выбирает нужный бин при неоднозначности.",
+      "normal": "@Primary задаёт дефолт для всех мест, где нет явного выбора. @Qualifier лучше, когда конкретному потребителю нужна конкретная реализация.",
+      "traps": [
+        "Думать, что @Primary решает все случаи лучше @Qualifier.",
+        "Полагаться на имя параметра без явного контракта."
+      ],
+      "followUps": [
+        "Чем @Primary отличается от @Qualifier?",
+        "Что будет при двух @Primary?"
+      ]
+    },
+    "meta": {
+      "verified": true,
+      "source": "DEBAGanov/interview_questions topics, paraphrased",
+      "lastReviewedAt": "2026-05-22",
+      "reviewer": "codex"
+    }
+  },
+  {
+    "id": "sb-033",
+    "domain": "spring-boot",
+    "difficulty": 4,
+    "type": "open",
+    "mode": "definition",
+    "prompt": "Зачем нужны @Conditional и ConditionalOn... аннотации в Spring Boot?",
+    "tags": [
+      "conditional",
+      "autoconfiguration",
+      "spring-boot"
+    ],
+    "rubric": [
+      {
+        "id": "condition",
+        "title": "Conditional beans",
+        "description": "Бин/конфигурация включаются только при выполнении условия.",
+        "required": true,
+        "weight": 2,
+        "keywords": [
+          "conditional",
+          "condition",
+          "услов"
+        ]
+      },
+      {
+        "id": "boot",
+        "title": "Boot autoconfiguration",
+        "description": "Boot использует условия по classpath, properties, missing bean и т.д.",
+        "required": true,
+        "weight": 2,
+        "keywords": [
+          "conditionalonclass",
+          "conditionalonmissingbean",
+          "property"
+        ]
+      },
+      {
+        "id": "override",
+        "title": "Override",
+        "description": "Позволяет автоконфигурации отступить, если пользователь объявил свой бин.",
+        "required": false,
+        "weight": 1,
+        "keywords": [
+          "override",
+          "missingbean",
+          "custom"
+        ]
+      }
+    ],
+    "answerGuide": {
+      "short": "@Conditional включает бин только при выполнении условия; Boot строит на этом автоконфигурацию через @ConditionalOnClass, @ConditionalOnMissingBean и property-условия.",
+      "normal": "Например, DataSourceAutoConfiguration создаётся только если @ConditionalOnClass для JDBC выполняется и @ConditionalOnMissingBean подтверждает, что пользовательский DataSource не объявлен; property-условия включают/выключают целые куски конфигурации по spring.*.enabled. Это делает starter-ы гибкими и ненавязчивыми.",
+      "traps": [
+        "Думать, что автоконфигурация всегда создаёт бин безусловно.",
+        "Писать свой бин и не понимать, почему Boot-конфигурация отключилась."
+      ],
+      "followUps": [
+        "Что делает @ConditionalOnMissingBean?",
+        "Как посмотреть condition evaluation report?"
+      ]
+    },
+    "meta": {
+      "verified": true,
+      "source": "DEBAGanov/interview_questions topics, paraphrased",
+      "lastReviewedAt": "2026-05-22",
+      "reviewer": "codex"
+    }
+  },
+  {
+    "id": "sb-034",
+    "domain": "spring-boot",
+    "difficulty": 4,
+    "type": "single",
+    "mode": "comparison",
+    "prompt": "Чем Servlet Filter отличается от HandlerInterceptor?",
+    "tags": [
+      "interceptor",
+      "servlet",
+      "filter",
+      "mvc"
+    ],
+    "options": [
+      {
+        "id": "a",
+        "text": "Interceptor работает до DispatcherServlet, Filter — после"
+      },
+      {
+        "id": "b",
+        "text": "Это одно и то же"
+      },
+      {
+        "id": "c",
+        "text": "Filter применим только к статическим ресурсам"
+      },
+      {
+        "id": "d",
+        "text": "Filter работает на уровне контейнера до DispatcherServlet (цепочка); Interceptor — внутри MVC, вокруг выбранного handler"
+      }
+    ],
+    "correctOptionIds": [
+      "d"
+    ],
+    "answerGuide": {
+      "short": "Filter ниже уровнем и работает до MVC; Interceptor работает внутри Spring MVC вокруг handler.",
+      "normal": "Filter видит raw servlet request/response. HandlerInterceptor уже знает выбранный handler и удобен для MVC-логики до/после controller.",
+      "traps": [
+        "Пытаться в Filter использовать детали выбранного controller method.",
+        "Делать security в interceptor вместо стандартной filter-chain модели Spring Security."
+      ],
+      "followUps": [
+        "Что такое Listener?",
+        "Где живёт Spring Security filter chain?"
+      ]
+    },
+    "meta": {
+      "verified": true,
+      "source": "DEBAGanov/interview_questions topics, paraphrased",
+      "lastReviewedAt": "2026-05-22",
+      "reviewer": "codex"
+    }
+  },
+  {
+    "id": "sb-035",
+    "domain": "spring-boot",
+    "difficulty": 4,
+    "type": "single",
+    "mode": "definition",
+    "prompt": "Как в Spring MVC обычно обрабатывают ошибки и валидацию входных DTO?",
+    "tags": [
+      "exception-handler",
+      "validation",
+      "mvc"
+    ],
+    "options": [
+      {
+        "id": "a",
+        "text": "@Valid запускает Bean Validation (ошибка → 400), а единый @RestControllerAdvice формирует контракт ошибки (ProblemDetail)"
+      },
+      {
+        "id": "b",
+        "text": "Ловить исключения в каждом методе вручную"
+      },
+      {
+        "id": "c",
+        "text": "Возвращать 200 OK с текстом ошибки"
+      },
+      {
+        "id": "d",
+        "text": "Валидацию писать в SQL-триггерах"
+      }
+    ],
+    "correctOptionIds": [
+      "a"
+    ],
+    "answerGuide": {
+      "short": "DTO валидируют через @Valid, ошибки централизуют в @RestControllerAdvice.",
+      "normal": "Не отдавайте наружу stacktrace. Сделайте единый формат ошибок и отдельно обработайте validation errors, not found, conflict и unexpected errors.",
+      "traps": [
+        "Валидировать JPA entity как API DTO.",
+        "Возвращать 500 на ошибку валидации."
+      ],
+      "followUps": [
+        "Чем @Valid отличается от @Validated?",
+        "Как вернуть field errors?"
+      ]
+    },
+    "meta": {
+      "verified": true,
+      "source": "DEBAGanov/interview_questions topics, paraphrased",
+      "lastReviewedAt": "2026-05-22",
+      "reviewer": "codex"
+    }
+  },
+  {
+    "id": "sb-036",
+    "domain": "spring-boot",
+    "difficulty": 4,
+    "type": "single",
+    "mode": "definition",
+    "prompt": "Зачем нужен Spring Cloud Config Server?",
+    "tags": [
+      "spring-cloud",
+      "config-server",
+      "configuration"
+    ],
+    "options": [
+      {
+        "id": "a",
+        "text": "Хранит пользовательские сессии"
+      },
+      {
+        "id": "b",
+        "text": "Централизует конфигурацию нескольких сервисов и окружений (часто из Git); секреты при этом хранят отдельно (Vault)"
+      },
+      {
+        "id": "c",
+        "text": "Балансирует нагрузку между сервисами"
+      },
+      {
+        "id": "d",
+        "text": "Заменяет базу данных"
+      }
+    ],
+    "correctOptionIds": [
+      "b"
+    ],
+    "answerGuide": {
+      "short": "Config Server централизует внешнюю конфигурацию микросервисов.",
+      "normal": "Сервисы получают настройки по имени приложения и профилю. Это удобно для единообразного управления окружениями, но секреты нужно хранить и шифровать отдельно.",
+      "traps": [
+        "Хранить пароли в открытом config repo.",
+        "Путать config server с service discovery."
+      ],
+      "followUps": [
+        "Что такое refresh scope?",
+        "Как Spring profiles связаны с Config Server?"
+      ]
+    },
+    "meta": {
+      "verified": true,
+      "source": "DEBAGanov/interview_questions topics, paraphrased",
+      "lastReviewedAt": "2026-05-22",
+      "reviewer": "codex"
+    }
+  },
+  {
+    "id": "sb-037",
+    "domain": "spring-boot",
+    "difficulty": 4,
+    "type": "single",
+    "mode": "definition",
+    "prompt": "Какая основная роль Spring Cloud Gateway?",
+    "tags": [
+      "gateway",
+      "spring-cloud",
+      "api-gateway"
+    ],
+    "options": [
+      {
+        "id": "a",
+        "text": "Компилировать Java-код в bytecode"
+      },
+      {
+        "id": "b",
+        "text": "Маршрутизировать входящий трафик к сервисам и применять cross-cutting политики"
+      },
+      {
+        "id": "c",
+        "text": "Хранить JPA entities"
+      },
+      {
+        "id": "d",
+        "text": "Заменять unit-тесты"
+      }
+    ],
+    "correctOptionIds": [
+      "b"
+    ],
+    "answerGuide": {
+      "short": "Gateway маршрутизирует входящий трафик и применяет политики вроде auth/rate limit.",
+      "normal": "На gateway часто живут routing, TLS termination, rate limiting, auth integration, canary routing. Бизнес-логику туда лучше не переносить.",
+      "traps": [
+        "Превратить gateway в монолит с бизнес-правилами.",
+        "Дублировать всю security-логику только на gateway и не защищать сервисы."
+      ],
+      "followUps": [
+        "Что такое predicate и filter в Gateway?",
+        "Чем gateway отличается от service mesh?"
+      ]
+    },
+    "meta": {
+      "verified": true,
+      "source": "DEBAGanov/interview_questions topics, paraphrased",
+      "lastReviewedAt": "2026-05-22",
+      "reviewer": "codex"
+    }
+  },
+  {
+    "id": "sb-038",
+    "domain": "spring-boot",
+    "difficulty": 4,
+    "type": "single",
+    "mode": "definition",
+    "prompt": "Что такое service discovery и где здесь Eureka?",
+    "tags": [
+      "eureka",
+      "service-discovery",
+      "spring-cloud"
+    ],
+    "options": [
+      {
+        "id": "a",
+        "text": "Шифрование трафика между сервисами"
+      },
+      {
+        "id": "b",
+        "text": "Централизованное хранилище конфигурации"
+      },
+      {
+        "id": "c",
+        "text": "Поиск сервисов по логическому имени вместо статического host:port; Eureka — реестр (в Kubernetes часто заменяется Service/DNS)"
+      },
+      {
+        "id": "d",
+        "text": "Очередь сообщений между сервисами"
+      }
+    ],
+    "correctOptionIds": [
+      "c"
+    ],
+    "answerGuide": {
+      "short": "Service discovery даёт поиск сервисов по имени; Eureka — один из registry-вариантов.",
+      "normal": "Сервис регистрирует свой instance, а клиент или load balancer получает список доступных instances. В Kubernetes часто достаточно встроенного Service/DNS.",
+      "traps": [
+        "Хардкодить host:port микросервисов.",
+        "Ставить Eureka в Kubernetes без причины."
+      ],
+      "followUps": [
+        "Что такое client-side load balancing?",
+        "Чем discovery отличается от config server?"
+      ]
+    },
+    "meta": {
+      "verified": true,
+      "source": "DEBAGanov/interview_questions topics, paraphrased",
+      "lastReviewedAt": "2026-05-22",
+      "reviewer": "codex"
+    }
+  },
+  {
+    "id": "sb-039",
+    "domain": "spring-boot",
+    "difficulty": 5,
+    "type": "open",
+    "mode": "definition",
+    "prompt": "Что такое Spring Batch и из каких основных частей состоит batch job?",
+    "tags": [
+      "spring-batch",
+      "batch",
+      "background-job"
+    ],
+    "rubric": [
+      {
+        "id": "purpose",
+        "title": "Purpose",
+        "description": "Пакетная обработка больших объёмов данных, фоновые jobs, импорты/экспорты.",
+        "required": true,
+        "weight": 1,
+        "keywords": [
+          "batch",
+          "job",
+          "пакет"
+        ]
+      },
+      {
+        "id": "model",
+        "title": "Model",
+        "description": "Job, Step, ItemReader, ItemProcessor, ItemWriter.",
+        "required": true,
+        "weight": 2,
+        "keywords": [
+          "job",
+          "step",
+          "itemreader",
+          "itemprocessor",
+          "itemwriter"
+        ]
+      },
+      {
+        "id": "features",
+        "title": "Features",
+        "description": "Chunk processing, restartability, skip/retry, JobRepository.",
+        "required": false,
+        "weight": 1,
+        "keywords": [
+          "chunk",
+          "restart",
+          "skip",
+          "retry",
+          "jobrepository"
+        ]
+      }
+    ],
+    "answerGuide": {
+      "short": "Spring Batch — фреймворк для batch jobs: Job состоит из Steps, Step читает/process/write items.",
+      "normal": "Он полезен для больших импортов, отчётов, миграций и фоновой обработки. Важны restartability, chunk commits, skip/retry и хранение состояния job execution.",
+      "traps": [
+        "Использовать Batch для обычного HTTP request path.",
+        "Не думать о restartability после падения job."
+      ],
+      "followUps": [
+        "Что такое chunk-oriented processing?",
+        "Где хранится состояние batch job?"
+      ]
+    },
+    "meta": {
+      "verified": true,
+      "source": "DEBAGanov/interview_questions topics, paraphrased",
+      "lastReviewedAt": "2026-05-22",
+      "reviewer": "codex"
+    }
+  },
+  {
+    "id": "sb-040",
+    "domain": "spring-boot",
+    "difficulty": 5,
+    "type": "single",
+    "mode": "definition",
+    "prompt": "Когда полезен Spring Integration?",
+    "tags": [
+      "spring-integration",
+      "enterprise-integration"
+    ],
+    "options": [
+      {
+        "id": "a",
+        "text": "Для пакетной ночной обработки больших файлов"
+      },
+      {
+        "id": "b",
+        "text": "Для рендеринга HTML-шаблонов"
+      },
+      {
+        "id": "c",
+        "text": "Для кэширования данных в Redis"
+      },
+      {
+        "id": "d",
+        "text": "Для декларативной связки систем по enterprise integration patterns (channels/endpoints/adapters) вместо ручного glue-code"
+      }
+    ],
+    "correctOptionIds": [
+      "d"
+    ],
+    "answerGuide": {
+      "short": "Spring Integration строит message pipelines из channels/endpoints/adapters по EIP-паттернам.",
+      "normal": "Он полезен, когда нужно связать разные протоколы и системы декларативным flow: прочитать файл, преобразовать, отфильтровать, отправить в брокер.",
+      "traps": [
+        "Использовать Integration там, где достаточно одного service method.",
+        "Прятать сложную бизнес-логику в интеграционный flow без тестов."
+      ],
+      "followUps": [
+        "Что такое MessageChannel?",
+        "Чем router отличается от filter?"
+      ]
+    },
+    "meta": {
+      "verified": true,
+      "source": "DEBAGanov/interview_questions topics, paraphrased",
+      "lastReviewedAt": "2026-05-22",
+      "reviewer": "codex"
+    }
+  },
+  {
+    "id": "sb-041",
+    "domain": "spring-boot",
+    "difficulty": 4,
+    "type": "single",
+    "mode": "comparison",
+    "prompt": "Чем REST отличается от SOAP?",
+    "tags": [
+      "rest",
+      "soap",
+      "hateoas"
+    ],
+    "options": [
+      {
+        "id": "a",
+        "text": "REST — архитектурный стиль над HTTP (ресурсы и глаголы, гибкие форматы); SOAP — строгий XML-протокол с контрактом (WSDL)"
+      },
+      {
+        "id": "b",
+        "text": "SOAP легче и без схемы, REST строго типизирован"
+      },
+      {
+        "id": "c",
+        "text": "Это одно и то же"
+      },
+      {
+        "id": "d",
+        "text": "REST работает только с XML"
+      }
+    ],
+    "correctOptionIds": [
+      "a"
+    ],
+    "answerGuide": {
+      "short": "REST — ресурсный HTTP-стиль; SOAP — XML-протокол с WSDL; HATEOAS добавляет ссылки действий в ответы.",
+      "normal": "REST обычно проще для web API, SOAP встречается там, где важны формальные контракты и legacy enterprise-интеграции. HATEOAS полезен, когда клиенту важно discoverability workflow.",
+      "traps": [
+        "Называть любой JSON over HTTP настоящим REST.",
+        "Добавлять HATEOAS-ссылки без практической пользы клиенту."
+      ],
+      "followUps": [
+        "Что делает Spring HATEOAS?",
+        "Когда SOAP всё ещё оправдан?"
+      ]
+    },
+    "meta": {
+      "verified": true,
+      "source": "DEBAGanov/interview_questions topics, paraphrased",
+      "lastReviewedAt": "2026-05-22",
+      "reviewer": "codex"
+    }
+  },
+  {
+    "id": "sb-042",
+    "domain": "spring-boot",
+    "difficulty": 5,
+    "type": "single",
+    "mode": "definition",
+    "prompt": "Какие основные backend-риски у GraphQL?",
+    "tags": [
+      "graphql",
+      "api",
+      "n+1"
+    ],
+    "options": [
+      {
+        "id": "a",
+        "text": "Невозможность выбрать конкретные поля"
+      },
+      {
+        "id": "b",
+        "text": "N+1 на резолверах, авторизация на уровне полей и защита от слишком дорогих/глубоких запросов"
+      },
+      {
+        "id": "c",
+        "text": "Только один запрос за раз на клиента"
+      },
+      {
+        "id": "d",
+        "text": "Полное отсутствие типизации схемы"
+      }
+    ],
+    "correctOptionIds": [
+      "b"
+    ],
+    "answerGuide": {
+      "short": "GraphQL даёт typed schema и выбор полей клиентом, но требует контроля N+1, сложности запросов и authorization.",
+      "normal": "Он хорош для клиентов с разными потребностями в данных. Backend должен проектировать resolvers, batching, кеширование и ограничения глубины/стоимости запроса.",
+      "traps": [
+        "Думать, что GraphQL автоматически быстрее REST.",
+        "Забыть field-level authorization."
+      ],
+      "followUps": [
+        "Что такое DataLoader?",
+        "Когда REST проще GraphQL?"
+      ]
+    },
+    "meta": {
+      "verified": true,
+      "source": "DEBAGanov/interview_questions topics, paraphrased",
+      "lastReviewedAt": "2026-05-22",
+      "reviewer": "codex"
+    }
+  },
+  {
+    "id": "sb-043",
+    "domain": "spring-boot",
+    "difficulty": 4,
+    "type": "single",
+    "mode": "definition",
+    "prompt": "Что важно задавать при отправке через KafkaTemplate?",
+    "tags": [
+      "spring-kafka",
+      "kafkatemplate",
+      "producer"
+    ],
+    "options": [
+      {
+        "id": "a",
+        "text": "Только текст сообщения, ничего больше"
+      },
+      {
+        "id": "b",
+        "text": "Обязательно номер партиции вручную для каждого сообщения"
+      },
+      {
+        "id": "c",
+        "text": "Key (партиционирование и порядок событий одной сущности), topic, а также headers/correlation id"
+      },
+      {
+        "id": "d",
+        "text": "Пароль брокера в каждом сообщении"
+      }
+    ],
+    "correctOptionIds": [
+      "c"
+    ],
+    "answerGuide": {
+      "short": "KafkaTemplate отправляет records; задавайте topic, key, payload и полезные headers.",
+      "normal": "Key нужен для выбора partition и порядка событий одной бизнес-сущности. Headers полезны для correlation id, версии события и технической маршрутизации.",
+      "traps": [
+        "Отправлять без key и ожидать порядок по orderId/userId.",
+        "Прятать несовместимые изменения payload без версии."
+      ],
+      "followUps": [
+        "Как KafkaTemplate сообщает об ошибке отправки?",
+        "Когда нужен transactional KafkaTemplate?"
+      ]
+    },
+    "meta": {
+      "verified": true,
+      "source": "spring messaging expansion",
+      "lastReviewedAt": "2026-05-22",
+      "reviewer": "codex"
+    }
+  },
+  {
+    "id": "sb-044",
+    "domain": "spring-boot",
+    "difficulty": 5,
+    "type": "open",
+    "mode": "definition",
+    "prompt": "Как @KafkaListener связан с listener container и offset commit?",
+    "tags": [
+      "spring-kafka",
+      "kafkalistener",
+      "offset"
+    ],
+    "rubric": [
+      {
+        "id": "listener",
+        "title": "@KafkaListener",
+        "description": "Аннотированный метод вызывается container-ом для records из topic.",
+        "required": true,
+        "weight": 1,
+        "keywords": [
+          "kafkalistener",
+          "container",
+          "topic"
+        ]
+      },
+      {
+        "id": "container",
+        "title": "Container",
+        "description": "Listener container управляет poll loop, threads, assignment, commits и errors.",
+        "required": true,
+        "weight": 2,
+        "keywords": [
+          "poll",
+          "assignment",
+          "commit",
+          "thread"
+        ]
+      },
+      {
+        "id": "ack",
+        "title": "Ack mode",
+        "description": "Ack mode определяет, когда offset фиксируется; manual ack позволяет commit после обработки.",
+        "required": true,
+        "weight": 2,
+        "keywords": [
+          "ack",
+          "offset",
+          "manual",
+          "commit"
+        ]
+      }
+    ],
+    "answerGuide": {
+      "short": "@KafkaListener — метод, а listener container делает poll/commit/error handling вокруг него.",
+      "normal": "Для at-least-once обрабатывают сообщение, сохраняют бизнес-эффект, затем ack/commit offset. При падении до commit возможен повтор, поэтому consumer должен быть идемпотентным.",
+      "traps": [
+        "Думать, что @KafkaListener сам по себе гарантирует exactly-once.",
+        "Коммитить offset до успешной обработки."
+      ],
+      "followUps": [
+        "Что такое AckMode.MANUAL?",
+        "Почему concurrency ограничена partitions?"
+      ]
+    },
+    "meta": {
+      "verified": true,
+      "source": "spring messaging expansion",
+      "lastReviewedAt": "2026-05-22",
+      "reviewer": "codex"
+    }
+  },
+  {
+    "id": "sb-045",
+    "domain": "spring-boot",
+    "difficulty": 5,
+    "type": "single",
+    "mode": "architecture",
+    "prompt": "Как в Spring Kafka обычно строят retry и dead letter topic?",
+    "tags": [
+      "spring-kafka",
+      "dlt",
+      "retries",
+      "error-handling"
+    ],
+    "options": [
+      {
+        "id": "a",
+        "text": "Бесконечно повторяют сообщение, пока не получится"
+      },
+      {
+        "id": "b",
+        "text": "Удаляют сообщение при первой же ошибке"
+      },
+      {
+        "id": "c",
+        "text": "Откатывают offset в начало топика"
+      },
+      {
+        "id": "d",
+        "text": "DefaultErrorHandler ретраит с backoff, а после исчерпания попыток публикует запись в DLT через DeadLetterPublishingRecoverer"
+      }
+    ],
+    "correctOptionIds": [
+      "d"
+    ],
+    "answerGuide": {
+      "short": "DefaultErrorHandler + backoff retries + DeadLetterPublishingRecoverer в DLT.",
+      "normal": "Poison message нельзя бесконечно ретраить в partition. После N попыток запись отправляют в DLT с headers об ошибке, алертят и разбирают отдельно.",
+      "traps": [
+        "Сделать бесконечный retry и заблокировать partition.",
+        "Создать DLT без мониторинга."
+      ],
+      "followUps": [
+        "Что хранить в DLT headers?",
+        "Когда retry topic лучше blocking retry?"
+      ]
+    },
+    "meta": {
+      "verified": true,
+      "source": "spring messaging expansion",
+      "lastReviewedAt": "2026-05-22",
+      "reviewer": "codex"
+    }
+  },
+  {
+    "id": "sb-046",
+    "domain": "spring-boot",
+    "difficulty": 4,
+    "type": "single",
+    "mode": "definition",
+    "prompt": "Для чего нужен RabbitTemplate в Spring AMQP?",
+    "tags": [
+      "spring-amqp",
+      "rabbittemplate",
+      "rabbitmq"
+    ],
+    "options": [
+      {
+        "id": "a",
+        "text": "Отправлять сообщения в exchange с routing key — а тот по bindings маршрутизирует их в очереди"
+      },
+      {
+        "id": "b",
+        "text": "Подписываться на очередь и обрабатывать сообщения"
+      },
+      {
+        "id": "c",
+        "text": "Создавать таблицы в базе данных"
+      },
+      {
+        "id": "d",
+        "text": "Писать напрямую в очередь, минуя exchange"
+      }
+    ],
+    "correctOptionIds": [
+      "a"
+    ],
+    "answerGuide": {
+      "short": "RabbitTemplate — Spring API для публикации сообщений в RabbitMQ exchange/routing key.",
+      "normal": "Обычно настраивают converter для JSON и publisher confirms/returns для надёжной публикации. Producer в RabbitMQ мыслит exchange и routing key, а не partition.",
+      "traps": [
+        "Публиковать прямо в queue и не понимать routing model.",
+        "Не настраивать converter/schema compatibility."
+      ],
+      "followUps": [
+        "Что такое publisher confirm?",
+        "Чем direct exchange отличается от topic exchange?"
+      ]
+    },
+    "meta": {
+      "verified": true,
+      "source": "spring messaging expansion",
+      "lastReviewedAt": "2026-05-22",
+      "reviewer": "codex"
+    }
+  },
+  {
+    "id": "sb-047",
+    "domain": "spring-boot",
+    "difficulty": 4,
+    "type": "single",
+    "mode": "definition",
+    "prompt": "Как @RabbitListener работает с ack и зачем нужен prefetch?",
+    "tags": [
+      "spring-amqp",
+      "rabbitlistener",
+      "prefetch",
+      "ack"
+    ],
+    "options": [
+      {
+        "id": "a",
+        "text": "Prefetch шифрует сообщения"
+      },
+      {
+        "id": "b",
+        "text": "Ack/nack подтверждают или отклоняют обработку (manual или auto), а prefetch ограничивает число неподтверждённых сообщений у consumer"
+      },
+      {
+        "id": "c",
+        "text": "Ack удаляет очередь целиком"
+      },
+      {
+        "id": "d",
+        "text": "Prefetch задаёт порядок очередей"
+      }
+    ],
+    "correctOptionIds": [
+      "b"
+    ],
+    "answerGuide": {
+      "short": "@RabbitListener работает через container; ack подтверждает сообщение, prefetch ограничивает unacked backlog.",
+      "normal": "Prefetch защищает consumer от переполнения и улучшает fairness. При ошибках нельзя бесконечно requeue poison message: нужны retries и DLQ.",
+      "traps": [
+        "Поставить огромный prefetch и получить высокий latency.",
+        "Nack с requeue для poison message без лимита."
+      ],
+      "followUps": [
+        "Что такое manual ack?",
+        "Как настроить DLX?"
+      ]
+    },
+    "meta": {
+      "verified": true,
+      "source": "spring messaging expansion",
+      "lastReviewedAt": "2026-05-22",
+      "reviewer": "codex"
+    }
+  },
+  {
+    "id": "sb-048",
+    "domain": "spring-boot",
+    "difficulty": 5,
+    "type": "open",
+    "mode": "comparison",
+    "prompt": "Когда в Spring выбрать AMQP/RabbitMQ, а когда Kafka?",
+    "tags": [
+      "spring-amqp",
+      "spring-kafka",
+      "rabbitmq",
+      "kafka"
+    ],
+    "rubric": [
+      {
+        "id": "rabbit",
+        "title": "RabbitMQ",
+        "description": "Команды/work queues, routing, ack/nack, TTL, delay, DLQ patterns.",
+        "required": true,
+        "weight": 2,
+        "keywords": [
+          "rabbitmq",
+          "routing",
+          "ttl",
+          "delay",
+          "dlq"
+        ]
+      },
+      {
+        "id": "kafka",
+        "title": "Kafka",
+        "description": "Event log, retention, replay, high throughput, independent consumer groups.",
+        "required": true,
+        "weight": 2,
+        "keywords": [
+          "kafka",
+          "retention",
+          "replay",
+          "consumer group"
+        ]
+      },
+      {
+        "id": "semantics",
+        "title": "Semantics",
+        "description": "Выбор по semantics: task/command queue vs event stream/history.",
+        "required": true,
+        "weight": 1,
+        "keywords": [
+          "command",
+          "event",
+          "semantics"
+        ]
+      }
+    ],
+    "answerGuide": {
+      "short": "Выбор по semantics: RabbitMQ — command/work queues с routing, Kafka — event log с replay и независимыми consumer groups.",
+      "normal": "Сводится к semantics сообщения. Команда «сделай это, дальше забудь» — work queue с routing, ack/nack, TTL/delay и DLQ, это RabbitMQ. Событие «вот что произошло, кто хочет — переиграет» — лог с retention и replay, независимыми consumer groups, это Kafka. Команды в Kafka и события в RabbitMQ возможны, но идут против дизайна.",
+      "traps": [
+        "Выбирать брокер по популярности.",
+        "Ожидать Kafka-style replay от RabbitMQ без отдельного хранения."
+      ],
+      "followUps": [
+        "Что такое DLX в RabbitMQ?",
+        "Почему Kafka DLT — отдельный topic?"
+      ]
+    },
+    "meta": {
+      "verified": true,
+      "source": "spring messaging expansion",
+      "lastReviewedAt": "2026-05-22",
+      "reviewer": "codex"
+    }
+  },
+  {
+    "id": "sb-049",
+    "domain": "spring-boot",
+    "difficulty": 5,
+    "type": "single",
+    "mode": "definition",
+    "prompt": "Что такое binder в Spring Cloud Stream?",
+    "tags": [
+      "spring-cloud-stream",
+      "binder",
+      "bindings"
+    ],
+    "options": [
+      {
+        "id": "a",
+        "text": "Класс для сериализации JSON"
+      },
+      {
+        "id": "b",
+        "text": "Пул потоков для consumer"
+      },
+      {
+        "id": "c",
+        "text": "Абстракция над брокером: один и тот же код работает поверх Kafka или RabbitMQ через общую модель"
+      },
+      {
+        "id": "d",
+        "text": "Хранилище offset-ов"
+      }
+    ],
+    "correctOptionIds": [
+      "c"
+    ],
+    "answerGuide": {
+      "short": "Binder — адаптер Cloud Stream к конкретному брокеру; bindings связывают функции с destinations.",
+      "normal": "Код пишет Consumer/Function/Supplier, а конфигурация указывает, куда подключить input/output. Это снижает boilerplate, но не отменяет семантику Kafka/RabbitMQ.",
+      "traps": [
+        "Думать, что binder делает Kafka и RabbitMQ одинаковыми.",
+        "Не задавать consumer group для production consumer."
+      ],
+      "followUps": [
+        "Что такое destination?",
+        "Чем binder отличается от KafkaTemplate?"
+      ]
+    },
+    "meta": {
+      "verified": true,
+      "source": "spring messaging expansion",
+      "lastReviewedAt": "2026-05-22",
+      "reviewer": "codex"
+    }
+  },
+  {
+    "id": "sb-050",
+    "domain": "spring-boot",
+    "difficulty": 4,
+    "type": "single",
+    "mode": "definition",
+    "prompt": "Какая функциональная модель используется в современном Spring Cloud Stream?",
+    "tags": [
+      "spring-cloud-stream",
+      "functional-bean"
+    ],
+    "options": [
+      {
+        "id": "a",
+        "text": "Только XML endpoints"
+      },
+      {
+        "id": "b",
+        "text": "Supplier, Function и Consumer beans"
+      },
+      {
+        "id": "c",
+        "text": "Только наследование от AbstractController"
+      },
+      {
+        "id": "d",
+        "text": "JSP tag libraries"
+      }
+    ],
+    "correctOptionIds": [
+      "b"
+    ],
+    "answerGuide": {
+      "short": "Cloud Stream использует Supplier, Function и Consumer beans.",
+      "normal": "Supplier производит сообщения, Function преобразует input в output, Consumer принимает input без output. Bindings в конфигурации подключают их к broker destinations.",
+      "traps": [
+        "Путать Spring Cloud Stream со Spring Integration channels.",
+        "Считать function name неважным для binding-конфигурации."
+      ],
+      "followUps": [
+        "Что такое input/output binding?",
+        "Как задать несколько функций?"
+      ]
+    },
+    "meta": {
+      "verified": true,
+      "source": "spring messaging expansion",
+      "lastReviewedAt": "2026-05-22",
+      "reviewer": "codex"
+    }
+  },
+  {
+    "id": "sb-051",
+    "domain": "spring-boot",
+    "difficulty": 5,
+    "type": "open",
+    "mode": "comparison",
+    "prompt": "Когда Spring Cloud Stream хуже прямого Spring Kafka или Spring AMQP?",
+    "tags": [
+      "spring-cloud-stream",
+      "spring-kafka",
+      "spring-amqp"
+    ],
+    "rubric": [
+      {
+        "id": "specific",
+        "title": "Broker-specific features",
+        "description": "Тонкие настройки listener container, manual offset/ack, transactions, DLT/retry могут быть прозрачнее в native API.",
+        "required": true,
+        "weight": 2,
+        "keywords": [
+          "manual",
+          "transaction",
+          "dlt",
+          "container"
+        ]
+      },
+      {
+        "id": "debug",
+        "title": "Debuggability",
+        "description": "Дополнительная абстракция усложняет отладку broker-specific поведения.",
+        "required": true,
+        "weight": 1,
+        "keywords": [
+          "debug",
+          "abstraction"
+        ]
+      },
+      {
+        "id": "fit",
+        "title": "Fit",
+        "description": "Cloud Stream лучше для стандартных event pipelines и унификации.",
+        "required": false,
+        "weight": 1,
+        "keywords": [
+          "pipeline",
+          "standard",
+          "uniform"
+        ]
+      }
+    ],
+    "answerGuide": {
+      "short": "Когда нужны broker-specific возможности (manual ack, transactions, container hooks, DLT) или прозрачная отладка — лишняя abstraction Cloud Stream мешает; native API проще.",
+      "normal": "Cloud Stream хорош для стандартных функций и унификации. Но когда важны детали commit/ack, transactions, retry topics, container hooks или Rabbit-specific routing, native API проще контролировать. Дополнительная abstraction усложняет debug broker-specific поведения: проблема может быть в binder, конвертере или контейнере одновременно.",
+      "traps": [
+        "Использовать Cloud Stream, чтобы не понимать брокер.",
+        "Переусложнять простой pipeline прямым API без нужды."
+      ],
+      "followUps": [
+        "Какие binder-specific properties вы настраивали?",
+        "Как тестировать Cloud Stream функции?"
+      ]
+    },
+    "meta": {
+      "verified": true,
+      "source": "spring messaging expansion",
+      "lastReviewedAt": "2026-05-22",
+      "reviewer": "codex"
+    }
+  },
+  {
+    "id": "sb-052",
+    "domain": "spring-boot",
+    "difficulty": 5,
+    "type": "open",
+    "mode": "definition",
+    "prompt": "Как устроена SecurityFilterChain в Spring Security?",
+    "tags": [
+      "spring-security",
+      "security-filter-chain",
+      "servlet"
+    ],
+    "rubric": [
+      {
+        "id": "filters",
+        "title": "Filters",
+        "description": "Spring Security работает как цепочка servlet filters до MVC controller.",
+        "required": true,
+        "weight": 2,
+        "keywords": [
+          "filter",
+          "chain",
+          "servlet",
+          "mvc"
+        ]
+      },
+      {
+        "id": "auth",
+        "title": "Authentication/Authorization",
+        "description": "Фильтры извлекают credentials, создают Authentication и проверяют доступ.",
+        "required": true,
+        "weight": 2,
+        "keywords": [
+          "authentication",
+          "authorization",
+          "credentials"
+        ]
+      },
+      {
+        "id": "config",
+        "title": "Configuration",
+        "description": "В Spring Boot конфигурируется через SecurityFilterChain bean и HttpSecurity DSL.",
+        "required": true,
+        "weight": 1,
+        "keywords": [
+          "securityfilterchain",
+          "httpsecurity"
+        ]
+      }
+    ],
+    "answerGuide": {
+      "short": "SecurityFilterChain — набор servlet filters, который аутентифицирует и авторизует запрос до controller.",
+      "normal": "Фильтры читают токен/cookie/basic auth, строят Authentication, кладут его в SecurityContext и применяют authorization rules. Поэтому security находится ниже MVC interceptors.",
+      "traps": [
+        "Пытаться реализовать security только через HandlerInterceptor.",
+        "Не понимать порядок filters при кастомизации."
+      ],
+      "followUps": [
+        "Что такое SecurityContext?",
+        "Где обрабатываются 401 и 403?"
+      ]
+    },
+    "meta": {
+      "verified": true,
+      "source": "spring security expansion",
+      "lastReviewedAt": "2026-05-22",
+      "reviewer": "codex"
+    }
+  },
+  {
+    "id": "sb-053",
+    "domain": "spring-boot",
+    "difficulty": 5,
+    "type": "open",
+    "mode": "comparison",
+    "prompt": "Чем JWT отличается от OAuth2/OIDC?",
+    "tags": [
+      "spring-security",
+      "jwt",
+      "oauth2",
+      "oidc"
+    ],
+    "rubric": [
+      {
+        "id": "jwt",
+        "title": "JWT",
+        "description": "JWT — формат токена с claims и подписью.",
+        "required": true,
+        "weight": 2,
+        "keywords": [
+          "jwt",
+          "claims",
+          "signature"
+        ]
+      },
+      {
+        "id": "oauth",
+        "title": "OAuth2/OIDC",
+        "description": "OAuth2/OIDC — протоколы authorization/login/token issuance, а не формат токена.",
+        "required": true,
+        "weight": 2,
+        "keywords": [
+          "oauth2",
+          "oidc",
+          "protocol",
+          "authorization"
+        ]
+      },
+      {
+        "id": "validation",
+        "title": "Validation",
+        "description": "Resource server проверяет issuer, audience, expiration, signature и scopes/authorities.",
+        "required": false,
+        "weight": 1,
+        "keywords": [
+          "issuer",
+          "audience",
+          "expiration",
+          "scope"
+        ]
+      }
+    ],
+    "answerGuide": {
+      "short": "JWT — формат токена; OAuth2/OIDC — протоколы получения и использования токенов.",
+      "normal": "Spring OAuth2 Resource Server может проверять JWT bearer token: подпись, exp, iss, aud и scopes. Но refresh/revocation/login flow — это уже часть OAuth2/OIDC архитектуры.",
+      "traps": [
+        "Называть любой JWT «OAuth».",
+        "Проверять только подпись и забыть issuer/audience/expiration."
+      ],
+      "followUps": [
+        "Что такое scope vs role?",
+        "Когда нужен opaque token?"
+      ]
+    },
+    "meta": {
+      "verified": true,
+      "source": "spring security expansion",
+      "lastReviewedAt": "2026-05-22",
+      "reviewer": "codex"
+    }
+  },
+  {
+    "id": "sb-054",
+    "domain": "spring-boot",
+    "difficulty": 4,
+    "type": "single",
+    "mode": "definition",
+    "prompt": "Когда CSRF-защита нужна в Spring Security, а когда её часто отключают?",
+    "tags": [
+      "spring-security",
+      "csrf",
+      "web-security"
+    ],
+    "options": [
+      {
+        "id": "a",
+        "text": "Нужна всегда и везде без исключений"
+      },
+      {
+        "id": "b",
+        "text": "Нужна только для GET-запросов"
+      },
+      {
+        "id": "c",
+        "text": "Отключать нужно всегда ради производительности"
+      },
+      {
+        "id": "d",
+        "text": "Нужна для stateful cookie/сессий (браузер сам шлёт credentials); для stateless bearer-API её обычно отключают"
+      }
+    ],
+    "correctOptionIds": [
+      "d"
+    ],
+    "answerGuide": {
+      "short": "CSRF нужен для browser cookie-сессий; для stateless bearer-token API его часто отключают.",
+      "normal": "Если auth хранится в cookie и браузер отправляет её автоматически, чужой сайт может инициировать запрос. Если клиент сам добавляет Authorization: Bearer token, CSRF-риска обычно меньше.",
+      "traps": [
+        "Отключать CSRF для cookie-based web app.",
+        "Считать CORS защитой от CSRF или авторизацией."
+      ],
+      "followUps": [
+        "Чем CSRF отличается от XSS?",
+        "Что делает SameSite cookie?"
+      ]
+    },
+    "meta": {
+      "verified": true,
+      "source": "spring security expansion",
+      "lastReviewedAt": "2026-05-22",
+      "reviewer": "codex"
+    }
+  },
+  {
+    "id": "sb-055",
+    "domain": "spring-boot",
+    "difficulty": 4,
+    "type": "single",
+    "mode": "definition",
+    "prompt": "Для чего нужна @PreAuthorize в Spring Security?",
+    "tags": [
+      "spring-security",
+      "method-security",
+      "preauthorize"
+    ],
+    "options": [
+      {
+        "id": "a",
+        "text": "Для проверки прав перед вызовом метода"
+      },
+      {
+        "id": "b",
+        "text": "Для создания Kafka topic"
+      },
+      {
+        "id": "c",
+        "text": "Для настройки JDBC pool"
+      },
+      {
+        "id": "d",
+        "text": "Для сериализации JSON"
+      }
+    ],
+    "correctOptionIds": [
+      "a"
+    ],
+    "answerGuide": {
+      "short": "@PreAuthorize проверяет expression до выполнения метода.",
+      "normal": "Method security полезна на service layer, когда один метод вызывается из разных controllers/jobs/listeners. Можно проверять authorities, roles и ownership через bean methods.",
+      "traps": [
+        "Полагаться только на URL security и забыть service layer.",
+        "Проверять только роль без ownership ресурса."
+      ],
+      "followUps": [
+        "Как включить method security?",
+        "Чем hasRole отличается от hasAuthority?"
+      ]
+    },
+    "meta": {
+      "verified": true,
+      "source": "spring security expansion",
+      "lastReviewedAt": "2026-05-22",
+      "reviewer": "codex"
+    }
+  },
+  {
+    "id": "sb-056",
+    "domain": "spring-boot",
+    "difficulty": 3,
+    "type": "open",
+    "mode": "live_coding",
+    "language": "java",
+    "starterCode": "@RestController\n@RequestMapping(\"/users\")\nclass UserController {\n    private final UserService service;\n    UserController(UserService service) { this.service = service; }\n\n    // объяви GET /users/{id}\n}",
+    "prompt": "Добавь эндпоинт GET /users/{id}, возвращающий User по идентификатору.",
+    "tags": [
+      "coding",
+      "web",
+      "rest"
+    ],
+    "rubric": [
+      {
+        "id": "mapping",
+        "title": "Маппинг метода",
+        "description": "Метод помечен @GetMapping(\"/{id}\").",
+        "required": true,
+        "weight": 2,
+        "keywords": [
+          "getmapping",
+          "/{id}",
+          "mapping"
+        ]
+      },
+      {
+        "id": "pathvar",
+        "title": "@PathVariable",
+        "description": "Идентификатор берётся из пути через @PathVariable.",
+        "required": true,
+        "weight": 1,
+        "keywords": [
+          "pathvariable",
+          "id"
+        ]
+      },
+      {
+        "id": "return",
+        "title": "Возврат",
+        "description": "Возвращает User или ResponseEntity<User>.",
+        "required": false,
+        "weight": 1,
+        "keywords": [
+          "user",
+          "responseentity",
+          "return"
+        ]
+      }
+    ],
+    "answerGuide": {
+      "short": "@GetMapping(\"/{id}\") User byId(@PathVariable long id) { return service.find(id); }",
+      "normal": "Метод с @GetMapping(\"/{id}\"), параметр @PathVariable long id, возврат User (или ResponseEntity для контроля статуса и 404).",
+      "traps": [
+        "Забыть @PathVariable.",
+        "Возвращать 200, когда пользователь не найден."
+      ],
+      "followUps": [
+        "Как вернуть 404?",
+        "Чем @PathVariable отличается от @RequestParam?"
+      ]
+    },
+    "meta": {
+      "verified": true,
+      "source": "seed",
+      "lastReviewedAt": "2026-05-22",
+      "reviewer": "seed"
+    }
+  }
+]

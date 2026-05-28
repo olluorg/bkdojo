@@ -1,0 +1,17 @@
+services:
+  bkdojo:
+    build:
+      context: .
+      args:
+        # Build-time: where the client calls the eval API. Baked into the bundle.
+        VITE_EVAL_ENDPOINT: /api/evaluate
+    ports:
+      - '3000:3000'
+    environment:
+      - PORT=3000
+    # Runtime secrets/config (OPENROUTER_API_KEY, OPENROUTER_MODEL).
+    # Just edit .env and `docker compose up -d` to apply — no rebuild needed.
+    env_file:
+      - path: .env
+        required: false
+    restart: unless-stopped

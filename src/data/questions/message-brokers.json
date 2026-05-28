@@ -1,0 +1,1007 @@
+[
+  {
+    "id": "mb-001",
+    "domain": "message-brokers",
+    "difficulty": 2,
+    "type": "open",
+    "mode": "definition",
+    "prompt": "Что такое message broker и зачем он нужен?",
+    "tags": ["basics", "messaging"],
+    "rubric": [
+      {
+        "id": "decoupling",
+        "title": "Развязка producer и consumer",
+        "description": "Отправитель и получатель не знают друг о друге и не зависят от доступности друг друга.",
+        "required": true,
+        "weight": 2,
+        "keywords": ["развязка", "decoupling", "producer", "consumer", "связанность"]
+      },
+      {
+        "id": "async",
+        "title": "Асинхронность и буферизация",
+        "description": "Сообщения копятся в брокере и обрабатываются в своём темпе — сглаживание пиков нагрузки.",
+        "required": true,
+        "weight": 1,
+        "keywords": ["асинхрон", "буфер", "очередь", "пик", "load leveling"]
+      },
+      {
+        "id": "reliability",
+        "title": "Надёжность доставки",
+        "description": "Гарантии доставки, повторы, персистентность сообщений при сбоях.",
+        "required": false,
+        "weight": 1,
+        "keywords": ["надёжность", "доставка", "ack", "персистентность", "retry"]
+      }
+    ],
+    "answerGuide": {
+      "short": "Брокер — посредник, который развязывает отправителя и получателя и передаёт сообщения асинхронно.",
+      "normal": "Назови три ценности: развязка сервисов, асинхронность/буферизация пиков, надёжность доставки. Пример: заказ кладём в очередь, обработка идёт независимо.",
+      "traps": ["Сводить брокер только к 'очереди', забывая про развязку и масштабирование."],
+      "followUps": ["Чем pub/sub отличается от point-to-point?", "Какие гарантии доставки бывают?"]
+    },
+    "meta": { "verified": true, "source": "seed", "lastReviewedAt": "2026-05-21", "reviewer": "seed" }
+  },
+  {
+    "id": "mb-002",
+    "domain": "message-brokers",
+    "difficulty": 3,
+    "type": "open",
+    "mode": "comparison",
+    "prompt": "Чем Kafka принципиально отличается от RabbitMQ?",
+    "tags": ["kafka", "rabbitmq", "comparison"],
+    "rubric": [
+      {
+        "id": "model",
+        "title": "Модель хранения",
+        "description": "Kafka — распределённый персистентный лог с партициями; RabbitMQ — брокер очередей с гибкой маршрутизацией (exchanges).",
+        "required": true,
+        "weight": 2,
+        "keywords": ["лог", "log", "партиции", "partition", "очередь", "exchange", "routing"]
+      },
+      {
+        "id": "consumption",
+        "title": "Модель потребления",
+        "description": "Kafka: pull + offset, сообщения остаются и доступны для replay; RabbitMQ: push + ack, сообщение удаляется после подтверждения.",
+        "required": true,
+        "weight": 2,
+        "keywords": ["pull", "offset", "replay", "push", "ack", "удаляется"]
+      },
+      {
+        "id": "usecase",
+        "title": "Когда что",
+        "description": "Kafka — высокий throughput, стриминг, event sourcing; RabbitMQ — сложная маршрутизация, задачи/RPC, низкие задержки.",
+        "required": false,
+        "weight": 1,
+        "keywords": ["throughput", "стриминг", "event sourcing", "маршрутизация", "задачи"]
+      }
+    ],
+    "answerGuide": {
+      "short": "Kafka — персистентный лог с партициями и offset (replay); RabbitMQ — очереди с гибкой маршрутизацией и ack.",
+      "normal": "Сравни по трём осям: модель хранения (лог vs очередь), потребление (offset/replay vs ack/delete), типичные сценарии (стриминг/высокий throughput vs сложная маршрутизация).",
+      "traps": ["Называть Kafka 'просто очередью' — это лог с сохранением и повторным чтением."],
+      "followUps": ["Что такое consumer group в Kafka?", "Какие exchange-типы есть в RabbitMQ?"]
+    },
+    "meta": { "verified": true, "source": "seed", "lastReviewedAt": "2026-05-21", "reviewer": "seed" }
+  },
+  {
+    "id": "mb-003",
+    "domain": "message-brokers",
+    "difficulty": 3,
+    "type": "single",
+    "mode": "definition",
+    "prompt": "Что характерно для семантики доставки at-least-once?",
+    "tags": ["delivery-semantics", "reliability"],
+    "options": [
+      { "id": "a", "text": "Сообщение может быть потеряно, но не продублировано" },
+      { "id": "b", "text": "Сообщение доставляется ровно один раз без дубликатов" },
+      { "id": "c", "text": "Сообщение не теряется, но может прийти повторно — возможны дубликаты" },
+      { "id": "d", "text": "Сообщение доставляется максимум один раз" }
+    ],
+    "correctOptionIds": ["c"],
+    "answerGuide": {
+      "short": "At-least-once: потерь нет, но возможны дубликаты — нужна идемпотентность.",
+      "normal": "At-least-once гарантирует, что сообщение точно дойдёт, но из-за повторов (например, при потере ack) может прийти повторно. Поэтому consumer должен быть идемпотентным.",
+      "traps": ["Путать at-least-once с exactly-once.", "Забывать про необходимость идемпотентности consumer'а."],
+      "followUps": ["Как сделать consumer идемпотентным?", "Почему exactly-once так сложно достичь?"]
+    },
+    "meta": { "verified": true, "source": "seed", "lastReviewedAt": "2026-05-21", "reviewer": "seed" }
+  },
+  {
+    "id": "mb-004",
+    "domain": "message-brokers",
+    "difficulty": 4,
+    "type": "open",
+    "mode": "scenario",
+    "prompt": "Как сделать consumer идемпотентным при семантике at-least-once?",
+    "tags": ["idempotency", "reliability"],
+    "rubric": [
+      {
+        "id": "why",
+        "title": "Почему это нужно",
+        "description": "At-least-once допускает дубликаты, поэтому повторная обработка не должна менять результат.",
+        "required": true,
+        "weight": 1,
+        "keywords": ["дубликат", "повтор", "at-least-once", "идемпотент"]
+      },
+      {
+        "id": "key",
+        "title": "Ключ идемпотентности",
+        "description": "Уникальный id сообщения/операции, по которому распознают повтор.",
+        "required": true,
+        "weight": 2,
+        "keywords": ["ключ", "id", "idempotency key", "message id", "дедуп"]
+      },
+      {
+        "id": "mechanism",
+        "title": "Механизм",
+        "description": "Дедупликация (хранилище обработанных id), upsert или условная запись (insert if not exists).",
+        "required": true,
+        "weight": 2,
+        "keywords": ["дедупликац", "upsert", "insert if not exists", "хранилище", "transaction"]
+      }
+    ],
+    "answerGuide": {
+      "short": "At-least-once допускает дубликаты, поэтому consumer должен быть идемпотентным: idempotency-key и дедуп-хранилище / upsert.",
+      "normal": "При at-least-once брокер может доставить одно сообщение повторно (retry, rebalance, потеря offset). Чтобы повтор не менял результат, дай каждой операции уникальный id, проверяй «уже обработано?» в БД/кэше и атомарно сохраняй результат вместе с отметкой об обработке (или upsert). Окно дедупликации выбирают по retry-политике брокера.",
+      "traps": ["Полагаться только на exactly-once брокера.", "Проверять и записывать в разных транзакциях."],
+      "followUps": ["Что такое inbox/outbox паттерн?", "Как выбрать окно дедупликации?"]
+    },
+    "meta": { "verified": true, "source": "seed", "lastReviewedAt": "2026-05-22", "reviewer": "seed" }
+  },
+  {
+    "id": "mb-005",
+    "domain": "message-brokers",
+    "difficulty": 4,
+    "type": "open",
+    "mode": "architecture",
+    "prompt": "Что такое consumer group в Kafka и как через неё масштабируется потребление?",
+    "tags": ["kafka", "consumer-group", "scaling"],
+    "rubric": [
+      {
+        "id": "group",
+        "title": "Что такое группа",
+        "description": "Набор consumer'ов с общим group.id, делящих между собой партиции топика.",
+        "required": true,
+        "weight": 1,
+        "keywords": ["group", "группа", "group.id", "делят"]
+      },
+      {
+        "id": "partition-assignment",
+        "title": "Распределение партиций",
+        "description": "Каждая партиция в группе обрабатывается ровно одним consumer'ом; параллелизм ограничен числом партиций.",
+        "required": true,
+        "weight": 2,
+        "keywords": ["партиц", "partition", "один consumer", "параллелизм", "ограничен"]
+      },
+      {
+        "id": "rebalance",
+        "title": "Rebalancing",
+        "description": "При изменении состава группы партиции перераспределяются; offset хранится на группу.",
+        "required": false,
+        "weight": 1,
+        "keywords": ["rebalance", "перераспред", "offset", "состав"]
+      }
+    ],
+    "answerGuide": {
+      "short": "Consumer group делит партиции топика: одна партиция — одному consumer'у; масштаб ограничен числом партиций.",
+      "normal": "Объясни: добавляя consumer'ов в группу, распределяешь партиции и растишь пропускную способность — но не выше числа партиций. При изменении группы происходит rebalance, offset'ы хранятся per-group.",
+      "traps": ["Ждать роста параллелизма выше числа партиций.", "Игнорировать паузы при rebalance."],
+      "followUps": ["Как выбрать число партиций?", "Что такое sticky-assignor?"]
+    },
+    "meta": { "verified": true, "source": "seed", "lastReviewedAt": "2026-05-22", "reviewer": "seed" }
+  },
+  {
+    "id": "mb-006",
+    "domain": "message-brokers",
+    "difficulty": 2,
+    "type": "single",
+    "mode": "comparison",
+    "prompt": "Чем модель pub/sub отличается от point-to-point (очередь)?",
+    "tags": ["pubsub", "queue", "patterns"],
+    "options": [
+      { "id": "a", "text": "В pub/sub сообщение получает только один потребитель" },
+      { "id": "b", "text": "В pub/sub сообщение получают все подписчики, в point-to-point — один из потребителей" },
+      { "id": "c", "text": "Это одно и то же, разные названия" },
+      { "id": "d", "text": "Point-to-point не поддерживает нескольких потребителей вообще" }
+    ],
+    "correctOptionIds": ["b"],
+    "answerGuide": {
+      "short": "Pub/sub доставляет всем подписчикам; point-to-point — одному потребителю из конкурирующих.",
+      "normal": "В point-to-point (очередь) сообщение забирает один из конкурирующих потребителей. В pub/sub каждое сообщение получают все активные подписчики (broadcast).",
+      "traps": ["Считать, что в очереди не может быть нескольких потребителей — может, но сообщение получает один из них."],
+      "followUps": ["Как Kafka совмещает обе модели через consumer groups?", "Что такое fanout exchange?"]
+    },
+    "meta": { "verified": true, "source": "seed", "lastReviewedAt": "2026-05-22", "reviewer": "seed" }
+  },
+  {
+    "id": "mb-007",
+    "domain": "message-brokers",
+    "difficulty": 3,
+    "type": "open",
+    "mode": "comparison",
+    "prompt": "Сравни семантики доставки: at-most-once, at-least-once, exactly-once.",
+    "tags": ["delivery-semantics"],
+    "rubric": [
+      {
+        "id": "at-most-once",
+        "title": "At-most-once",
+        "description": "Без повторов: возможны потери, но не дубликаты.",
+        "required": true,
+        "weight": 1,
+        "keywords": ["at-most-once", "потери", "без дублей"]
+      },
+      {
+        "id": "at-least-once",
+        "title": "At-least-once",
+        "description": "С повторами: потерь нет, но возможны дубликаты; требует идемпотентности.",
+        "required": true,
+        "weight": 1,
+        "keywords": ["at-least-once", "дубликаты", "идемпотент", "без потерь"]
+      },
+      {
+        "id": "exactly-once",
+        "title": "Exactly-once",
+        "description": "Без потерь и дублей; дорого, обычно достигается идемпотентностью + транзакциями/дедупликацией.",
+        "required": true,
+        "weight": 1,
+        "keywords": ["exactly-once", "без потерь и дублей", "транзакц", "дедуп"]
+      }
+    ],
+    "answerGuide": {
+      "short": "At-most-once — теряем, не дублируем; at-least-once — не теряем, можем дублировать; exactly-once — ни то, ни другое (дорого).",
+      "normal": "Разложи по двум осям (потери/дубли) и укажи цену: at-least-once + идемпотентность — практичный дефолт; «честный» exactly-once дорог и часто эмулируется.",
+      "traps": ["Считать exactly-once бесплатным и универсальным.", "Путать гарантии брокера и сквозную гарантию приложения."],
+      "followUps": ["Как работает идемпотентный producer в Kafka?", "Почему сквозной exactly-once так сложен?"]
+    },
+    "meta": { "verified": true, "source": "seed", "lastReviewedAt": "2026-05-22", "reviewer": "seed" }
+  },
+  {
+    "id": "mb-008",
+    "domain": "message-brokers",
+    "difficulty": 5,
+    "type": "open",
+    "mode": "architecture",
+    "prompt": "Что такое dead letter queue (DLQ) и зачем она нужна?",
+    "tags": ["dlq", "reliability", "error-handling"],
+    "rubric": [
+      {
+        "id": "what",
+        "title": "Что это",
+        "description": "Отдельная очередь, куда отправляются сообщения, которые не удалось обработать после N попыток (или с истёкшим TTL).",
+        "required": true,
+        "weight": 2,
+        "keywords": ["dlq", "dead letter", "необработан", "n попыток", "ttl"]
+      },
+      {
+        "id": "why",
+        "title": "Зачем",
+        "description": "Изолирует «ядовитые» сообщения, чтобы они не блокировали обработку остальных, и сохраняет их для разбора.",
+        "required": true,
+        "weight": 2,
+        "keywords": ["ядовит", "poison", "не блокир", "разбор", "изоляц"]
+      },
+      {
+        "id": "handling",
+        "title": "Что с ней делать",
+        "description": "Мониторинг, ручной/автоматический разбор и повторная отправка после исправления.",
+        "required": false,
+        "weight": 1,
+        "keywords": ["мониторинг", "повторная отправка", "redrive", "разбор"]
+      }
+    ],
+    "answerGuide": {
+      "short": "DLQ — куда уходят неудачно обработанные сообщения после N попыток, чтобы не блокировать очередь.",
+      "normal": "Объясни: при повторяющихся ошибках сообщение перенаправляется в DLQ; это спасает от poison-message, который иначе застрял бы в цикле ретраев. Затем DLQ мониторят и разбирают.",
+      "traps": ["Складывать в DLQ без мониторинга — сообщения просто теряются из виду.", "Бесконечно ретраить poison-message."],
+      "followUps": ["Как реализовать retry с backoff до DLQ?", "Что класть в метаданные DLQ-сообщения?"]
+    },
+    "meta": { "verified": true, "source": "seed", "lastReviewedAt": "2026-05-22", "reviewer": "seed" }
+  },
+  {
+    "id": "mb-009",
+    "domain": "message-brokers",
+    "difficulty": 3,
+    "type": "open",
+    "mode": "definition",
+    "prompt": "Что такое topic, partition и offset в Kafka?",
+    "tags": ["kafka", "topic", "partition", "offset"],
+    "rubric": [
+      {
+        "id": "topic",
+        "title": "Topic",
+        "description": "Логический поток/категория сообщений, в которую producer пишет события.",
+        "required": true,
+        "weight": 1,
+        "keywords": ["topic", "топик", "поток", "категория"]
+      },
+      {
+        "id": "partition",
+        "title": "Partition",
+        "description": "Физически упорядоченный shard топика; масштабирует throughput и параллелизм.",
+        "required": true,
+        "weight": 2,
+        "keywords": ["partition", "партиц", "shard", "параллел"]
+      },
+      {
+        "id": "offset",
+        "title": "Offset",
+        "description": "Позиция сообщения внутри partition; consumer хранит/коммитит прогресс чтения.",
+        "required": true,
+        "weight": 2,
+        "keywords": ["offset", "позиция", "commit", "consumer"]
+      }
+    ],
+    "answerGuide": {
+      "short": "Topic — логический поток; partition — упорядоченная часть topic; offset — позиция сообщения в partition.",
+      "normal": "Kafka хранит сообщения в topic, topic делится на partitions. Порядок гарантируется внутри одной partition, а offset показывает позицию consumer в этой partition.",
+      "traps": ["Ожидать глобальный порядок по всему topic.", "Считать offset глобальным для всех partitions."],
+      "followUps": ["Как Kafka выбирает partition для сообщения?", "Что будет при увеличении числа partitions?"]
+    },
+    "meta": { "verified": true, "source": "enhorse/java-interview topics, paraphrased", "lastReviewedAt": "2026-05-22", "reviewer": "codex" }
+  },
+  {
+    "id": "mb-010",
+    "domain": "message-brokers",
+    "difficulty": 4,
+    "type": "single",
+    "mode": "scenario",
+    "prompt": "Какая гарантия порядка в Kafka является базовой?",
+    "tags": ["kafka", "ordering", "partition"],
+    "options": [
+      { "id": "a", "text": "Глобальный порядок всех сообщений во всех topics" },
+      { "id": "b", "text": "Порядок сообщений внутри одной partition" },
+      { "id": "c", "text": "Порядок только между разными consumer groups" },
+      { "id": "d", "text": "Kafka не даёт никаких гарантий порядка" }
+    ],
+    "correctOptionIds": ["b"],
+    "answerGuide": {
+      "short": "Kafka гарантирует порядок внутри одной partition.",
+      "normal": "Если сообщения с одним ключом попадают в одну partition, consumer увидит их в порядке записи. Между partitions глобального порядка нет.",
+      "traps": ["Ждать порядка на уровне всего topic.", "Игнорировать key при требованиях к ordering."],
+      "followUps": ["Как обеспечить порядок событий одного пользователя?", "Почему нельзя просто добавить partitions без анализа ключей?"]
+    },
+    "meta": { "verified": true, "source": "enhorse/java-interview topics, paraphrased", "lastReviewedAt": "2026-05-22", "reviewer": "codex" }
+  },
+  {
+    "id": "mb-011",
+    "domain": "message-brokers",
+    "difficulty": 5,
+    "type": "open",
+    "mode": "architecture",
+    "prompt": "Как работает consumer group в Kafka?",
+    "tags": ["kafka", "consumer-group", "scaling"],
+    "rubric": [
+      {
+        "id": "group",
+        "title": "Group",
+        "description": "Consumer group — набор consumers, совместно читающих topic как один логический подписчик.",
+        "required": true,
+        "weight": 1,
+        "keywords": ["consumer group", "group", "подписчик"]
+      },
+      {
+        "id": "assignment",
+        "title": "Partition assignment",
+        "description": "Каждая partition назначается максимум одному consumer внутри группы в конкретный момент.",
+        "required": true,
+        "weight": 2,
+        "keywords": ["partition", "назнач", "одному consumer", "assignment"]
+      },
+      {
+        "id": "scaling",
+        "title": "Scaling limit",
+        "description": "Параллелизм группы ограничен числом partitions; лишние consumers будут простаивать.",
+        "required": true,
+        "weight": 2,
+        "keywords": ["параллел", "число partitions", "проста"]
+      },
+      {
+        "id": "rebalance",
+        "title": "Rebalance",
+        "description": "При изменении состава группы partitions перераспределяются, что может временно остановить обработку.",
+        "required": false,
+        "weight": 1,
+        "keywords": ["rebalance", "перераспредел", "состав группы"]
+      }
+    ],
+    "answerGuide": {
+      "short": "Consumer group делит partitions между consumers; одна partition одновременно читается одним consumer группы. Параллелизм ограничен числом partitions — лишние consumers будут простаивать.",
+      "normal": "Группа позволяет масштабировать чтение: разные consumers получают разные partitions. Параллелизм группы ограничен числом partitions: если consumers больше, лишние будут простаивать. При добавлении/падении consumer происходит rebalance.",
+      "traps": ["Думать, что два consumer одной группы читают одну partition параллельно.", "Добавлять consumers сверх числа partitions и ждать роста throughput."],
+      "followUps": ["Что такое rebalance?", "Когда offset commit делать до или после обработки?"]
+    },
+    "meta": { "verified": true, "source": "enhorse/java-interview topics, paraphrased", "lastReviewedAt": "2026-05-22", "reviewer": "codex" }
+  },
+  {
+    "id": "mb-012",
+    "domain": "message-brokers",
+    "difficulty": 3,
+    "type": "open",
+    "mode": "definition",
+    "prompt": "Что такое Kafka и когда её стоит выбирать?",
+    "tags": ["kafka", "architecture"],
+    "rubric": [
+      {
+        "id": "log",
+        "title": "Distributed log",
+        "description": "Kafka — распределённый commit log для потоков событий, а не просто очередь.",
+        "required": true,
+        "weight": 2,
+        "keywords": ["kafka", "log", "событ", "stream"]
+      },
+      {
+        "id": "strengths",
+        "title": "Сильные стороны",
+        "description": "Высокая пропускная способность, retention/replay, независимые consumer groups.",
+        "required": true,
+        "weight": 2,
+        "keywords": ["throughput", "retention", "replay", "consumer group"]
+      },
+      {
+        "id": "not-for",
+        "title": "Когда не стоит",
+        "description": "Не лучший выбор для приоритетных очередей, per-message TTL/delay и сложной AMQP-маршрутизации.",
+        "required": false,
+        "weight": 1,
+        "keywords": ["ttl", "delay", "priority", "amqp"]
+      }
+    ],
+    "answerGuide": {
+      "short": "Kafka — распределённый лог событий с retention, replay и масштабируемым чтением consumer groups.",
+      "normal": "Её выбирают для event streaming, интеграций, аудита, аналитических пайплайнов и high-throughput обмена событиями. Для классических задач очередей с delay/priority/DLQ из коробки может быть удобнее RabbitMQ.",
+      "traps": ["Считать Kafka универсальной заменой любой очереди.", "Игнорировать требования к порядку и ключам."],
+      "followUps": ["Чем Kafka отличается от RabbitMQ?", "Что такое retention?"]
+    },
+    "meta": { "verified": true, "source": "enhorse/java-interview topics, paraphrased", "lastReviewedAt": "2026-05-22", "reviewer": "codex" }
+  },
+  {
+    "id": "mb-013",
+    "domain": "message-brokers",
+    "difficulty": 4,
+    "type": "open",
+    "mode": "definition",
+    "prompt": "Какие основные компоненты Kafka вы знаете?",
+    "tags": ["kafka", "broker", "producer", "consumer"],
+    "rubric": [
+      {
+        "id": "producer-consumer",
+        "title": "Producer/Consumer",
+        "description": "Producer пишет records в topics, consumer читает их.",
+        "required": true,
+        "weight": 1,
+        "keywords": ["producer", "consumer"]
+      },
+      {
+        "id": "broker-topic",
+        "title": "Broker/Topic/Partition",
+        "description": "Broker хранит partitions topics; partition — единица порядка и параллелизма.",
+        "required": true,
+        "weight": 2,
+        "keywords": ["broker", "topic", "partition"]
+      },
+      {
+        "id": "coordination",
+        "title": "Coordination",
+        "description": "Consumer group coordination и metadata управляют назначениями partitions; современные Kafka-кластеры могут работать без ZooKeeper через KRaft.",
+        "required": false,
+        "weight": 1,
+        "keywords": ["consumer group", "coordinator", "zookeeper", "kraft"]
+      }
+    ],
+    "answerGuide": {
+      "short": "Producer, consumer, broker, topic, partition, offset, consumer group и replication.",
+      "normal": "Broker принимает и хранит данные. Topic логически группирует события. Partition даёт порядок внутри себя и масштабирование. Consumer group распределяет partitions между экземплярами приложения.",
+      "traps": ["Называть ZooKeeper обязательным для всех современных Kafka-кластеров.", "Путать topic и queue."],
+      "followUps": ["Что такое partition leader?", "Что такое offset commit?"]
+    },
+    "meta": { "verified": true, "source": "enhorse/java-interview topics, paraphrased", "lastReviewedAt": "2026-05-22", "reviewer": "codex" }
+  },
+  {
+    "id": "mb-014",
+    "domain": "message-brokers",
+    "difficulty": 4,
+    "type": "open",
+    "mode": "definition",
+    "prompt": "Как producer выбирает partition для сообщения?",
+    "tags": ["kafka", "producer", "partitioner", "ordering"],
+    "rubric": [
+      {
+        "id": "key",
+        "title": "Key",
+        "description": "Если key задан, partition обычно выбирается хешем ключа, чтобы одинаковый key попадал в одну partition.",
+        "required": true,
+        "weight": 2,
+        "keywords": ["key", "hash", "partition"]
+      },
+      {
+        "id": "no-key",
+        "title": "No key",
+        "description": "Без key producer распределяет сообщения по partitions по стратегии partitioner-а для баланса.",
+        "required": true,
+        "weight": 1,
+        "keywords": ["без key", "partitioner", "round", "sticky"]
+      },
+      {
+        "id": "ordering",
+        "title": "Ordering",
+        "description": "Порядок сохраняется только внутри выбранной partition; key важен для порядка событий одной сущности.",
+        "required": true,
+        "weight": 2,
+        "keywords": ["порядок", "ordering", "одной partition"]
+      }
+    ],
+    "answerGuide": {
+      "short": "С key partition обычно выбирается по хешу key; без key — стратегией partitioner-а.",
+      "normal": "Если нужен порядок по userId/orderId, этот id кладут в key. Тогда события одного ключа идут в одну partition и читаются последовательно.",
+      "traps": ["Отправлять без key и ожидать порядок по бизнес-сущности.", "Считать порядок глобальным по topic."],
+      "followUps": ["Что делает custom Partitioner?", "Что будет при hot key?"]
+    },
+    "meta": { "verified": true, "source": "enhorse/java-interview topics, paraphrased", "lastReviewedAt": "2026-05-22", "reviewer": "codex" }
+  },
+  {
+    "id": "mb-015",
+    "domain": "message-brokers",
+    "difficulty": 5,
+    "type": "open",
+    "mode": "comparison",
+    "prompt": "Что означают acks=0, acks=1 и acks=all у Kafka producer?",
+    "tags": ["kafka", "producer", "acks", "reliability"],
+    "rubric": [
+      {
+        "id": "acks0",
+        "title": "acks=0",
+        "description": "Producer не ждёт подтверждения broker-а; минимальная задержка, максимальный риск потери.",
+        "required": true,
+        "weight": 1,
+        "keywords": ["acks=0", "не жд"]
+      },
+      {
+        "id": "acks1",
+        "title": "acks=1",
+        "description": "Подтверждение от leader partition; follower replicas могут ещё не получить запись.",
+        "required": true,
+        "weight": 1,
+        "keywords": ["acks=1", "leader"]
+      },
+      {
+        "id": "acksall",
+        "title": "acks=all",
+        "description": "Подтверждение после записи на in-sync replicas согласно min.insync.replicas.",
+        "required": true,
+        "weight": 2,
+        "keywords": ["acks=all", "isr", "min.insync"]
+      }
+    ],
+    "answerGuide": {
+      "short": "acks=0 без подтверждения, acks=1 ждёт leader, acks=all ждёт ISR и надёжнее.",
+      "normal": "Для критичных событий обычно используют acks=all, replication.factor > 1 и min.insync.replicas. Это повышает надёжность, но может увеличить latency и снизить availability при деградации replicas.",
+      "traps": ["Ставить acks=all без понимания min.insync.replicas.", "Ждать exactly-once только от acks."],
+      "followUps": ["Что такое ISR?", "Как enable.idempotence связан с retries?"]
+    },
+    "meta": { "verified": true, "source": "enhorse/java-interview topics, paraphrased", "lastReviewedAt": "2026-05-22", "reviewer": "codex" }
+  },
+  {
+    "id": "mb-016",
+    "domain": "message-brokers",
+    "difficulty": 5,
+    "type": "open",
+    "mode": "definition",
+    "prompt": "Что такое идемпотентный Kafka producer и зачем он нужен?",
+    "tags": ["kafka", "producer", "idempotence", "retries"],
+    "rubric": [
+      {
+        "id": "problem",
+        "title": "Проблема дублей",
+        "description": "При retry producer может отправить дубликат, если ack потерялся, а запись уже принята broker-ом.",
+        "required": true,
+        "weight": 2,
+        "keywords": ["retry", "дубликат", "ack"]
+      },
+      {
+        "id": "idempotence",
+        "title": "Idempotence",
+        "description": "enable.idempotence добавляет producer id/sequence и позволяет broker-у отбрасывать дубли в partition.",
+        "required": true,
+        "weight": 2,
+        "keywords": ["enable.idempotence", "sequence", "producer id"]
+      },
+      {
+        "id": "scope",
+        "title": "Scope",
+        "description": "Гарантия ограничена Kafka producer/partition и не заменяет идемпотентность consumer-а end-to-end.",
+        "required": true,
+        "weight": 1,
+        "keywords": ["partition", "end-to-end", "consumer"]
+      }
+    ],
+    "answerGuide": {
+      "short": "Идемпотентный producer защищает от дублей при retry внутри Kafka, используя sequence на partition.",
+      "normal": "Это полезно, когда отправка была успешна, но подтверждение потерялось. Broker видит повтор по producer id и sequence number и не пишет duplicate record.",
+      "traps": ["Считать producer idempotence полной exactly-once гарантией всего приложения.", "Отключать retries и терять сообщения вместо борьбы с дублями."],
+      "followUps": ["Что дают Kafka transactions?", "Почему consumer всё равно должен быть идемпотентным?"]
+    },
+    "meta": { "verified": true, "source": "enhorse/java-interview topics, paraphrased", "lastReviewedAt": "2026-05-22", "reviewer": "codex" }
+  },
+  {
+    "id": "mb-017",
+    "domain": "message-brokers",
+    "difficulty": 5,
+    "type": "open",
+    "mode": "comparison",
+    "prompt": "Чем commitSync() отличается от commitAsync() у Kafka consumer?",
+    "tags": ["kafka", "consumer", "offset", "commit"],
+    "rubric": [
+      {
+        "id": "sync",
+        "title": "commitSync",
+        "description": "Синхронно ждёт результата commit и может повторять/бросить ошибку вызывающему коду.",
+        "required": true,
+        "weight": 2,
+        "keywords": ["commitsync", "синхрон", "жд"]
+      },
+      {
+        "id": "async",
+        "title": "commitAsync",
+        "description": "Не блокирует poll loop, результат приходит callback-ом; возможны нюансы порядка callback-ов.",
+        "required": true,
+        "weight": 2,
+        "keywords": ["commitasync", "callback", "не блок"]
+      },
+      {
+        "id": "choice",
+        "title": "Выбор",
+        "description": "Async быстрее в цикле, sync часто используют при shutdown/rebalance для финального commit.",
+        "required": false,
+        "weight": 1,
+        "keywords": ["shutdown", "rebalance", "финаль"]
+      }
+    ],
+    "answerGuide": {
+      "short": "commitSync блокирует и ждёт результат; commitAsync быстрее, но требует аккуратного callback/error handling.",
+      "normal": "Типичный подход: async commits в основном цикле ради throughput и sync commit при закрытии consumer или в rebalance hooks, чтобы не потерять последний прогресс.",
+      "traps": ["Коммитить offset до успешной обработки.", "Игнорировать ошибки async callback."],
+      "followUps": ["Что такое auto commit?", "Почему commit после обработки даёт at-least-once?"]
+    },
+    "meta": { "verified": true, "source": "enhorse/java-interview topics, paraphrased", "lastReviewedAt": "2026-05-22", "reviewer": "codex" }
+  },
+  {
+    "id": "mb-018",
+    "domain": "message-brokers",
+    "difficulty": 4,
+    "type": "single",
+    "mode": "definition",
+    "prompt": "Что делает настройка auto.offset.reset=earliest?",
+    "tags": ["kafka", "consumer", "offset"],
+    "options": [
+      { "id": "a", "text": "Всегда перечитывает topic с начала при каждом запуске consumer" },
+      { "id": "b", "text": "Начинает читать с самого раннего доступного offset, если у группы ещё нет committed offset" },
+      { "id": "c", "text": "Удаляет committed offsets группы" },
+      { "id": "d", "text": "Коммитит offset после каждого record" }
+    ],
+    "correctOptionIds": ["b"],
+    "answerGuide": {
+      "short": "earliest применяется, когда committed offset отсутствует: читать с самого раннего доступного сообщения.",
+      "normal": "Если offset для group.id уже есть, consumer продолжит с него. auto.offset.reset влияет только на ситуацию отсутствующего/недоступного offset.",
+      "traps": ["Думать, что earliest всегда сбрасывает прогресс.", "Не учитывать retention: ранние сообщения могли быть удалены."],
+      "followUps": ["Чем earliest отличается от latest?", "Как вручную сбросить offsets группы?"]
+    },
+    "meta": { "verified": true, "source": "enhorse/java-interview topics, paraphrased", "lastReviewedAt": "2026-05-22", "reviewer": "codex" }
+  },
+  {
+    "id": "mb-019",
+    "domain": "message-brokers",
+    "difficulty": 5,
+    "type": "open",
+    "mode": "definition",
+    "prompt": "Что такое Kafka rebalance и почему он опасен для обработки сообщений?",
+    "tags": ["kafka", "consumer-group", "rebalance"],
+    "rubric": [
+      {
+        "id": "definition",
+        "title": "Rebalance",
+        "description": "Перераспределение partitions между consumers при изменении состава группы или metadata.",
+        "required": true,
+        "weight": 2,
+        "keywords": ["rebalance", "перераспредел", "partition"]
+      },
+      {
+        "id": "pause",
+        "title": "Пауза",
+        "description": "Во время rebalance обработка может временно останавливаться, а partitions отзываются у consumers.",
+        "required": true,
+        "weight": 1,
+        "keywords": ["pause", "останов", "revoked"]
+      },
+      {
+        "id": "commit",
+        "title": "Offset risk",
+        "description": "Нужно корректно коммитить обработанные offsets при revoke, иначе будут дубли или потери.",
+        "required": true,
+        "weight": 2,
+        "keywords": ["offset", "commit", "дубли", "потери"]
+      }
+    ],
+    "answerGuide": {
+      "short": "Rebalance перераспределяет partitions в группе и приостанавливает обработку: partitions revoked у consumers, новые ещё не назначены — пауза. Опасен ещё и неправильным commit offsets.",
+      "normal": "Он случается при добавлении/падении consumer, timeout heartbeat, изменении partitions. Во время rebalance обработка временно останавливается, partitions revoked у consumers; обработчик rebalance должен зафиксировать прогресс по отозванным partitions и корректно остановить in-flight работу.",
+      "traps": ["Долго обрабатывать batch и превышать max.poll.interval.ms.", "Не обрабатывать partition revoke callbacks."],
+      "followUps": ["Что делает heartbeat thread?", "Что такое cooperative rebalance?"]
+    },
+    "meta": { "verified": true, "source": "enhorse/java-interview topics, paraphrased", "lastReviewedAt": "2026-05-22", "reviewer": "codex" }
+  },
+  {
+    "id": "mb-020",
+    "domain": "message-brokers",
+    "difficulty": 5,
+    "type": "open",
+    "mode": "comparison",
+    "prompt": "Чем Kafka Streams отличается от обычного Kafka Consumer?",
+    "tags": ["kafka", "streams", "consumer"],
+    "rubric": [
+      {
+        "id": "consumer",
+        "title": "Consumer API",
+        "description": "Низкоуровневое чтение records и ручная обработка poll/commit/error handling.",
+        "required": true,
+        "weight": 1,
+        "keywords": ["consumer api", "poll", "commit"]
+      },
+      {
+        "id": "streams",
+        "title": "Streams API",
+        "description": "Библиотека stream processing с DSL, state stores, windowing и топологиями.",
+        "required": true,
+        "weight": 2,
+        "keywords": ["streams", "dsl", "state store", "window"]
+      },
+      {
+        "id": "deployment",
+        "title": "Deployment",
+        "description": "Kafka Streams запускается как обычное приложение, а не отдельный кластер обработки.",
+        "required": false,
+        "weight": 1,
+        "keywords": ["приложение", "cluster"]
+      }
+    ],
+    "answerGuide": {
+      "short": "Consumer API — ручное чтение; Kafka Streams — библиотека для stateful stream processing поверх Kafka.",
+      "normal": "Streams удобно использовать для join, aggregation, windowing и materialized state. Для простой обработки сообщения и вызова сервиса часто достаточно Consumer API.",
+      "traps": ["Путать Kafka Streams с отдельным сервером.", "Использовать Streams для тривиального consume без state/топологии."],
+      "followUps": ["Что такое state store?", "Чем Kafka Streams отличается от Flink?"]
+    },
+    "meta": { "verified": true, "source": "enhorse/java-interview topics, paraphrased", "lastReviewedAt": "2026-05-22", "reviewer": "codex" }
+  },
+  {
+    "id": "mb-021",
+    "domain": "message-brokers",
+    "difficulty": 4,
+    "type": "open",
+    "mode": "definition",
+    "prompt": "Зачем нужна Schema Registry в Kafka-экосистеме?",
+    "tags": ["kafka", "schema-registry", "serialization"],
+    "rubric": [
+      {
+        "id": "schemas",
+        "title": "Schemas",
+        "description": "Хранит версии схем сообщений для Avro/Protobuf/JSON Schema.",
+        "required": true,
+        "weight": 1,
+        "keywords": ["schema registry", "avro", "protobuf", "json schema"]
+      },
+      {
+        "id": "compatibility",
+        "title": "Compatibility",
+        "description": "Проверяет совместимость новых версий схем, чтобы producer не сломал consumers.",
+        "required": true,
+        "weight": 2,
+        "keywords": ["compatibility", "совместим", "version"]
+      },
+      {
+        "id": "evolution",
+        "title": "Evolution",
+        "description": "Позволяет развивать контракт событий независимо между командами.",
+        "required": false,
+        "weight": 1,
+        "keywords": ["evolution", "контракт", "команд"]
+      }
+    ],
+    "answerGuide": {
+      "short": "Schema Registry хранит версии схем и контролирует совместимость сообщений.",
+      "normal": "Она нужна, чтобы producer и consumer не договаривались устно о формате. Схема получает id, payload сериализуется по ней, а compatibility rules защищают от ломающих изменений.",
+      "traps": ["Менять формат события без версии/совместимости.", "Считать JSON без схемы достаточным контрактом для больших систем."],
+      "followUps": ["Что такое backward compatibility?", "Как добавлять поле в Avro-схему?"]
+    },
+    "meta": { "verified": true, "source": "enhorse/java-interview topics, paraphrased", "lastReviewedAt": "2026-05-22", "reviewer": "codex" }
+  },
+  {
+    "id": "mb-022",
+    "domain": "message-brokers",
+    "difficulty": 4,
+    "type": "open",
+    "mode": "comparison",
+    "prompt": "Чем Kafka отличается от RabbitMQ?",
+    "tags": ["kafka", "rabbitmq", "messaging"],
+    "rubric": [
+      {
+        "id": "kafka",
+        "title": "Kafka",
+        "description": "Распределённый лог: retention, replay, high throughput, consumer groups.",
+        "required": true,
+        "weight": 2,
+        "keywords": ["kafka", "log", "retention", "replay"]
+      },
+      {
+        "id": "rabbit",
+        "title": "RabbitMQ",
+        "description": "Классический брокер очередей с exchanges/routing, ack/nack, TTL, DLQ/delay-паттернами.",
+        "required": true,
+        "weight": 2,
+        "keywords": ["rabbitmq", "exchange", "routing", "ttl", "dlq"]
+      },
+      {
+        "id": "choice",
+        "title": "Выбор",
+        "description": "Kafka для потоков событий и replay; RabbitMQ для команд/очередей со сложной маршрутизацией.",
+        "required": false,
+        "weight": 1,
+        "keywords": ["выбор", "events", "commands"]
+      }
+    ],
+    "answerGuide": {
+      "short": "Kafka — лог событий и replay; RabbitMQ — классический брокер очередей с гибкой маршрутизацией.",
+      "normal": "Kafka хранит историю и позволяет разным группам читать независимо. RabbitMQ хорошо подходит для work queues, routing keys, delayed/dead-letter паттернов и задач, где сообщение после обработки исчезает.",
+      "traps": ["Выбирать Kafka только потому, что она популярна.", "Ожидать от RabbitMQ Kafka-style replay без отдельного проектирования."],
+      "followUps": ["Что такое exchange в RabbitMQ?", "Когда Kafka как очередь неудобна?"]
+    },
+    "meta": { "verified": true, "source": "enhorse/java-interview topics, paraphrased", "lastReviewedAt": "2026-05-22", "reviewer": "codex" }
+  },
+  {
+    "id": "mb-023",
+    "domain": "message-brokers",
+    "difficulty": 4,
+    "type": "open",
+    "mode": "definition",
+    "prompt": "Что такое exchange и routing key в RabbitMQ?",
+    "tags": ["rabbitmq", "exchange", "routing"],
+    "rubric": [
+      {
+        "id": "exchange",
+        "title": "Exchange",
+        "description": "Exchange принимает сообщения от producer и маршрутизирует их в queues.",
+        "required": true,
+        "weight": 2,
+        "keywords": ["exchange", "queue", "producer"]
+      },
+      {
+        "id": "routing-key",
+        "title": "Routing key",
+        "description": "Routing key участвует в выборе queues через bindings.",
+        "required": true,
+        "weight": 1,
+        "keywords": ["routing key", "binding"]
+      },
+      {
+        "id": "types",
+        "title": "Types",
+        "description": "Direct, topic, fanout, headers exchange дают разные правила маршрутизации.",
+        "required": false,
+        "weight": 1,
+        "keywords": ["direct", "topic", "fanout", "headers"]
+      }
+    ],
+    "answerGuide": {
+      "short": "Exchange маршрутизирует сообщения в queues; routing key сопоставляется с bindings.",
+      "normal": "Producer обычно публикует в exchange, а не напрямую в queue. Direct требует точного ключа, topic поддерживает шаблоны, fanout рассылает всем привязанным queues.",
+      "traps": ["Путать exchange с queue.", "Ожидать Kafka-style retention от RabbitMQ queue."],
+      "followUps": ["Что такое binding?", "Чем direct exchange отличается от topic exchange?"]
+    },
+    "meta": { "verified": true, "source": "codex", "lastReviewedAt": "2026-05-22", "reviewer": "codex" }
+  },
+  {
+    "id": "mb-024",
+    "domain": "message-brokers",
+    "difficulty": 4,
+    "type": "single",
+    "mode": "definition",
+    "prompt": "Что означает visibility timeout в AWS SQS?",
+    "tags": ["sqs", "visibility-timeout", "delivery-semantics"],
+    "options": [
+      { "id": "a", "text": "Время, после которого очередь удаляется" },
+      { "id": "b", "text": "Период, на который полученное сообщение скрыто от других consumers" },
+      { "id": "c", "text": "Максимальный срок хранения логов producer-а" },
+      { "id": "d", "text": "Интервал между автоматическими коммитами offset" }
+    ],
+    "correctOptionIds": ["b"],
+    "answerGuide": {
+      "short": "Visibility timeout скрывает полученное сообщение от других consumers на время обработки.",
+      "normal": "Если consumer не удалит сообщение до истечения timeout, оно снова станет доступным. Поэтому SQS обработчики должны быть идемпотентными.",
+      "traps": ["Считать получение сообщения его удалением.", "Ставить timeout меньше реального времени обработки."],
+      "followUps": ["Как работает DLQ в SQS?", "Почему SQS даёт at-least-once?"]
+    },
+    "meta": { "verified": true, "source": "codex", "lastReviewedAt": "2026-05-22", "reviewer": "codex" }
+  },
+  {
+    "id": "mb-025",
+    "domain": "message-brokers",
+    "difficulty": 5,
+    "type": "open",
+    "mode": "architecture",
+    "prompt": "Что такое saga pattern в микросервисах?",
+    "tags": ["saga", "microservices", "eventual-consistency"],
+    "rubric": [
+      {
+        "id": "local-transactions",
+        "title": "Local transactions",
+        "description": "Saga разбивает процесс на локальные транзакции в разных сервисах.",
+        "required": true,
+        "weight": 2,
+        "keywords": ["saga", "local transaction", "локальн"]
+      },
+      {
+        "id": "compensation",
+        "title": "Compensation",
+        "description": "При сбое выполняются компенсирующие действия вместо общего rollback.",
+        "required": true,
+        "weight": 2,
+        "keywords": ["compensation", "компенсац", "rollback"]
+      },
+      {
+        "id": "styles",
+        "title": "Styles",
+        "description": "Choreography через события или orchestration через координатор.",
+        "required": false,
+        "weight": 1,
+        "keywords": ["choreography", "orchestration", "event"]
+      }
+    ],
+    "answerGuide": {
+      "short": "Saga — цепочка локальных транзакций с компенсациями для распределённого бизнес-процесса.",
+      "normal": "Она нужна, когда нельзя или не хочется держать distributed transaction между сервисами. Состояния процесса должны явно отражать eventual consistency и возможные компенсации.",
+      "traps": ["Думать, что компенсация всегда точный undo.", "Не проектировать промежуточные статусы процесса."],
+      "followUps": ["Чем choreography отличается от orchestration?", "Когда saga хуже простой монолитной транзакции?"]
+    },
+    "meta": { "verified": true, "source": "codex", "lastReviewedAt": "2026-05-22", "reviewer": "codex" }
+  },
+  {
+    "id": "mb-026",
+    "domain": "message-brokers",
+    "difficulty": 5,
+    "type": "open",
+    "mode": "definition",
+    "prompt": "Что такое Change Data Capture (CDC) и где оно полезно?",
+    "tags": ["cdc", "outbox", "event-driven"],
+    "rubric": [
+      {
+        "id": "definition",
+        "title": "CDC",
+        "description": "Чтение изменений из БД, часто из transaction log/WAL/binlog, и публикация их дальше.",
+        "required": true,
+        "weight": 2,
+        "keywords": ["cdc", "wal", "binlog", "change"]
+      },
+      {
+        "id": "use-cases",
+        "title": "Use cases",
+        "description": "Индексация, аналитика, интеграции, outbox relay, репликация read models.",
+        "required": true,
+        "weight": 2,
+        "keywords": ["index", "analytics", "outbox", "read model"]
+      },
+      {
+        "id": "contract",
+        "title": "Contract",
+        "description": "CDC строки таблицы не всегда равно доменному событию; нужен контракт payload.",
+        "required": false,
+        "weight": 1,
+        "keywords": ["domain event", "contract", "payload"]
+      }
+    ],
+    "answerGuide": {
+      "short": "CDC читает изменения из журнала БД и публикует их для индексации, аналитики и интеграций.",
+      "normal": "CDC полезно, когда нельзя вставлять publish прямо в transaction path или нужен outbox relay. Но схема таблицы не должна автоматически становиться внешним контрактом события.",
+      "traps": ["Публиковать внутреннюю структуру таблицы как публичный event contract.", "Не учитывать порядок и повторную доставку изменений."],
+      "followUps": ["Как CDC связан с transactional outbox?", "Что такое Debezium?"]
+    },
+    "meta": { "verified": true, "source": "codex", "lastReviewedAt": "2026-05-22", "reviewer": "codex" }
+  }
+]
