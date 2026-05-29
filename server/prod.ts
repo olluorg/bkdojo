@@ -18,12 +18,16 @@ Bun.serve({
 
     if (url.pathname === '/api/evaluate') return handler(req);
 
+    // Keep the opener<->popup handle alive for the Google OAuth popup login
+    // (the popup visits accounts.google.com, which is COOP:same-origin).
+    const spaHeaders = { 'cross-origin-opener-policy': 'same-origin-allow-popups' };
+
     const rel = url.pathname === '/' ? 'index.html' : url.pathname.replace(/^\/+/, '');
     const file = Bun.file(new URL(rel, distDir));
-    if (await file.exists()) return new Response(file);
+    if (await file.exists()) return new Response(file, { headers: spaHeaders });
 
     // Hash-router app: unknown paths fall back to index.html.
-    return new Response(indexHtml, { headers: { 'content-type': 'text/html' } });
+    return new Response(indexHtml, { headers: { 'content-type': 'text/html', ...spaHeaders } });
   },
 });
 

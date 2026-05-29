@@ -1,9 +1,15 @@
-import { useRef, useState } from 'react';
+import { lazy, Suspense, useRef, useState } from 'react';
 import { serverEndpoint } from '../../domain/evaluation/ServerAiEvaluator';
 import { EVAL_METHOD_HINTS, EVAL_METHOD_LABELS, type EvalMethod } from '../../domain/models/settings';
 import { parseProgress, serializeProgress } from '../../storage/progressStorage';
 import { useAiCapability, type AiStatus } from '../../hooks/useAiCapability';
 import { useProgress } from '../../state/ProgressContext';
+
+// Sync UI (and the SDK it pulls in) is loaded only when the build flag is set.
+// Gating the dynamic import on the static flag lets Vite drop the SyncSection
+// chunk (and the whole SDK) from the default offline-only build.
+const SYNC_ENABLED = import.meta.env.VITE_BKDOJO_SYNC === '1';
+const SyncSection = SYNC_ENABLED ? lazy(() => import('./SyncSection')) : null;
 
 const METHODS: EvalMethod[] = ['auto', 'server', 'chrome', 'manual'];
 
@@ -109,6 +115,12 @@ export function SettingsScreen() {
         </div>
         {importMsg && <p className="screen__note">{importMsg}</p>}
       </div>
+
+      {SyncSection && (
+        <Suspense fallback={null}>
+          <SyncSection />
+        </Suspense>
+      )}
 
       <p className="screen__note">
         Если выбранный способ недоступен, ответ можно оценить самому — самопроверка всегда работает как

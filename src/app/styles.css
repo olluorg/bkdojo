@@ -1531,6 +1531,21 @@ body {
   outline: none;
 }
 
+.text-input {
+  padding: 10px 12px;
+  border-radius: var(--radius);
+  border: 1px solid var(--border);
+  background: var(--bg);
+  color: var(--text);
+  font: inherit;
+  font-size: 14px;
+}
+
+.text-input:focus-visible {
+  border-color: var(--accent);
+  outline: none;
+}
+
 .qchat__send {
   margin: 0;
   white-space: nowrap;

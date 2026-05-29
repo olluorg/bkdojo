@@ -60,7 +60,7 @@ function isValidProgress(value: unknown): value is UserProgress {
  * terms) and backfills any newly added domain skills (e.g. when a course is
  * introduced) so the save isn't wiped.
  */
-function normalizeProgress(parsed: UserProgress): UserProgress {
+export function normalizeProgress(parsed: UserProgress): UserProgress {
   const defaults = createDefaultProgress();
   const skills = { ...defaults.skills };
   for (const domain of DOMAINS) {

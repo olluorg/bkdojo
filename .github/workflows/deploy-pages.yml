@@ -31,6 +31,12 @@ jobs:
           # For project pages (https://<user>.github.io/<repo>/) Vite needs a base path.
           # GITHUB_REPOSITORY is "<owner>/<repo>"; we extract the repo segment.
           VITE_BASE: /${{ github.event.repository.name }}/
+          # Sync config — all build-time and non-secret (they ship in the client
+          # bundle), so they live in repo Variables, not Secrets. Leave the
+          # VITE_BKDOJO_SYNC variable unset/empty to ship the offline-only build.
+          VITE_BKDOJO_SYNC: ${{ vars.VITE_BKDOJO_SYNC }}
+          VITE_OLLU_SERVER: ${{ vars.VITE_OLLU_SERVER }}
+          VITE_OLLU_GOOGLE_CLIENT_ID: ${{ vars.VITE_OLLU_GOOGLE_CLIENT_ID }}
         run: bun run build
 
       - name: SPA 404 fallback
