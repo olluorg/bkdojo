@@ -23,6 +23,7 @@ describe('runFreeformChat', () => {
 
   test('falls back to the server proxy when Chrome AI is unavailable (auto)', async () => {
     let sentBody = '';
+    let sentKey = '';
     const result = await runFreeformChat(
       'sys',
       [
@@ -32,16 +33,22 @@ describe('runFreeformChat', () => {
       ],
       {
         getModel: () => undefined,
-        endpoint: 'https://example.test/eval',
+        endpoint: 'https://example.test/functions/llm',
+        apiKey: 'sk-test',
         method: 'auto',
         fetchFn: async (_url, init) => {
           sentBody = String(init?.body ?? '');
-          return new Response('ответ сервера', { status: 200 });
+          sentKey = new Headers(init?.headers).get('x-provider-key') ?? '';
+          return new Response(
+            JSON.stringify({ choices: [{ message: { content: 'ответ сервера' } }] }),
+            { status: 200 },
+          );
         },
       },
     );
     expect(result.source).toBe('server');
     expect(result.text).toBe('ответ сервера');
+    expect(sentKey).toBe('sk-test');
     // The transcript is flattened into the user message for the server path.
     expect(sentBody).toContain('вопрос 1');
     expect(sentBody).toContain('ответ 1');

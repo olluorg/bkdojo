@@ -6,8 +6,6 @@
   "description": "Backend Interview Trainer — adaptive Java/Kotlin backend interview prep (Chrome-first MVP)",
   "scripts": {
     "dev": "vite",
-    "dev:api": "bun server/dev.ts",
-    "dev:all": "bun server/dev.ts & vite",
     "build": "tsc --noEmit && vite build",
     "start": "bun server/prod.ts",
     "preview": "vite preview",

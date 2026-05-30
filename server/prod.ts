@@ -1,12 +1,11 @@
 /**
- * Production server for a VPS: serves the built SPA (dist/) and the evaluation
- * API in one Bun process. Run after `bun run build` with `bun run start`.
+ * Production server for a VPS: serves the built SPA (dist/) in one Bun process.
+ * Run after `bun run build` with `bun run start`.
  *
- * Put it behind a reverse proxy (Caddy/nginx) for TLS. See DEPLOY.md.
- * Env: PORT (default 3000), OPENROUTER_API_KEY (+ OPENROUTER_MODEL) for the API.
+ * Open-answer evaluation no longer runs here — it goes to the micro-platform LLM
+ * proxy (`VITE_EVAL_ENDPOINT` → /functions/llm) with the user's own key. This
+ * server is now pure static hosting; put it behind a reverse proxy for TLS.
  */
-import handler from '../api/evaluate.ts';
-
 const port = Number(process.env.PORT ?? 3000);
 const distDir = new URL('../dist/', import.meta.url);
 const indexHtml = Bun.file(new URL('index.html', distDir));
@@ -15,8 +14,6 @@ Bun.serve({
   port,
   async fetch(req) {
     const url = new URL(req.url);
-
-    if (url.pathname === '/api/evaluate') return handler(req);
 
     // Keep the opener<->popup handle alive for the Google OAuth popup login
     // (the popup visits accounts.google.com, which is COOP:same-origin).
@@ -31,7 +28,4 @@ Bun.serve({
   },
 });
 
-console.log(`[bkdojo] serving dist + /api on http://localhost:${port}`);
-if (!process.env.OPENROUTER_API_KEY) {
-  console.warn('[bkdojo] OPENROUTER_API_KEY is not set — open-answer eval will 500');
-}
+console.log(`[bkdojo] serving dist on http://localhost:${port}`);

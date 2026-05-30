@@ -17,11 +17,11 @@ The app is inspired by Duolingo, but it is not childish. It should feel like a s
 
 ## MVP constraints
 
-- No persistent backend / database; the only server code is a stateless, optional serverless eval proxy (`api/evaluate.ts` → OpenRouter). It holds the API key and is opt-in via `VITE_EVAL_ENDPOINT`.
+- No persistent backend / database, and no provider key on any bkdojo server. Open-answer eval is opt-in via `VITE_EVAL_ENDPOINT`, which points at the micro-platform LLM proxy (`/functions/llm`); the user supplies their own OpenRouter key in Settings (sent as the `X-Provider-Key` header, stored only in localStorage). The only bkdojo server code is `server/prod.ts`, which statically serves `dist/`.
 - No authentication
 - No payments
 - Chrome-first: full functionality is only required in Google Chrome Desktop
-- Open-answer questions are evaluated by AI: on-device via the Chrome Built-in AI / Prompt API first, then the serverless OpenRouter proxy if configured, then manual self-assessment. Keyword matching is NOT the product evaluation mechanism — it survives only as a test/emergency fallback.
+- Open-answer questions are evaluated by AI: on-device via the Chrome Built-in AI / Prompt API first, then the micro-platform LLM proxy if configured (with the user's own key), then manual self-assessment. Keyword matching is NOT the product evaluation mechanism — it survives only as a test/emergency fallback.
 - All evaluators sit behind the `AnswerEvaluator` abstraction; the UI binds only to `EvaluationResult` / `AnswerOutcome`.
 - Content is stored as JSON
 - User progress is stored locally

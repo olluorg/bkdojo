@@ -1,8 +1,10 @@
 # Деплой bkdojo
 
 На сервере/локально приложение — это **один Bun-процесс** (`server/prod.ts`),
-который раздаёт собранный фронтенд (`dist/`) и обслуживает `/api/evaluate`
-(прокси к OpenRouter). Запустить можно через Docker (рекомендуется) или вручную.
+который раздаёт собранный фронтенд (`dist/`). Своего бэкенда у bkdojo больше нет:
+серверная AI-оценка идёт через LLM-прокси micro-platform (`/functions/llm`), а
+ключ OpenRouter каждый пользователь вводит сам в настройках приложения. Запустить
+можно через Docker (рекомендуется) или вручную.
 
 ---
 
@@ -11,17 +13,19 @@
 Нужен только Docker. Поведение настраивается через `.env`.
 
 ```bash
-cp .env.example .env          # впиши OPENROUTER_API_KEY (и при желании OPENROUTER_MODEL)
+cp .env.example .env          # при желании задай VITE_EVAL_ENDPOINT (URL прокси)
 docker compose up -d --build  # собрать и запустить
 # открыть http://localhost:3000
 ```
 
 Как устроены переменные:
-- `OPENROUTER_API_KEY`, `OPENROUTER_MODEL` — **runtime**: меняешь в `.env` →
-  `docker compose up -d` (без `--build`) применит, пересборка не нужна.
-- `VITE_EVAL_ENDPOINT` — **build-time** (вшивается в бандл). По умолчанию
-  `/api/evaluate` (задан как build-arg в `docker-compose.yml`). Менять нужно
-  редко; если поменял — пересобери: `docker compose up -d --build`.
+- `VITE_EVAL_ENDPOINT` — **build-time** (вшивается в бандл, задан как build-arg в
+  `docker-compose.yml`). Это URL LLM-прокси micro-platform, напр.
+  `https://api.ollu.example/functions/llm`. Пусто = серверная оценка выключена.
+  Поменял — пересобери: `docker compose up -d --build`.
+- Секретов на сервере bkdojo больше нет: ключ OpenRouter пользователь вводит в
+  настройках приложения, он шлётся в прокси заголовком `X-Provider-Key` и хранится
+  только в его браузере.
 
 Полезное:
 ```bash
@@ -57,8 +61,9 @@ your.domain.com {
 ### 0. Что понадобится
 - VPS (Ubuntu/Debian), SSH-доступ.
 - Домен, указывающий A-записью на IP VPS (для HTTPS).
-- Ключ OpenRouter (https://openrouter.ai/keys) — нужен только если хочешь
-  серверную AI-оценку открытых ответов.
+- Развёрнутый LLM-прокси micro-platform (`/functions/llm`) — нужен только если
+  хочешь серверную AI-оценку открытых ответов. Ключ OpenRouter вводит сам
+  пользователь в настройках приложения, на сервере bkdojo он не хранится.
 
 ## 1. Установить Bun на VPS
 ```bash
@@ -82,13 +87,12 @@ nano .env
 ```
 Заполни:
 ```ini
-OPENROUTER_API_KEY=sk-or-...        # секрет, только на сервере
-OPENROUTER_MODEL=openai/gpt-4o-mini # по желанию
-VITE_EVAL_ENDPOINT=/api/evaluate    # включает серверный оценщик в клиенте
+# URL LLM-прокси micro-platform; включает серверный оценщик в клиенте.
+VITE_EVAL_ENDPOINT=https://api.ollu.example/functions/llm
 ```
-Важно: Vite вшивает в бандл **только** переменные с префиксом `VITE_`. Значит
-`VITE_EVAL_ENDPOINT` попадёт в клиент (это не секрет), а `OPENROUTER_API_KEY`
-останется на сервере и в бандл не утечёт.
+Важно: Vite вшивает в бандл **только** переменные с префиксом `VITE_`. URL прокси
+не секрет, поэтому его можно держать в бандле; секретов (ключей) на сервере bkdojo
+больше нет.
 
 ## 4. Собрать фронтенд
 ```bash
@@ -170,13 +174,13 @@ bun run build
 sudo systemctl restart bkdojo
 ```
 
-## Без OpenRouter
+## Без серверной оценки
 Если серверная AI-оценка не нужна — не задавай `VITE_EVAL_ENDPOINT` (открытые
-ответы пойдут через Chrome Built-in AI или режим самопроверки), а ключ не нужен.
+ответы пойдут через Chrome Built-in AI или режим самопроверки).
 
 ## Заметки по эксплуатации
-- Это платный внешний API (OpenRouter) — следи за расходом; при желании добавь
-  rate-limit и кэш одинаковых запросов в `api/evaluate.ts`.
+- bkdojo раздаёт только статику — секретов и платных вызовов на нём нет. Расход
+  OpenRouter, выбор модели (`OPENROUTER_MODEL`), gateway (`OPENROUTER_BASE_URL`) и
+  лимиты живут на стороне прокси micro-platform, а оплачивает вызовы сам
+  пользователь своим ключом.
 - Логи: `journalctl -u bkdojo -f`.
-- Сменить модель — поправь `OPENROUTER_MODEL` в `.env` и `systemctl restart bkdojo`
-  (пересборка не нужна, это серверная переменная).

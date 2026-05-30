@@ -11,10 +11,6 @@ export default defineConfig({
   plugins: [react()],
   server: {
     headers: COOP_HEADERS,
-    // Proxy the evaluation API to the local Bun dev server (`bun run dev:api`).
-    proxy: {
-      '/api': 'http://localhost:8787',
-    },
   },
   preview: {
     headers: COOP_HEADERS,

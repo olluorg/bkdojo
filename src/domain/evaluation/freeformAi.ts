@@ -1,6 +1,7 @@
 import type { LanguageModelStatic } from '../../types/chrome-ai';
 import type { EvalMethod } from '../models/settings';
 import { serverEndpoint, type FetchFn } from './ServerAiEvaluator';
+import { getProviderKey } from './providerKey';
 
 /**
  * Free-form AI text generation, distinct from rubric-based answer evaluation.
@@ -39,6 +40,8 @@ export class FreeformUnavailableError extends Error {
 export interface FreeformDeps {
   getModel: () => LanguageModelStatic | undefined;
   endpoint: string;
+  /** Caller's OpenRouter key, sent as X-Provider-Key; empty disables the server. */
+  apiKey: string;
   fetchFn: FetchFn;
   timeoutMs: number;
   /** User preference; mirrors the evaluator resolver (auto/chrome/server/manual). */
@@ -49,6 +52,7 @@ function defaultDeps(): FreeformDeps {
   return {
     getModel: () => globalThis.LanguageModel,
     endpoint: serverEndpoint(),
+    apiKey: getProviderKey(),
     fetchFn: (input, init) => fetch(input, init),
     timeoutMs: 30_000,
     method: 'auto',
@@ -81,19 +85,26 @@ async function tryChrome(input: FreeformInput, deps: FreeformDeps): Promise<stri
 }
 
 async function tryServer(input: FreeformInput, deps: FreeformDeps): Promise<string | undefined> {
-  if (!deps.endpoint) return undefined;
+  if (!deps.endpoint || !deps.apiKey) return undefined;
   const controller = new AbortController();
   const timer = setTimeout(() => controller.abort(), deps.timeoutMs);
   try {
     const res = await deps.fetchFn(deps.endpoint, {
       method: 'POST',
-      headers: { 'content-type': 'application/json' },
-      body: JSON.stringify({ system: input.system, user: input.user }),
+      headers: { 'content-type': 'application/json', 'x-provider-key': deps.apiKey },
+      body: JSON.stringify({
+        messages: [
+          { role: 'system', content: input.system },
+          { role: 'user', content: input.user },
+        ],
+      }),
       signal: controller.signal,
     });
     if (!res.ok) return undefined;
-    const text = (await res.text()).trim();
-    return text || undefined;
+    // The proxy returns the upstream chat-completion verbatim; pull the content.
+    const data = (await res.json()) as { choices?: { message?: { content?: unknown } }[] };
+    const content = data?.choices?.[0]?.message?.content;
+    return typeof content === 'string' && content.trim() ? content.trim() : undefined;
   } catch {
     return undefined;
   } finally {
@@ -167,8 +178,8 @@ async function chromeChat(
 
 /**
  * Multi-turn chat against the best available AI channel. Chrome AI keeps native
- * roles; the server proxy (which takes only system+user) receives the transcript
- * flattened into the user message, so no server change is needed.
+ * roles; the server path sends a single system+user pair (the transcript is
+ * flattened into the user message), matching the non-chat free-form request.
  */
 export async function runFreeformChat(
   system: string,

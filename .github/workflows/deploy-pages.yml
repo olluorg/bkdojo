@@ -37,6 +37,9 @@ jobs:
           VITE_BKDOJO_SYNC: ${{ vars.VITE_BKDOJO_SYNC }}
           VITE_OLLU_SERVER: ${{ vars.VITE_OLLU_SERVER }}
           VITE_OLLU_GOOGLE_CLIENT_ID: ${{ vars.VITE_OLLU_GOOGLE_CLIENT_ID }}
+          # micro-platform LLM proxy URL (e.g. https://api.ollu.example/functions/llm).
+          # Unset = server evaluator off; users supply their own key in-app.
+          VITE_EVAL_ENDPOINT: ${{ vars.VITE_EVAL_ENDPOINT }}
         run: bun run build
 
       - name: SPA 404 fallback

@@ -16,7 +16,7 @@ export const EVAL_METHOD_LABELS: Record<EvalMethod, string> = {
 
 export const EVAL_METHOD_HINTS: Record<EvalMethod, string> = {
   auto: 'Сначала Chrome AI, затем сервер (если настроен), иначе самопроверка.',
-  server: 'Оценивает облачная LLM через серверный прокси (OpenRouter).',
+  server: 'Оценивает облачная LLM через прокси micro-platform (нужен свой ключ OpenRouter).',
   chrome: 'Встроенная модель браузера (Chrome Built-in AI), на устройстве.',
   manual: 'Ты сам отмечаешь раскрытые пункты по эталону.',
 };

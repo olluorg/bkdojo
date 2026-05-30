@@ -23,27 +23,44 @@ function input(): EvaluationInput {
   return { question: question(), answer: 'some answer' };
 }
 
+/** Wraps a model JSON string in the proxy's passthrough chat-completion shape. */
+function completion(content: string): Response {
+  return new Response(JSON.stringify({ choices: [{ message: { content } }] }), { status: 200 });
+}
+
 function deps(over: Partial<ServerDeps>): ServerDeps {
-  return { endpoint: '/api/evaluate', timeoutMs: 1000, fetchFn: () => Promise.resolve(new Response('{}')), ...over };
+  return {
+    endpoint: 'https://api.test/functions/llm',
+    apiKey: 'sk-test',
+    timeoutMs: 1000,
+    fetchFn: () => Promise.resolve(completion('{}')),
+    ...over,
+  };
 }
 
 describe('ServerAiEvaluator', () => {
-  test('availability reflects whether an endpoint is configured', async () => {
+  test('availability needs both an endpoint and a provider key', async () => {
     expect(await new ServerAiEvaluator(deps({ endpoint: '' })).availability()).toBe('unavailable');
-    expect(await new ServerAiEvaluator(deps({ endpoint: '/api/evaluate' })).availability()).toBe(
-      'available',
-    );
+    expect(await new ServerAiEvaluator(deps({ apiKey: '' })).availability()).toBe('unavailable');
+    expect(await new ServerAiEvaluator(deps({})).availability()).toBe('available');
   });
 
-  test('parses a successful server response (source = server)', async () => {
+  test('sends the provider key and parses the passthrough response', async () => {
+    let sentKey = '';
     const reply = JSON.stringify({
       concepts: [{ conceptId: 'c1', coverage: 'covered' }],
       feedback: 'ok',
     });
     const evaluator = new ServerAiEvaluator(
-      deps({ fetchFn: () => Promise.resolve(new Response(reply, { status: 200 })) }),
+      deps({
+        fetchFn: (_url, init) => {
+          sentKey = new Headers(init?.headers).get('x-provider-key') ?? '';
+          return Promise.resolve(completion(reply));
+        },
+      }),
     );
     const result = await evaluator.evaluate(input());
+    expect(sentKey).toBe('sk-test');
     expect(result.source).toBe('server');
     expect(result.verdict).toBe('correct');
   });
@@ -57,5 +74,9 @@ describe('ServerAiEvaluator', () => {
 
   test('throws when the endpoint is not configured', () => {
     expect(new ServerAiEvaluator(deps({ endpoint: '' })).evaluate(input())).rejects.toThrow();
+  });
+
+  test('throws when the provider key is missing', () => {
+    expect(new ServerAiEvaluator(deps({ apiKey: '' })).evaluate(input())).rejects.toThrow();
   });
 });

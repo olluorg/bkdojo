@@ -1,5 +1,6 @@
 import { lazy, Suspense, useRef, useState } from 'react';
 import { serverEndpoint } from '../../domain/evaluation/ServerAiEvaluator';
+import { getProviderKey, setProviderKey } from '../../domain/evaluation/providerKey';
 import { EVAL_METHOD_HINTS, EVAL_METHOD_LABELS, type EvalMethod } from '../../domain/models/settings';
 import { parseProgress, serializeProgress } from '../../storage/progressStorage';
 import { useAiCapability, type AiStatus } from '../../hooks/useAiCapability';
@@ -30,6 +31,13 @@ export function SettingsScreen() {
 
   const fileInput = useRef<HTMLInputElement>(null);
   const [importMsg, setImportMsg] = useState<string | null>(null);
+  const [apiKey, setApiKey] = useState(getProviderKey());
+  const serverReady = !!endpoint && !!apiKey;
+
+  function saveApiKey(value: string) {
+    setApiKey(value);
+    setProviderKey(value);
+  }
 
   function exportProgress() {
     const blob = new Blob([serializeProgress(progress)], { type: 'application/json' });
@@ -77,8 +85,8 @@ export function SettingsScreen() {
         <ul className="ability-list">
           <li className="ability-list__row">
             <span>Сервер (LLM)</span>
-            <span className={`status status--${endpoint ? 'ok' : 'off'}`}>
-              {endpoint ? 'настроен' : 'не настроен'}
+            <span className={`status status--${serverReady ? 'ok' : endpoint ? 'warn' : 'off'}`}>
+              {serverReady ? 'настроен' : endpoint ? 'нужен ключ' : 'не настроен'}
             </span>
           </li>
           <li className="ability-list__row">
@@ -91,6 +99,24 @@ export function SettingsScreen() {
           </li>
         </ul>
       </div>
+
+      {endpoint && (
+        <div className="stat-block">
+          <div className="stat-block__head">Ключ OpenRouter</div>
+          <input
+            type="password"
+            className="text-input"
+            placeholder="sk-or-..."
+            value={apiKey}
+            autoComplete="off"
+            onChange={(e) => saveApiKey(e.target.value)}
+          />
+          <p className="screen__note">
+            Серверная оценка идёт через прокси micro-platform с твоим собственным ключом
+            OpenRouter. Ключ хранится только в этом браузере и не синхронизируется.
+          </p>
+        </div>
+      )}
 
       <div className="stat-block">
         <div className="stat-block__head">Прогресс</div>
@@ -124,7 +150,8 @@ export function SettingsScreen() {
 
       <p className="screen__note">
         Если выбранный способ недоступен, ответ можно оценить самому — самопроверка всегда работает как
-        запасной вариант. Серверная оценка включается переменной VITE_EVAL_ENDPOINT при сборке.
+        запасной вариант. Серверная оценка включается переменной VITE_EVAL_ENDPOINT при сборке и
+        требует твоего ключа OpenRouter.
       </p>
     </section>
   );

@@ -3,15 +3,12 @@ services:
     build:
       context: .
       args:
-        # Build-time: where the client calls the eval API. Baked into the bundle.
-        VITE_EVAL_ENDPOINT: /api/evaluate
+        # Build-time: the micro-platform LLM proxy URL that enables server-side
+        # eval (baked into the bundle). Empty = server evaluator off. Users supply
+        # their own OpenRouter key in-app; no server secret is needed here.
+        VITE_EVAL_ENDPOINT: ${VITE_EVAL_ENDPOINT:-}
     ports:
       - '3000:3000'
     environment:
       - PORT=3000
-    # Runtime secrets/config (OPENROUTER_API_KEY, OPENROUTER_MODEL).
-    # Just edit .env and `docker compose up -d` to apply — no rebuild needed.
-    env_file:
-      - path: .env
-        required: false
     restart: unless-stopped
