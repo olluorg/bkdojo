@@ -5,16 +5,20 @@ import { DEFAULT_SETTINGS, type EvalMethod } from '../domain/models/settings';
 import { createDefaultPet, feedPet, playPet, type FeedEvent } from '../domain/pet/pet';
 import { recordActivity, type ActivityKind } from '../domain/progress/activity';
 import { isLessonRead, setLessonRead } from '../domain/progress/lessonProgress';
+import { setLessonBookmark } from '../domain/progress/lessonBookmarks';
+import { setQuestionBookmark } from '../domain/progress/questionBookmarks';
 import { applyOutcome } from '../domain/progress/applyOutcome';
 import { earnFromLesson, touchCredits, useCredit } from '../domain/progress/overrideCredits';
 import { touchStreak } from '../domain/progress/streak';
 import { applyTermResult } from '../domain/progress/termProgress';
-import { createDefaultProgress } from '../storage/progressStorage';
+import { createDefaultProgress, mergeProgress } from '../storage/progressStorage';
 
 export type ProgressAction =
   | { type: 'record'; outcome: AnswerOutcome; mode?: 'placement' | 'daily' }
   | { type: 'recordTerm'; termId: string; correct: boolean }
   | { type: 'setLessonRead'; lessonId: string; read: boolean }
+  | { type: 'setLessonBookmark'; lessonId: string; bookmarked: boolean }
+  | { type: 'setQuestionBookmark'; questionId: string; bookmarked: boolean }
   | { type: 'saveLessonComment'; lessonId: string; comment: CachedLessonComment }
   | { type: 'recordActivity'; kind: ActivityKind }
   | { type: 'completePlacement' }
@@ -24,6 +28,7 @@ export type ProgressAction =
   | { type: 'tickOverrideCredits' }
   | { type: 'useOverrideCredit' }
   | { type: 'replace'; progress: UserProgress }
+  | { type: 'merge'; progress: UserProgress }
   | { type: 'reset' };
 
 function fed(state: UserProgress, event: FeedEvent): PetCarrier {
@@ -68,6 +73,10 @@ export function progressReducer(state: UserProgress, action: ProgressAction): Us
       }
       return next;
     }
+    case 'setLessonBookmark':
+      return setLessonBookmark(state, action.lessonId, action.bookmarked);
+    case 'setQuestionBookmark':
+      return setQuestionBookmark(state, action.questionId, action.bookmarked);
     case 'saveLessonComment':
       return {
         ...state,
@@ -102,6 +111,8 @@ export function progressReducer(state: UserProgress, action: ProgressAction): Us
     }
     case 'replace':
       return action.progress;
+    case 'merge':
+      return mergeProgress(state, action.progress);
     case 'reset':
       return createDefaultProgress();
     default:

@@ -1,5 +1,10 @@
 import { DOMAINS, type Domain } from '../domain/models/common';
-import type { DomainSkill, UserProgress } from '../domain/models/progress';
+import type {
+  CachedLessonComment,
+  DomainSkill,
+  TermProgress,
+  UserProgress,
+} from '../domain/models/progress';
 import { DEFAULT_SETTINGS } from '../domain/models/settings';
 import { createDefaultPet } from '../domain/pet/pet';
 
@@ -38,6 +43,8 @@ export function createDefaultProgress(): UserProgress {
     streakDays: 0,
     terms: {},
     lessonsRead: {},
+    lessonBookmarks: {},
+    questionBookmarks: {},
     lessonComments: {},
     activity: {},
     pet: createDefaultPet(),
@@ -74,6 +81,8 @@ export function normalizeProgress(parsed: UserProgress): UserProgress {
     skills,
     terms: parsed.terms ?? {},
     lessonsRead: parsed.lessonsRead ?? {},
+    lessonBookmarks: parsed.lessonBookmarks ?? {},
+    questionBookmarks: parsed.questionBookmarks ?? {},
     lessonComments: parsed.lessonComments ?? {},
     activity: parsed.activity ?? {},
     pet: parsed.pet ?? defaults.pet,
@@ -123,4 +132,84 @@ export function parseProgress(raw: string): UserProgress | null {
     // fall through
   }
   return null;
+}
+
+function laterIso(a: string | undefined, b: string | undefined): string | undefined {
+  if (!a) return b;
+  if (!b) return a;
+  return a >= b ? a : b;
+}
+
+/** Union of two id→ISO maps, keeping the earliest timestamp for shared keys. */
+function mergeIsoMap(
+  base: Record<string, string> = {},
+  incoming: Record<string, string> = {},
+): Record<string, string> {
+  const out: Record<string, string> = { ...incoming, ...base };
+  for (const [key, iso] of Object.entries(incoming)) {
+    const existing = out[key];
+    out[key] = existing && existing <= iso ? existing : iso;
+  }
+  return out;
+}
+
+/**
+ * Merges imported progress into the current save without discarding either
+ * side. History is unioned (deduped by question + timestamp), aggregates take
+ * the stronger value, and id→date maps are unioned. Device-local preferences
+ * (settings, theme-independent pet, override credits) stay as they are on this
+ * device. This is what import uses, so loading a backup can only add progress,
+ * never wipe it.
+ */
+export function mergeProgress(base: UserProgress, incoming: UserProgress): UserProgress {
+  const seen = new Set<string>();
+  const history = [...base.history, ...incoming.history]
+    .filter((rec) => {
+      const key = `${rec.questionId}|${rec.answeredAt}`;
+      if (seen.has(key)) return false;
+      seen.add(key);
+      return true;
+    })
+    .sort((a, b) => a.answeredAt.localeCompare(b.answeredAt));
+
+  const skills = {} as Record<Domain, DomainSkill>;
+  for (const domain of DOMAINS) {
+    const a = base.skills?.[domain] ?? defaultSkill(domain);
+    const b = incoming.skills?.[domain] ?? defaultSkill(domain);
+    // The device that answered more questions has the better-calibrated skill.
+    skills[domain] = b.answered > a.answered ? b : a;
+  }
+
+  const terms: Record<string, TermProgress> = { ...incoming.terms };
+  for (const [id, term] of Object.entries(base.terms ?? {})) {
+    const other = terms[id];
+    terms[id] = other && other.seen > term.seen ? other : term;
+  }
+
+  const lessonComments: Record<string, CachedLessonComment> = { ...incoming.lessonComments };
+  for (const [id, comment] of Object.entries(base.lessonComments ?? {})) {
+    const other = lessonComments[id];
+    lessonComments[id] = other && other.generatedAt > comment.generatedAt ? other : comment;
+  }
+
+  const activity: Record<string, string> = { ...incoming.activity };
+  for (const [kind, iso] of Object.entries(base.activity ?? {})) {
+    activity[kind] = laterIso(activity[kind], iso)!;
+  }
+
+  return {
+    ...base,
+    version: PROGRESS_VERSION,
+    history,
+    skills,
+    terms,
+    placementDone: base.placementDone || incoming.placementDone,
+    streakDays: Math.max(base.streakDays, incoming.streakDays),
+    lastPracticeDate: laterIso(base.lastPracticeDate, incoming.lastPracticeDate),
+    lessonsRead: mergeIsoMap(base.lessonsRead, incoming.lessonsRead),
+    lessonBookmarks: mergeIsoMap(base.lessonBookmarks, incoming.lessonBookmarks),
+    questionBookmarks: mergeIsoMap(base.questionBookmarks, incoming.questionBookmarks),
+    lessonComments,
+    activity,
+  };
 }

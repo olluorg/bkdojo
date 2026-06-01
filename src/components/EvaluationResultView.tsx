@@ -49,7 +49,13 @@ export function EvaluationResultView({
       </div>
       <p className="card__prompt">{question.prompt}</p>
 
-      <span className={`verdict verdict--${outcome.verdict}`}>{VERDICT_LABELS[outcome.verdict]}</span>
+      <span
+        className={`verdict verdict--${outcome.verdict}`}
+        role="status"
+        aria-live="polite"
+      >
+        {VERDICT_LABELS[outcome.verdict]}
+      </span>
 
       {outcome.evaluatedBy === 'skipped' && (
         <p className="result__feedback">Вопрос пропущен — вот как на него ответить.</p>

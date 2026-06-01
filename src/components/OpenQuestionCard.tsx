@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { DOMAIN_LABELS } from '../domain/models/common';
 import type { OpenQuestion } from '../domain/models/question';
+import { SUBMIT_HINT, onCmdEnter } from './keyboard';
 
 interface Props {
   question: OpenQuestion;
@@ -10,13 +11,19 @@ interface Props {
 
 export function OpenQuestionCard({ question, onSubmit, busy }: Props) {
   const [text, setText] = useState('');
+  const canSubmit = !busy && text.trim().length > 0;
+  const submit = () => {
+    if (canSubmit) onSubmit(text);
+  };
 
   return (
     <div className="card">
       <div className="card__meta">
         {DOMAIN_LABELS[question.domain]} · сложность {question.difficulty} · открытый ответ
       </div>
-      <p className="card__prompt">{question.prompt}</p>
+      <p className="card__prompt" id={`prompt-${question.id}`}>
+        {question.prompt}
+      </p>
 
       <textarea
         className="textarea"
@@ -24,12 +31,18 @@ export function OpenQuestionCard({ question, onSubmit, busy }: Props) {
         value={text}
         disabled={busy}
         placeholder="Ответь так, как ответил бы на собеседовании…"
+        aria-label="Твой ответ"
+        aria-describedby={`prompt-${question.id}`}
         onChange={(e) => setText(e.target.value)}
+        onKeyDown={onCmdEnter(submit)}
       />
 
-      <button className="btn" disabled={busy || text.trim().length === 0} onClick={() => onSubmit(text)}>
-        {busy ? 'Проверяю…' : 'Проверить'}
-      </button>
+      <div className="card__submit">
+        <button className="btn" disabled={!canSubmit} onClick={submit}>
+          {busy ? 'Проверяю…' : 'Проверить'}
+        </button>
+        <span className="card__shortcut">{SUBMIT_HINT}</span>
+      </div>
     </div>
   );
 }

@@ -6,6 +6,7 @@ import type { DomainSkill, UserProgress } from '../models/progress';
 import type { Session, SessionItem } from '../models/session';
 import { pickByDifficulty, targetDifficulty } from './adaptiveSelector';
 import { maxOpenForSize } from './questionMix';
+import { recoveryOffset } from './recovery';
 
 export interface DailyOptions {
   size?: number;
@@ -57,7 +58,8 @@ export function buildDailySession(
     let progressed = false;
     for (const domain of order) {
       if (items.length >= size) break;
-      const target = targetDifficulty(progress.skills[domain].ability);
+      const offset = recoveryOffset(progress.history, domain);
+      const target = targetDifficulty(progress.skills[domain].ability, offset);
       const full = getByDomain(index, domain);
       const pool = relaxed || openCount < maxOpen ? full : full.filter(isChoiceQuestion);
       const question = pickByDifficulty(pool, target, { excludeIds: used, rng });

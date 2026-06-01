@@ -7,6 +7,7 @@ import type {
 import { buildEvaluationPrompt } from './evaluationPrompt';
 import { parseEvaluation } from './parseEvaluation';
 import { getProviderKey } from './providerKey';
+import { getBaseUrl, getModel } from './llmProvider';
 
 export class ServerEvaluatorError extends Error {
   constructor(message: string) {
@@ -20,8 +21,12 @@ export type FetchFn = (input: RequestInfo | URL, init?: RequestInit) => Promise<
 export interface ServerDeps {
   /** LLM proxy endpoint (micro-platform /functions/llm); empty disables it. */
   endpoint: string;
-  /** Caller's OpenRouter key, sent as X-Provider-Key; empty disables it. */
+  /** Caller's provider key, sent as X-Provider-Key; empty disables it. */
   apiKey: string;
+  /** Provider base URL, sent as X-Provider-Base-Url; empty = server default. */
+  baseUrl: string;
+  /** Model id forwarded in the request body; empty = server default. */
+  model: string;
   timeoutMs: number;
   fetchFn: FetchFn;
 }
@@ -35,6 +40,8 @@ function liveDeps(): ServerDeps {
   return {
     endpoint: serverEndpoint(),
     apiKey: getProviderKey(),
+    baseUrl: getBaseUrl(),
+    model: getModel(),
     timeoutMs: 30_000,
     fetchFn: (input, init) => fetch(input, init),
   };
@@ -62,13 +69,20 @@ export class ServerAiEvaluator implements AnswerEvaluator {
 
     const { system, user } = buildEvaluationPrompt(input);
 
+    const headers: Record<string, string> = {
+      'content-type': 'application/json',
+      'x-provider-key': this.deps.apiKey,
+    };
+    if (this.deps.baseUrl) headers['x-provider-base-url'] = this.deps.baseUrl;
+
     const controller = new AbortController();
     const timer = setTimeout(() => controller.abort(), this.deps.timeoutMs);
     try {
       const res = await this.deps.fetchFn(this.deps.endpoint, {
         method: 'POST',
-        headers: { 'content-type': 'application/json', 'x-provider-key': this.deps.apiKey },
+        headers,
         body: JSON.stringify({
+          ...(this.deps.model ? { model: this.deps.model } : {}),
           messages: [
             { role: 'system', content: system },
             { role: 'user', content: user },

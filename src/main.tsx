@@ -4,6 +4,7 @@ import { App } from './app/App';
 import { ProgressProvider } from './state/ProgressContext';
 import { loadProgressFromDb, migrateFromLocalStorage } from './storage/progressDb';
 import { relayOAuthCallbackIfPresent } from './sync/oauthCallback';
+import { applyTheme, watchSystemTheme } from './app/theme';
 import './app/styles.css';
 
 async function bootstrap() {
@@ -33,5 +34,7 @@ async function bootstrap() {
 // When this load is a Google OAuth popup callback, relay the result to the opener
 // and close — don't boot the app in the popup.
 if (!relayOAuthCallbackIfPresent()) {
+  applyTheme();
+  watchSystemTheme();
   void bootstrap();
 }

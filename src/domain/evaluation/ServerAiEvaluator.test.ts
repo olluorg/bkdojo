@@ -32,6 +32,8 @@ function deps(over: Partial<ServerDeps>): ServerDeps {
   return {
     endpoint: 'https://api.test/functions/llm',
     apiKey: 'sk-test',
+    baseUrl: 'https://provider.test/v1',
+    model: 'test/model',
     timeoutMs: 1000,
     fetchFn: () => Promise.resolve(completion('{}')),
     ...over,
@@ -45,8 +47,10 @@ describe('ServerAiEvaluator', () => {
     expect(await new ServerAiEvaluator(deps({})).availability()).toBe('available');
   });
 
-  test('sends the provider key and parses the passthrough response', async () => {
+  test('sends the provider key, base URL and model, and parses the passthrough', async () => {
     let sentKey = '';
+    let sentBaseUrl = '';
+    let sentBody = '';
     const reply = JSON.stringify({
       concepts: [{ conceptId: 'c1', coverage: 'covered' }],
       feedback: 'ok',
@@ -54,13 +58,18 @@ describe('ServerAiEvaluator', () => {
     const evaluator = new ServerAiEvaluator(
       deps({
         fetchFn: (_url, init) => {
-          sentKey = new Headers(init?.headers).get('x-provider-key') ?? '';
+          const h = new Headers(init?.headers);
+          sentKey = h.get('x-provider-key') ?? '';
+          sentBaseUrl = h.get('x-provider-base-url') ?? '';
+          sentBody = String(init?.body ?? '');
           return Promise.resolve(completion(reply));
         },
       }),
     );
     const result = await evaluator.evaluate(input());
     expect(sentKey).toBe('sk-test');
+    expect(sentBaseUrl).toBe('https://provider.test/v1');
+    expect(JSON.parse(sentBody).model).toBe('test/model');
     expect(result.source).toBe('server');
     expect(result.verdict).toBe('correct');
   });

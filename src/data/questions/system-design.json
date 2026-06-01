@@ -6,55 +6,100 @@
     "type": "single",
     "mode": "comparison",
     "prompt": "Чем горизонтальное масштабирование отличается от вертикального?",
-    "tags": ["scaling", "performance"],
-    "options": [
-      { "id": "a", "text": "Горизонтальное — добавить ещё машины; вертикальное — усилить одну машину" },
-      { "id": "b", "text": "Горизонтальное — усилить одну машину; вертикальное — добавить машины" },
-      { "id": "c", "text": "Это одно и то же" },
-      { "id": "d", "text": "Горизонтальное работает только для баз данных" }
+    "tags": [
+      "scaling",
+      "performance"
     ],
-    "correctOptionIds": ["a"],
+    "options": [
+      {
+        "id": "a",
+        "text": "Горизонтальное — добавить ещё машины; вертикальное — усилить одну машину"
+      },
+      {
+        "id": "b",
+        "text": "Горизонтальное — усилить одну машину; вертикальное — добавить машины"
+      },
+      {
+        "id": "c",
+        "text": "Это одно и то же"
+      },
+      {
+        "id": "d",
+        "text": "Горизонтальное работает только для баз данных"
+      }
+    ],
+    "correctOptionIds": [
+      "a"
+    ],
     "answerGuide": {
       "short": "Горизонтально — больше машин (scale out); вертикально — мощнее одна машина (scale up).",
       "normal": "Vertical scaling упирается в потолок железа и в единую точку отказа; horizontal масштабируется дальше, но требует stateless-сервисов, балансировки и работы с распределённым состоянием.",
-      "traps": ["Считать вертикальное масштабирование бесконечным.", "Забывать про состояние при scale out."],
-      "followUps": ["Что мешает масштабировать stateful-сервис?", "Зачем нужен load balancer?"]
+      "traps": [
+        "Считать вертикальное масштабирование бесконечным.",
+        "Забывать про состояние при scale out."
+      ],
+      "followUps": [
+        "Что мешает масштабировать stateful-сервис?",
+        "Зачем нужен load balancer?"
+      ]
     },
-    "meta": { "verified": true, "source": "seed", "lastReviewedAt": "2026-05-22", "reviewer": "seed" }
+    "meta": {
+      "verified": true,
+      "source": "seed",
+      "lastReviewedAt": "2026-05-22",
+      "reviewer": "seed"
+    }
   },
   {
     "id": "sd-002",
     "domain": "system-design",
     "difficulty": 3,
-    "type": "open",
+    "type": "single",
     "mode": "definition",
     "prompt": "Что утверждает CAP-теорема?",
-    "tags": ["cap", "consistency"],
-    "rubric": [
+    "tags": [
+      "cap",
+      "consistency"
+    ],
+    "options": [
       {
-        "id": "three",
-        "title": "Три свойства",
-        "description": "Consistency, Availability, Partition tolerance.",
-        "required": true,
-        "weight": 1,
-        "keywords": ["consistency", "availability", "partition", "согласован", "доступн", "раздел"]
+        "id": "a",
+        "text": "При сетевом разделении (Partition) приходится выбирать между согласованностью (C) и доступностью (A); P неизбежно, выбор C/A возникает только при разделении"
       },
       {
-        "id": "tradeoff",
-        "title": "Компромисс при разделении",
-        "description": "Сеть может разделиться (P неизбежно), и тогда выбираешь между C и A.",
-        "required": true,
-        "weight": 2,
-        "keywords": ["разделение", "partition", "выбор", "c и a", "cp", "ap"]
+        "id": "b",
+        "text": "Распределённая система не может одновременно быть быстрой, надёжной и дешёвой"
+      },
+      {
+        "id": "c",
+        "text": "Любая БД обязана поддерживать ACID-транзакции"
+      },
+      {
+        "id": "d",
+        "text": "Кэш и БД всегда полностью синхронизированы"
       }
+    ],
+    "correctOptionIds": [
+      "a"
     ],
     "answerGuide": {
       "short": "При сетевом разделении система выбирает между согласованностью (C) и доступностью (A); P неизбежно.",
       "normal": "Объясни, что partition tolerance в распределённой системе обязателен, поэтому реальный выбор — CP или AP во время разделения. Без разделения можно иметь и C, и A.",
-      "traps": ["Говорить «выбери 2 из 3» без оговорки про неизбежность P.", "Путать CAP-consistency с ACID-consistency."],
-      "followUps": ["Что такое PACELC?", "Пример AP- и CP-системы?"]
+      "traps": [
+        "Говорить «выбери 2 из 3» без оговорки про неизбежность P.",
+        "Путать CAP-consistency с ACID-consistency."
+      ],
+      "followUps": [
+        "Что такое PACELC?",
+        "Пример AP- и CP-системы?"
+      ]
     },
-    "meta": { "verified": true, "source": "seed", "lastReviewedAt": "2026-05-22", "reviewer": "seed" }
+    "meta": {
+      "verified": true,
+      "source": "seed",
+      "lastReviewedAt": "2026-05-22",
+      "reviewer": "seed"
+    }
   },
   {
     "id": "sd-003",
@@ -63,55 +108,99 @@
     "type": "single",
     "mode": "definition",
     "prompt": "Что описывает eventual consistency?",
-    "tags": ["consistency"],
-    "options": [
-      { "id": "a", "text": "Все реплики всегда согласованы мгновенно" },
-      { "id": "b", "text": "Реплики сходятся к одному состоянию спустя некоторое время после записи" },
-      { "id": "c", "text": "Данные никогда не согласуются" },
-      { "id": "d", "text": "Запись возможна только в одну реплику" }
+    "tags": [
+      "consistency"
     ],
-    "correctOptionIds": ["b"],
+    "options": [
+      {
+        "id": "a",
+        "text": "Все реплики всегда согласованы мгновенно"
+      },
+      {
+        "id": "b",
+        "text": "Реплики сходятся к одному состоянию спустя некоторое время после записи"
+      },
+      {
+        "id": "c",
+        "text": "Данные никогда не согласуются"
+      },
+      {
+        "id": "d",
+        "text": "Запись возможна только в одну реплику"
+      }
+    ],
+    "correctOptionIds": [
+      "b"
+    ],
     "answerGuide": {
       "short": "Реплики со временем сходятся к одному состоянию; сразу после записи возможны расхождения.",
       "normal": "Eventual consistency жертвует мгновенной согласованностью ради доступности и масштабируемости (AP). Клиент может временно прочитать устаревшие данные.",
-      "traps": ["Считать, что данные «никогда» не согласуются.", "Применять там, где нужна строгая согласованность (платежи)."],
-      "followUps": ["Что такое read-your-writes consistency?", "Когда eventual consistency недопустима?"]
+      "traps": [
+        "Считать, что данные «никогда» не согласуются.",
+        "Применять там, где нужна строгая согласованность (платежи)."
+      ],
+      "followUps": [
+        "Что такое read-your-writes consistency?",
+        "Когда eventual consistency недопустима?"
+      ]
     },
-    "meta": { "verified": true, "source": "seed", "lastReviewedAt": "2026-05-22", "reviewer": "seed" }
+    "meta": {
+      "verified": true,
+      "source": "seed",
+      "lastReviewedAt": "2026-05-22",
+      "reviewer": "seed"
+    }
   },
   {
     "id": "sd-004",
     "domain": "system-design",
     "difficulty": 2,
-    "type": "open",
+    "type": "single",
     "mode": "scenario",
-    "prompt": "Зачем нужно кэширование и какие у него риски?",
-    "tags": ["caching", "performance"],
-    "rubric": [
+    "prompt": "Зачем нужно кэширование и какие у него главные риски?",
+    "tags": [
+      "caching",
+      "performance"
+    ],
+    "options": [
       {
-        "id": "why",
-        "title": "Зачем",
-        "description": "Ускоряет ответы и снижает нагрузку на источник данных.",
-        "required": true,
-        "weight": 1,
-        "keywords": ["ускор", "нагрузк", "быстр", "кэш"]
+        "id": "a",
+        "text": "Заменяет базу данных полностью и упрощает архитектуру без побочных эффектов"
       },
       {
-        "id": "risk",
-        "title": "Риски",
-        "description": "Устаревшие данные и инвалидизация кэша — одна из сложных задач.",
-        "required": true,
-        "weight": 2,
-        "keywords": ["устарев", "инвалидаци", "invalidation", "stale", "согласован"]
+        "id": "b",
+        "text": "Снижает latency и нагрузку на источник; главные риски — устаревшие данные (нужна инвалидизация), cache stampede по горячему ключу и потеря данных при write-back"
+      },
+      {
+        "id": "c",
+        "text": "Ускоряет запись на диск, но не влияет на чтение"
+      },
+      {
+        "id": "d",
+        "text": "Делает систему строго согласованной за счёт TTL"
       }
+    ],
+    "correctOptionIds": [
+      "b"
     ],
     "answerGuide": {
       "short": "Кэш ускоряет чтение и снижает нагрузку, но рискует отдать устаревшие данные — нужна инвалидизация.",
       "normal": "Опиши выгоду (latency/нагрузка) и главную сложность — инвалидизацию и TTL. Упомяни cache-aside как частый паттерн.",
-      "traps": ["Кэшировать без стратегии инвалидизации.", "Кэшировать сильно изменяемые данные с большим TTL."],
-      "followUps": ["Что такое cache-aside?", "Как бороться с thundering herd?"]
+      "traps": [
+        "Кэшировать без стратегии инвалидизации.",
+        "Кэшировать сильно изменяемые данные с большим TTL."
+      ],
+      "followUps": [
+        "Что такое cache-aside?",
+        "Как бороться с thundering herd?"
+      ]
     },
-    "meta": { "verified": true, "source": "seed", "lastReviewedAt": "2026-05-22", "reviewer": "seed" }
+    "meta": {
+      "verified": true,
+      "source": "seed",
+      "lastReviewedAt": "2026-05-22",
+      "reviewer": "seed"
+    }
   },
   {
     "id": "sd-005",
@@ -120,21 +209,49 @@
     "type": "single",
     "mode": "definition",
     "prompt": "Что делает CDN?",
-    "tags": ["cdn", "caching"],
-    "options": [
-      { "id": "a", "text": "Шифрует трафик между клиентом и сервером" },
-      { "id": "b", "text": "Отдаёт контент с ближайшего к пользователю узла, снижая задержку" },
-      { "id": "c", "text": "Балансирует запросы к базе данных" },
-      { "id": "d", "text": "Преобразует доменные имена в IP" }
+    "tags": [
+      "cdn",
+      "caching"
     ],
-    "correctOptionIds": ["b"],
+    "options": [
+      {
+        "id": "a",
+        "text": "Шифрует трафик между клиентом и сервером"
+      },
+      {
+        "id": "b",
+        "text": "Отдаёт контент с ближайшего к пользователю узла, снижая задержку"
+      },
+      {
+        "id": "c",
+        "text": "Балансирует запросы к базе данных"
+      },
+      {
+        "id": "d",
+        "text": "Преобразует доменные имена в IP"
+      }
+    ],
+    "correctOptionIds": [
+      "b"
+    ],
     "answerGuide": {
       "short": "CDN раздаёт контент с географически близких узлов — меньше задержка и нагрузка на origin.",
       "normal": "CDN кэширует статику (и иногда динамику) на edge-узлах ближе к пользователю, снижая latency и разгружая исходный сервер.",
-      "traps": ["Путать CDN с DNS или TLS.", "Считать, что CDN кэширует любую динамику без настройки."],
-      "followUps": ["Что такое edge-узел?", "Как инвалидировать контент в CDN?"]
+      "traps": [
+        "Путать CDN с DNS или TLS.",
+        "Считать, что CDN кэширует любую динамику без настройки."
+      ],
+      "followUps": [
+        "Что такое edge-узел?",
+        "Как инвалидировать контент в CDN?"
+      ]
     },
-    "meta": { "verified": true, "source": "seed", "lastReviewedAt": "2026-05-22", "reviewer": "seed" }
+    "meta": {
+      "verified": true,
+      "source": "seed",
+      "lastReviewedAt": "2026-05-22",
+      "reviewer": "seed"
+    }
   },
   {
     "id": "sd-006",
@@ -143,7 +260,10 @@
     "type": "open",
     "mode": "scenario",
     "prompt": "Как сделать обработку запросов надёжной при сбоях и повторах?",
-    "tags": ["reliability", "idempotency"],
+    "tags": [
+      "reliability",
+      "idempotency"
+    ],
     "rubric": [
       {
         "id": "idempotency",
@@ -151,7 +271,12 @@
         "description": "Повторная обработка с тем же ключом не меняет результат.",
         "required": true,
         "weight": 2,
-        "keywords": ["идемпотент", "idempotency", "ключ", "дедуп"]
+        "keywords": [
+          "идемпотент",
+          "idempotency",
+          "ключ",
+          "дедуп"
+        ]
       },
       {
         "id": "retries",
@@ -159,7 +284,13 @@
         "description": "Повторы с экспоненциальной задержкой и jitter, ограничение попыток.",
         "required": true,
         "weight": 1,
-        "keywords": ["ретрай", "retry", "backoff", "jitter", "попыт"]
+        "keywords": [
+          "ретрай",
+          "retry",
+          "backoff",
+          "jitter",
+          "попыт"
+        ]
       },
       {
         "id": "isolation",
@@ -167,57 +298,82 @@
         "description": "Таймауты, circuit breaker, очередь недоставленных (DLQ).",
         "required": false,
         "weight": 1,
-        "keywords": ["timeout", "circuit breaker", "dlq", "таймаут"]
+        "keywords": [
+          "timeout",
+          "circuit breaker",
+          "dlq",
+          "таймаут"
+        ]
       }
     ],
     "answerGuide": {
       "short": "Идемпотентность + ретраи с backoff/jitter + таймауты/circuit breaker и DLQ.",
       "normal": "Опиши idempotency-ключи против дубликатов, ретраи с экспоненциальным backoff и jitter, таймауты и circuit breaker, а также DLQ для «ядовитых» сообщений.",
-      "traps": ["Ретраить без backoff (усугубляет перегруз).", "Повторы без идемпотентности → дубликаты."],
-      "followUps": ["Что такое circuit breaker?", "Зачем jitter в backoff?"]
+      "traps": [
+        "Ретраить без backoff (усугубляет перегруз).",
+        "Повторы без идемпотентности → дубликаты."
+      ],
+      "followUps": [
+        "Что такое circuit breaker?",
+        "Зачем jitter в backoff?"
+      ]
     },
-    "meta": { "verified": true, "source": "seed", "lastReviewedAt": "2026-05-22", "reviewer": "seed" }
+    "meta": {
+      "verified": true,
+      "source": "seed",
+      "lastReviewedAt": "2026-05-22",
+      "reviewer": "seed"
+    }
   },
   {
     "id": "sd-007",
     "domain": "system-design",
     "difficulty": 4,
-    "type": "open",
+    "type": "single",
     "mode": "scenario",
     "prompt": "Как масштабировать чтение базы данных под высокой нагрузкой?",
-    "tags": ["scaling", "performance"],
-    "rubric": [
+    "tags": [
+      "scaling",
+      "performance"
+    ],
+    "options": [
       {
-        "id": "replicas",
-        "title": "Реплики чтения",
-        "description": "Read-реплики разгружают мастер; запись идёт в мастер.",
-        "required": true,
-        "weight": 2,
-        "keywords": ["реплик", "replica", "read", "мастер", "master"]
+        "id": "a",
+        "text": "Просто увеличить число коннекшнов в пуле приложения"
       },
       {
-        "id": "cache",
-        "title": "Кэш",
-        "description": "Кэширование частых запросов снижает обращения к БД.",
-        "required": true,
-        "weight": 1,
-        "keywords": ["кэш", "cache", "redis"]
+        "id": "b",
+        "text": "Заменить РСУБД на in-memory без репликации"
       },
       {
-        "id": "shard",
-        "title": "Шардирование",
-        "description": "Горизонтальное разбиение данных по ключу при дальнейшем росте.",
-        "required": false,
-        "weight": 1,
-        "keywords": ["шард", "shard", "партиц"]
+        "id": "c",
+        "text": "Read-replicas (запись на leader, чтение распределить по followers) + кэширование часто читаемого; учитывать репликационный лаг (stale reads) и при необходимости маршрутизировать критичные чтения на leader"
+      },
+      {
+        "id": "d",
+        "text": "Отключить транзакции, чтобы чтения шли параллельно"
       }
+    ],
+    "correctOptionIds": [
+      "c"
     ],
     "answerGuide": {
       "short": "Read-реплики + кэш частых запросов, а при дальнейшем росте — шардирование.",
       "normal": "Сначала реплики чтения и кэш (Redis), затем денормализация/материализованные представления и шардирование. Учитывай лаг репликации (eventual consistency).",
-      "traps": ["Игнорировать лаг репликации.", "Шардировать преждевременно."],
-      "followUps": ["Чем грозит лаг репликации?", "Как выбрать ключ шардирования?"]
+      "traps": [
+        "Игнорировать лаг репликации.",
+        "Шардировать преждевременно."
+      ],
+      "followUps": [
+        "Чем грозит лаг репликации?",
+        "Как выбрать ключ шардирования?"
+      ]
     },
-    "meta": { "verified": true, "source": "seed", "lastReviewedAt": "2026-05-22", "reviewer": "seed" }
+    "meta": {
+      "verified": true,
+      "source": "seed",
+      "lastReviewedAt": "2026-05-22",
+      "reviewer": "seed"
+    }
   }
 ]

@@ -17,7 +17,7 @@ The app is inspired by Duolingo, but it is not childish. It should feel like a s
 
 ## MVP constraints
 
-- No persistent backend / database, and no provider key on any bkdojo server. Open-answer eval is opt-in via `VITE_EVAL_ENDPOINT`, which points at the micro-platform LLM proxy (`/functions/llm`); the user supplies their own OpenRouter key in Settings (sent as the `X-Provider-Key` header, stored only in localStorage). The only bkdojo server code is `server/prod.ts`, which statically serves `dist/`.
+- No persistent backend / database, and no provider key on any bkdojo server. Open-answer eval is opt-in via `VITE_EVAL_ENDPOINT`, which points at the micro-platform LLM proxy (`/functions/llm`); in Settings the user picks a provider (OpenRouter/OpenAI/routerai.ru → `X-Provider-Base-Url`), a model, and their own API key (`X-Provider-Key`), all stored only in localStorage (see `llmProvider.ts` / `providerKey.ts`). The only bkdojo server code is `server/prod.ts`, which statically serves `dist/`.
 - No authentication
 - No payments
 - Chrome-first: full functionality is only required in Google Chrome Desktop

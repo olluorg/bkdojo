@@ -6,6 +6,8 @@ import {
   submitManualAssessment,
 } from '../domain/evaluation/evaluationService';
 import { visibleBalance } from '../domain/progress/overrideCredits';
+import { isQuestionBookmarked } from '../domain/progress/questionBookmarks';
+import { applyHintPenalty, hintsFor } from '../domain/hints/hints';
 import {
   combineAnswers,
   pickBetterOutcome,
@@ -16,19 +18,21 @@ import type { AnswerOutcome, ChoiceSubmission } from '../domain/models/answer';
 import type { EvaluationResult, SelfAssessment } from '../domain/models/evaluation';
 import { isChoiceQuestion, isOpenQuestion } from '../domain/models/question';
 import type { Session, SessionItem } from '../domain/models/session';
-import { clearStepFromHash, routeBase, stepFromHash, writeStepToHash } from '../app/router';
+import { clearStepFromHash, hrefFor, routeBase, stepFromHash, writeStepToHash } from '../app/router';
 import {
   clearActiveSession,
   loadActiveSession,
   saveActiveSession,
 } from '../state/activeSessionStore';
 import { useProgress } from '../state/ProgressContext';
+import { Celebration } from './Celebration';
 import { ChoiceQuestionCard } from './ChoiceQuestionCard';
 import { ClarifyCard } from './ClarifyCard';
 import { CodeQuestionCard } from './CodeQuestionCard';
 import { EvaluationResultView } from './EvaluationResultView';
 import { ManualAssessmentCard } from './ManualAssessmentCard';
 import { OpenQuestionCard } from './OpenQuestionCard';
+import { ProgressBar } from './ProgressBar';
 import { QuestionChatPanel } from './QuestionChatPanel';
 
 type Phase =
@@ -47,6 +51,12 @@ interface Props {
   restartLabel?: string;
   /** Fired once when the last question is recorded (the session is completed). */
   onComplete?: () => void;
+  /**
+   * Optional primary action on the completion screen, e.g. "next lesson". When
+   * present it becomes the primary button and the restart action is demoted to a
+   * secondary (ghost) button.
+   */
+  nextAction?: { label: string; path: string };
   /**
    * When provided, the main pass is followed by a "work on mistakes" round built
    * from its outcomes (directives 1 & 2: re-ask wrong answers, probe missing
@@ -79,6 +89,7 @@ export function SessionRunner({
   restartLabel,
   onComplete,
   buildCorrectiveRound,
+  nextAction,
 }: Props) {
   const { progress, dispatch } = useProgress();
   const method = progress.settings?.evalMethod ?? 'auto';
@@ -94,6 +105,11 @@ export function SessionRunner({
   const [phase, setPhase] = useState<Phase>({ kind: 'answering' });
   const [busy, setBusy] = useState(false);
   const [done, setDone] = useState(false);
+
+  // Hints used on the *current* question (reset on advance). Drives the mild
+  // score cap so help never feels like a hard failure but still keeps ability
+  // honest. See domain/hints.
+  const [hintsUsed, setHintsUsed] = useState(0);
 
   // Corrective ("work on mistakes") round, appended after the main pass.
   const [round, setRound] = useState<'main' | 'corrective'>('main');
@@ -125,23 +141,91 @@ export function SessionRunner({
       <section>
         <h1 className="screen__title">{title}</h1>
         <p className="screen__note">{emptyMessage}</p>
-        <button className="btn btn--ghost" onClick={handleRestart}>
-          {restartLabel ?? 'Обновить'}
-        </button>
+        <div className="session-done__actions">
+          {nextAction && (
+            <a className="btn" href={hrefFor(nextAction.path)}>
+              {nextAction.label}
+            </a>
+          )}
+          <button className="btn btn--ghost" onClick={handleRestart}>
+            {restartLabel ?? 'Обновить'}
+          </button>
+        </div>
       </section>
     );
   }
 
   if (done) {
+    // Breakdown of the main pass — corrective re-asks aren't counted twice.
+    const results = outcomes.current;
+    const total = results.length || activeSession.items.length;
+    const correct = results.filter((o) => o.verdict === 'correct').length;
+    const partial = results.filter((o) => o.verdict === 'partial').length;
+    const wrong = results.filter((o) => o.verdict === 'incorrect').length;
+    const accuracy = total ? Math.round((correct / total) * 100) : 0;
+    const praise =
+      accuracy >= 80
+        ? { emoji: '🎉', title: 'Отлично!' }
+        : accuracy >= 50
+          ? { emoji: '💪', title: 'Хорошо, держим темп' }
+          : { emoji: '🧱', title: 'Есть над чем поработать' };
+
     return (
-      <section>
-        <h1 className="screen__title">Сессия завершена</h1>
-        <p className="screen__note">
-          Отвечено вопросов: {activeSession.items.length}. Серия: {progress.streakDays} дн.
+      <section className="session-done">
+        <Celebration />
+        <div className="session-done__hero">
+          <span className="session-done__emoji" aria-hidden>
+            {praise.emoji}
+          </span>
+          <h1 className="screen__title">{praise.title}</h1>
+          <p className="screen__note">Сессия завершена — отвечено вопросов: {total}.</p>
+        </div>
+
+        <div className="stat-block">
+          <div className="stat-block__head">
+            <span>Точность</span>
+            <span className="ability-list__level">{accuracy}%</span>
+          </div>
+          <ProgressBar value={total ? correct / total : 0} />
+        </div>
+
+        <ul className="session-done__breakdown">
+          <li className="session-done__item session-done__item--correct">
+            <span className="session-done__count">{correct}</span>
+            <span className="session-done__label">зачёт</span>
+          </li>
+          <li className="session-done__item session-done__item--partial">
+            <span className="session-done__count">{partial}</span>
+            <span className="session-done__label">частично</span>
+          </li>
+          <li className="session-done__item session-done__item--incorrect">
+            <span className="session-done__count">{wrong}</span>
+            <span className="session-done__label">не зачёт</span>
+          </li>
+        </ul>
+
+        <p className="session-done__streak">
+          <span aria-hidden>🔥</span> Серия: <strong>{progress.streakDays}</strong> дн.
         </p>
-        <button className="btn" onClick={handleRestart}>
-          {restartLabel ?? 'Новая сессия'}
-        </button>
+
+        <div className="session-done__actions">
+          {nextAction && (
+            <a className="btn" href={hrefFor(nextAction.path)}>
+              {nextAction.label}
+            </a>
+          )}
+          <button className={nextAction ? 'btn btn--ghost' : 'btn'} onClick={handleRestart}>
+            {restartLabel ?? 'Новая сессия'}
+          </button>
+          {wrong + partial > 0 && (
+            <a className="btn btn--ghost" href={hrefFor('/review')}>
+              Повторить слабые места
+            </a>
+          )}
+          <a className="btn btn--ghost" href={hrefFor('/today')}>
+            На главную
+          </a>
+        </div>
       </section>
     );
   }
@@ -150,6 +234,7 @@ export function SessionRunner({
   const item = items[step];
   if (!item) return null;
   const question = item.question;
+  const bookmarked = isQuestionBookmarked(progress, question.id);
 
   function finish() {
     setDone(true);
@@ -157,11 +242,20 @@ export function SessionRunner({
     onComplete?.();
   }
 
+  // All evaluated answers reach the result screen through here so the mild hint
+  // penalty (score cap, verdict untouched) is applied in exactly one place.
+  function showResult(outcome: AnswerOutcome) {
+    setPhase({ kind: 'result', outcome: applyHintPenalty(outcome, hintsUsed) });
+  }
+
+  const hints = hintsFor(question);
+  const revealed = hints.slice(0, hintsUsed);
+
   async function handleChoice(submission: ChoiceSubmission) {
     setBusy(true);
     try {
       const result = await evaluateAnswer(question, submission, { resolver: { method } });
-      if (result.kind === 'outcome') setPhase({ kind: 'result', outcome: result.outcome });
+      if (result.kind === 'outcome') showResult(result.outcome);
     } finally {
       setBusy(false);
     }
@@ -191,7 +285,7 @@ export function SessionRunner({
           return;
         }
       }
-      setPhase({ kind: 'result', outcome });
+      showResult(outcome);
     } finally {
       setBusy(false);
     }
@@ -211,7 +305,7 @@ export function SessionRunner({
         result.kind === 'outcome'
           ? pickBetterOutcome(phase.baseOutcome, result.outcome)
           : phase.baseOutcome;
-      setPhase({ kind: 'result', outcome });
+      showResult(outcome);
     } finally {
       setBusy(false);
     }
@@ -219,7 +313,7 @@ export function SessionRunner({
 
   function handleSkipClarify() {
     if (phase.kind !== 'clarify') return;
-    setPhase({ kind: 'result', outcome: phase.baseOutcome });
+    showResult(phase.baseOutcome);
   }
 
   async function handleManual(selfAssessment: SelfAssessment) {
@@ -227,7 +321,7 @@ export function SessionRunner({
     setBusy(true);
     try {
       const outcome = await submitManualAssessment(question, phase.answer, selfAssessment);
-      setPhase({ kind: 'result', outcome });
+      showResult(outcome);
     } finally {
       setBusy(false);
     }
@@ -235,7 +329,11 @@ export function SessionRunner({
 
   function handleDontKnow() {
     // "I don't know": count as incorrect and jump straight to the explanation.
-    setPhase({ kind: 'result', outcome: skipAnswer(question) });
+    showResult(skipAnswer(question));
+  }
+
+  function handleHint() {
+    setHintsUsed((n) => Math.min(n + 1, hints.length));
   }
 
   async function handleNext() {
@@ -247,6 +345,7 @@ export function SessionRunner({
       const nextStep = step + 1;
       setStep(nextStep);
       setPhase({ kind: 'answering' });
+      setHintsUsed(0);
       if (round === 'main') {
         saveActiveSession(storeKey, activeSession, nextStep);
         writeStepToHash(nextStep);
@@ -265,6 +364,7 @@ export function SessionRunner({
           setRound('corrective');
           setStep(0);
           setPhase({ kind: 'answering' });
+          setHintsUsed(0);
           return;
         }
       } finally {
@@ -291,8 +391,37 @@ export function SessionRunner({
           Работа над ошибками: вернёмся к тому, что не получилось.
         </div>
       )}
-      <p className="screen__note">
-        Вопрос {step + 1} из {items.length}
+      <div className="session__progress">
+        <div className="session__progress-head">
+          <p className="screen__note session__progress-label">
+            Вопрос {step + 1} из {items.length}
+          </p>
+          <button
+            type="button"
+            className={
+              bookmarked
+                ? 'bookmark-toggle bookmark-toggle--on'
+                : 'bookmark-toggle'
+            }
+            onClick={() =>
+              dispatch({
+                type: 'setQuestionBookmark',
+                questionId: question.id,
+                bookmarked: !bookmarked,
+              })
+            }
+            aria-pressed={bookmarked}
+            title={bookmarked ? 'Убрать вопрос из закладок' : 'В закладки — повторить позже'}
+          >
+            {bookmarked ? '★ В закладках' : '☆ В закладки'}
+          </button>
+        </div>
+        <ProgressBar value={(step + (phase.kind === 'result' ? 1 : 0)) / items.length} />
+      </div>
+
+      {/* Politely announce the evaluation wait for screen readers. */}
+      <p className="sr-only" role="status" aria-live="polite">
+        {busy ? 'Проверяю ответ…' : ''}
       </p>
 
       {phase.kind === 'answering' && isChoiceQuestion(question) && (
@@ -305,6 +434,25 @@ export function SessionRunner({
         ) : (
           <OpenQuestionCard key={question.id} question={question} onSubmit={handleOpen} busy={busy} />
         ))}
+
+      {phase.kind === 'answering' && hints.length > 0 && (
+        <div className="session__hints">
+          {revealed.length > 0 && (
+            <ul className="session__hint-list">
+              {revealed.map((hint, i) => (
+                <li key={i} className="session__hint">
+                  {hint}
+                </li>
+              ))}
+            </ul>
+          )}
+          {hintsUsed < hints.length && (
+            <button className="btn btn--ghost btn--hint" onClick={handleHint} disabled={busy}>
+              {hintsUsed === 0 ? 'Подсказка' : `Ещё подсказка (${hints.length - hintsUsed})`}
+            </button>
+          )}
+        </div>
+      )}
 
       {phase.kind === 'answering' && (
         <button className="btn btn--ghost" onClick={handleDontKnow} disabled={busy}>

@@ -73,8 +73,10 @@ export interface DailyMission {
   /** Estimated readiness gain for the focus domain, in percent points [lo, hi]. */
   expectedReadinessGain: [number, number];
   capability?: CapabilityUnlock;
-  /** Where the primary "Начать тренировку" button leads (first plan step). */
+  /** Where the primary CTA leads — the first plan step not yet done today. */
   primaryPath: string;
+  /** Label for the primary CTA, matching the next undone step. */
+  primaryLabel: string;
 }
 
 /** Alias requested by the spec — the mission is the next best action. */
@@ -161,6 +163,13 @@ export function buildDailyMission(input: MissionInput): DailyMission {
     ? `${DOMAIN_LABELS[focusDomain]}: ${focusLesson.title}`
     : DOMAIN_LABELS[focusDomain];
 
+  // The CTA tracks the plan: it leads to the first step not yet done today, so
+  // it advances (lesson → practice → review → terms → interview) instead of
+  // re-opening the same lesson every time. When everything is done, offer extra
+  // practice rather than a dead end.
+  const steps = buildSteps(progress, focusDomain, focusLesson, terms, now);
+  const nextStep = steps.find((s) => !s.done);
+
   return {
     goalLabel: GOAL_LABEL,
     readiness,
@@ -168,10 +177,11 @@ export function buildDailyMission(input: MissionInput): DailyMission {
     focusTitle,
     focusLesson: focusLesson ? { id: focusLesson.id, title: focusLesson.title } : undefined,
     reason: buildReason(reasonKind, focusDomain, readiness, dueInFocus),
-    steps: buildSteps(progress, focusDomain, focusLesson, terms, now),
+    steps,
     expectedReadinessGain: expectedGain(readiness.byDomain[focusDomain]),
     capability,
-    primaryPath: focusLesson ? `/lessons/${focusLesson.id}` : '/practice',
+    primaryPath: nextStep?.path ?? '/practice',
+    primaryLabel: nextStep?.title ?? 'Позаниматься ещё',
   };
 }
 
@@ -328,6 +338,7 @@ function freshStartMission(readiness: ReadinessSnapshot, lessons: Lesson[]): Dai
     steps,
     expectedReadinessGain: expectedGain(readiness.overall),
     primaryPath: '/level',
+    primaryLabel: 'Пройти диагностику',
   };
 }
 

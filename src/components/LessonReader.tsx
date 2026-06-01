@@ -1,6 +1,11 @@
-import { useEffect, useRef, type ReactNode } from 'react';
+import { useEffect, useMemo, useRef, useState, type ReactNode } from 'react';
+import type { GlossaryTerm } from '../domain/models/glossary';
 import type { Lesson } from '../domain/models/lesson';
 import type { LessonStatus } from '../domain/progress/lessonStatus';
+import { buildCandidates } from '../domain/glossary/termHighlight';
+import { useGlossary } from '../hooks/useGlossary';
+import { GlossaryPopup } from './GlossaryPopup';
+import { TermAwareText } from './TermAwareText';
 
 interface RelatedLink {
   id: string;
@@ -21,6 +26,8 @@ interface Props {
   next: { title: string } | null;
   /** Whether the learner has marked this lesson as read. */
   read: boolean;
+  /** Whether the lesson is saved to the learner's bookmarks. */
+  bookmarked: boolean;
   /** Completion state: drives the "needs work" / "passed" badge. */
   status?: LessonStatus;
   onBack: () => void;
@@ -28,6 +35,8 @@ interface Props {
   onNext: () => void;
   /** Sets the read/completed state (auto on reaching the end, or manual toggle). */
   onSetRead: (read: boolean) => void;
+  /** Toggles whether the lesson is bookmarked. */
+  onToggleBookmark: () => void;
   onPractice: () => void;
   onOpenRelated: (id: string) => void;
   /** Extra content rendered below the lesson actions (e.g. the comment panel). */
@@ -40,11 +49,13 @@ export function LessonReader({
   prev,
   next,
   read,
+  bookmarked,
   status,
   onBack,
   onPrev,
   onNext,
   onSetRead,
+  onToggleBookmark,
   onPractice,
   onOpenRelated,
   extra,
@@ -58,9 +69,16 @@ export function LessonReader({
   const onSetReadRef = useRef(onSetRead);
   onSetReadRef.current = onSetRead;
 
+  // Glossary highlight + popup. Candidates are built once per glossary load;
+  // the popup carries the clicked term and the anchoring element.
+  const glossary = useGlossary();
+  const candidates = useMemo(() => buildCandidates(glossary), [glossary]);
+  const [popup, setPopup] = useState<{ term: GlossaryTerm; anchor: HTMLElement } | null>(null);
+
   useEffect(() => {
     window.scrollTo({ top: 0 });
     settledRef.current = false; // re-arm auto-mark for the newly opened lesson
+    setPopup(null); // dismiss any open glossary popup when switching lessons
   }, [lesson.id]);
 
   useEffect(() => {
@@ -102,7 +120,11 @@ export function LessonReader({
           <h3 className="lesson-section__h">{section.heading}</h3>
           {section.paragraphs.map((paragraph, j) => (
             <p key={j} className="lesson-section__p">
-              {paragraph}
+              <TermAwareText
+                text={paragraph}
+                candidates={candidates}
+                onTermClick={(term, anchor) => setPopup({ term, anchor })}
+              />
             </p>
           ))}
           {section.code && <pre className="lesson-code">{section.code}</pre>}
@@ -122,6 +144,18 @@ export function LessonReader({
           aria-pressed={read}
         >
           {read ? '✓ Прочитано' : 'Отметить как прочитанный'}
+        </button>
+        <button
+          className={
+            bookmarked
+              ? 'btn btn--ghost lesson-bookmark-btn lesson-bookmark-btn--on'
+              : 'btn btn--ghost lesson-bookmark-btn'
+          }
+          onClick={onToggleBookmark}
+          aria-pressed={bookmarked}
+          title={bookmarked ? 'Убрать из закладок' : 'В закладки — перечитать позже'}
+        >
+          {bookmarked ? '★ В закладках' : '☆ В закладки'}
         </button>
       </div>
 
@@ -151,6 +185,14 @@ export function LessonReader({
             ))}
           </ul>
         </div>
+      )}
+
+      {popup && (
+        <GlossaryPopup
+          term={popup.term}
+          anchor={popup.anchor}
+          onClose={() => setPopup(null)}
+        />
       )}
     </section>
   );

@@ -101,6 +101,26 @@ describe('buildDailyMission', () => {
     expect(after.steps.find((s) => s.kind === 'lesson')?.done).toBe(true);
   });
 
+  test('the primary CTA advances to the first step not yet done today', () => {
+    const progress = createDefaultProgress();
+    progress.placementDone = true;
+
+    // Fresh day: the first undone step is the lesson, so the CTA opens it.
+    const before = build(progress);
+    const firstStep = before.steps.find((s) => !s.done);
+    expect(firstStep).toBeDefined();
+    expect(before.primaryPath).toBe(firstStep!.path);
+    expect(before.primaryLabel).toBe(firstStep!.title);
+
+    // After reading the focus lesson, the lesson step is done — the CTA should
+    // move on to practice instead of re-opening the same lesson.
+    const read = setLessonRead(progress, before.focusLesson!.id, true, now);
+    const after = build(read);
+    expect(after.steps.find((s) => s.kind === 'lesson')?.done).toBe(true);
+    expect(after.primaryPath).toBe('/practice');
+    expect(after.primaryPath).not.toBe(`/lessons/${after.focusLesson?.id}`);
+  });
+
   test('practice / review / interview steps tick off from today\'s activity', () => {
     const progress = createDefaultProgress();
     progress.placementDone = true;

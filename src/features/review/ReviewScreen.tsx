@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { EmptyState } from '../../components/EmptyState';
 import { WeakConceptsPanel } from '../../components/WeakConceptsPanel';
 import { useConceptLessons } from '../../hooks/useConceptLessons';
 import { useContentIndex } from '../../hooks/useContentIndex';
@@ -15,10 +16,13 @@ export function ReviewScreen() {
     return (
       <section>
         <h1 className="screen__title">Слабые места</h1>
-        <p className="screen__note">
-          Сначала пройди определение уровня и немного попрактикуйся — тогда здесь появятся вопросы на
-          повторение.
-        </p>
+        <EmptyState
+          icon="🎯"
+          title="Здесь появятся темы на повторение"
+          description="Сначала пройди определение уровня и немного попрактикуйся — система найдёт, что стоит закрепить, и вернёт это сюда."
+          actionLabel="Пройти диагностику"
+          actionHref="/level"
+        />
       </section>
     );
   }

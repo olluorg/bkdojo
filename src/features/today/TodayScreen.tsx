@@ -5,6 +5,7 @@ import { buildDailyMission } from '../../domain/today/dailyMission';
 import { useContentIndex } from '../../hooks/useContentIndex';
 import { useGlossary } from '../../hooks/useGlossary';
 import { useLessons } from '../../hooks/useLessons';
+import { useStreak } from '../../hooks/useStreak';
 import { useProgress } from '../../state/ProgressContext';
 import { hrefFor } from '../../app/router';
 
@@ -13,6 +14,7 @@ export function TodayScreen() {
   const index = useContentIndex();
   const { all: lessons } = useLessons();
   const terms = useGlossary();
+  const streak = useStreak();
 
   const mission = useMemo(
     () => buildDailyMission({ progress, index, lessons, terms }),
@@ -22,45 +24,70 @@ export function TodayScreen() {
   const overallPct = Math.round(mission.readiness.overall * 100);
   const [gainLo, gainHi] = mission.expectedReadinessGain;
 
-  // The five existing sections, reached as secondary actions from the mission.
-  const lessonPath = mission.focusLesson
-    ? `/lessons/${mission.focusLesson.id}`
-    : `/courses/${mission.focusDomain}`;
-  const secondaryActions = [
-    { label: 'Открыть урок', path: lessonPath },
-    { label: 'Перейти к практике', path: '/practice' },
-    { label: 'Повторить слабые места', path: '/review' },
-    { label: 'Открыть словарь', path: '/glossary' },
-    { label: 'Пройти mock interview', path: '/interview' },
-  ];
+  // Brand-new user (no placement yet): show a welcoming intro instead of the
+  // discouraging all-zero analytics.
+  const isFresh = mission.reason.kind === 'fresh-start';
+
+  // Daily goal: how much of today's plan is already ticked off — the motivating
+  // "почти у цели" counter, shown inline in the plan heading.
+  const doneSteps = mission.steps.filter((s) => s.done).length;
+  const totalSteps = mission.steps.length;
+  const allDone = totalSteps > 0 && doneSteps === totalSteps;
+
+  if (isFresh) {
+    return (
+      <section className="today">
+        <div className="today__welcome">
+          <span className="today__welcome-mark" aria-hidden>
+            🥋
+          </span>
+          <h1 className="screen__title">Добро пожаловать в bkdojo</h1>
+          <p className="today__welcome-lead">
+            Ежедневный тренажёр для подготовки к backend-собеседованиям. Цель — {mission.goalLabel}.
+          </p>
+          <ul className="today__welcome-points">
+            <li>Короткая диагностика подберёт сложность под тебя — без AI, за 5 минут.</li>
+            <li>Каждый день — один понятный фокус и план, а не бесконечная лента.</li>
+            <li>Открытые ответы оценивает AI, как на реальном интервью.</li>
+          </ul>
+          <a className="btn today__cta" href={hrefFor(mission.primaryPath)}>
+            Пройти диагностику
+          </a>
+        </div>
+
+        <div className="today__plan">
+          <h3 className="today__section-head">С чего начать</h3>
+          <ol className="today__steps">
+            {mission.steps.map((step, i) => (
+              <li key={`${step.kind}-${i}`} className="today__step">
+                <a className="today__step-link" href={hrefFor(step.path)}>
+                  <span className="today__step-num">{i + 1}</span>
+                  <span className="today__step-body">
+                    <span className="today__step-title">{step.title}</span>
+                    <span className="today__step-detail">{step.detail}</span>
+                  </span>
+                </a>
+              </li>
+            ))}
+          </ol>
+        </div>
+      </section>
+    );
+  }
 
   return (
     <section className="today">
       <h1 className="screen__title">Сегодня</h1>
-      <p className="screen__note">Один фокус на сегодня — и понятно, зачем он.</p>
+      <p className="screen__note">Цель — {mission.goalLabel}. Один фокус на сегодня.</p>
 
-      <div className="today__goal">
-        <span className="today__goal-tag">Цель</span>
-        <strong>{mission.goalLabel}</strong>
-      </div>
-
-      <div className="stat-block">
-        <div className="stat-block__head">
-          <span>Готовность к интервью</span>
-          <span className="ability-list__level">{overallPct}%</span>
+      {streak.state === 'at-risk' && (
+        <div className="today__nudge">
+          <span aria-hidden>🔥</span> Серия {streak.days} дн. под угрозой — заверши сегодня хотя бы
+          один шаг, чтобы её сохранить.
         </div>
-        <ProgressBar value={mission.readiness.overall} />
-      </div>
+      )}
 
-      <ul className="today__readiness">
-        {DOMAINS.map((domain) => (
-          <li key={domain} className="today__readiness-row">
-            <span className="today__readiness-name">{DOMAIN_LABELS[domain]}</span>
-            <ProgressBar value={mission.readiness.byDomain[domain]} />
-          </li>
-        ))}
-      </ul>
-
+      {/* The hero: the one focus + its CTA. Everything else is secondary. */}
       <div className="today__focus">
         <span className="today__focus-tag">Фокус дня</span>
         <h2 className="today__focus-title">{mission.focusTitle}</h2>
@@ -75,12 +102,20 @@ export function TodayScreen() {
         </div>
 
         <a className="btn today__cta" href={hrefFor(mission.primaryPath)}>
-          Начать тренировку
+          {mission.primaryLabel}
         </a>
       </div>
 
+      {/* The actionable checklist with an inline daily-goal counter. The five
+          steps already cover every section, so there's no separate quick-links
+          row — it would just duplicate these. */}
       <div className="today__plan">
-        <h3 className="today__section-head">План на сегодня</h3>
+        <div className="today__plan-head">
+          <h3 className="today__section-head">План на сегодня</h3>
+          <span className={allDone ? 'today__plan-count today__plan-count--done' : 'today__plan-count'}>
+            {allDone ? '🎯 готово' : `${doneSteps}/${totalSteps}`}
+          </span>
+        </div>
         <ol className="today__steps">
           {mission.steps.map((step, i) => (
             <li key={`${step.kind}-${i}`} className={step.done ? 'today__step today__step--done' : 'today__step'}>
@@ -96,28 +131,33 @@ export function TodayScreen() {
         </ol>
       </div>
 
-      <div className="today__effect">
-        <h3 className="today__section-head">Ожидаемый эффект</h3>
-        <p className="today__effect-gain">
-          {DOMAIN_LABELS[mission.focusDomain]} readiness +{gainLo}–{gainHi}%
-        </p>
-        {mission.capability && (
-          <p className="today__effect-cap">
-            <span className="today__cap-state">
-              {mission.capability.from} → {mission.capability.to}
-            </span>
-            <span className="today__cap-label">«{mission.capability.label}»</span>
-          </p>
-        )}
-      </div>
+      <details className="today__details">
+        <summary className="today__details-summary">Готовность к интервью · {overallPct}%</summary>
 
-      <div className="today__actions">
-        {secondaryActions.map((action) => (
-          <a key={action.label} className="btn btn--ghost today__action" href={hrefFor(action.path)}>
-            {action.label}
-          </a>
-        ))}
-      </div>
+        <ul className="today__readiness">
+          {DOMAINS.map((domain) => (
+            <li key={domain} className="today__readiness-row">
+              <span className="today__readiness-name">{DOMAIN_LABELS[domain]}</span>
+              <ProgressBar value={mission.readiness.byDomain[domain]} />
+            </li>
+          ))}
+        </ul>
+
+        <div className="today__effect">
+          <h3 className="today__section-head">Ожидаемый эффект</h3>
+          <p className="today__effect-gain">
+            {DOMAIN_LABELS[mission.focusDomain]} readiness +{gainLo}–{gainHi}%
+          </p>
+          {mission.capability && (
+            <p className="today__effect-cap">
+              <span className="today__cap-state">
+                {mission.capability.from} → {mission.capability.to}
+              </span>
+              <span className="today__cap-label">«{mission.capability.label}»</span>
+            </p>
+          )}
+        </div>
+      </details>
     </section>
   );
 }

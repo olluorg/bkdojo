@@ -8,6 +8,7 @@ import type { Lesson } from '../../domain/models/lesson';
 import type { Question } from '../../domain/models/question';
 import { correctlyAnsweredIds, lessonQuestionIds } from '../../domain/progress/lessonStatus';
 import { buildSessionFromQuestions } from '../../domain/selection/topicSelector';
+import { useLessons } from '../../hooks/useLessons';
 import { useProgress } from '../../state/ProgressContext';
 
 interface Props {
@@ -18,7 +19,17 @@ interface Props {
 
 export function LessonPractice({ index, lesson, onBack }: Props) {
   const { progress } = useProgress();
+  const { byDomain } = useLessons();
   const method = progress.settings?.evalMethod ?? 'auto';
+
+  // Next lesson in the same section, if any — surfaced on the completion screen
+  // so finishing a lesson's test leads straight into the next one.
+  const siblings = byDomain.get(lesson.domain) ?? [];
+  const idx = siblings.findIndex((l) => l.id === lesson.id);
+  const nextLesson = idx >= 0 && idx < siblings.length - 1 ? siblings[idx + 1] : undefined;
+  const nextAction = nextLesson
+    ? { label: 'Следующий урок →', path: `/lessons/${nextLesson.id}` }
+    : undefined;
 
   // The lesson's "работа над ошибками" re-asks ONLY the learner's own missed
   // questions from THIS lesson (retry), never concept follow-ups from the wider
@@ -72,6 +83,7 @@ export function LessonPractice({ index, lesson, onBack }: Props) {
         onRestart={onBack}
         restartLabel="Вернуться к уроку"
         buildCorrectiveRound={buildCorrectiveRound}
+        nextAction={nextAction}
       />
     </>
   );

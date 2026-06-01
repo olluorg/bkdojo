@@ -2,6 +2,7 @@ import type { LanguageModelStatic } from '../../types/chrome-ai';
 import type { EvalMethod } from '../models/settings';
 import { serverEndpoint, type FetchFn } from './ServerAiEvaluator';
 import { getProviderKey } from './providerKey';
+import { getBaseUrl, getModel } from './llmProvider';
 
 /**
  * Free-form AI text generation, distinct from rubric-based answer evaluation.
@@ -40,8 +41,12 @@ export class FreeformUnavailableError extends Error {
 export interface FreeformDeps {
   getModel: () => LanguageModelStatic | undefined;
   endpoint: string;
-  /** Caller's OpenRouter key, sent as X-Provider-Key; empty disables the server. */
+  /** Caller's provider key, sent as X-Provider-Key; empty disables the server. */
   apiKey: string;
+  /** Provider base URL, sent as X-Provider-Base-Url; empty = server default. */
+  baseUrl: string;
+  /** Model id forwarded in the request body; empty = server default. */
+  model: string;
   fetchFn: FetchFn;
   timeoutMs: number;
   /** User preference; mirrors the evaluator resolver (auto/chrome/server/manual). */
@@ -53,6 +58,8 @@ function defaultDeps(): FreeformDeps {
     getModel: () => globalThis.LanguageModel,
     endpoint: serverEndpoint(),
     apiKey: getProviderKey(),
+    baseUrl: getBaseUrl(),
+    model: getModel(),
     fetchFn: (input, init) => fetch(input, init),
     timeoutMs: 30_000,
     method: 'auto',
@@ -86,13 +93,20 @@ async function tryChrome(input: FreeformInput, deps: FreeformDeps): Promise<stri
 
 async function tryServer(input: FreeformInput, deps: FreeformDeps): Promise<string | undefined> {
   if (!deps.endpoint || !deps.apiKey) return undefined;
+  const headers: Record<string, string> = {
+    'content-type': 'application/json',
+    'x-provider-key': deps.apiKey,
+  };
+  if (deps.baseUrl) headers['x-provider-base-url'] = deps.baseUrl;
+
   const controller = new AbortController();
   const timer = setTimeout(() => controller.abort(), deps.timeoutMs);
   try {
     const res = await deps.fetchFn(deps.endpoint, {
       method: 'POST',
-      headers: { 'content-type': 'application/json', 'x-provider-key': deps.apiKey },
+      headers,
       body: JSON.stringify({
+        ...(deps.model ? { model: deps.model } : {}),
         messages: [
           { role: 'system', content: input.system },
           { role: 'user', content: input.user },

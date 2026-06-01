@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { SUBMIT_HINT, onCmdEnter } from './keyboard';
 
 interface Props {
   /** The AI's single clarifying question. */
@@ -15,6 +16,10 @@ interface Props {
  */
 export function ClarifyCard({ question, onSubmit, onSkip, busy }: Props) {
   const [text, setText] = useState('');
+  const canSubmit = !busy && text.trim().length > 0;
+  const submit = () => {
+    if (canSubmit) onSubmit(text);
+  };
 
   return (
     <div className="card">
@@ -27,20 +32,19 @@ export function ClarifyCard({ question, onSubmit, onSkip, busy }: Props) {
         value={text}
         disabled={busy}
         placeholder="Коротко добавь — это поможет оценке…"
+        aria-label="Ответ на уточняющий вопрос"
         onChange={(e) => setText(e.target.value)}
+        onKeyDown={onCmdEnter(submit)}
       />
 
       <div className="card__actions">
-        <button
-          className="btn"
-          disabled={busy || text.trim().length === 0}
-          onClick={() => onSubmit(text)}
-        >
+        <button className="btn" disabled={!canSubmit} onClick={submit}>
           {busy ? 'Проверяю…' : 'Ответить'}
         </button>
         <button className="btn btn--ghost" disabled={busy} onClick={onSkip}>
           Пропустить
         </button>
+        <span className="card__shortcut">{SUBMIT_HINT}</span>
       </div>
     </div>
   );

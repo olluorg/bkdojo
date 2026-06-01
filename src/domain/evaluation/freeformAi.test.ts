@@ -35,6 +35,8 @@ describe('runFreeformChat', () => {
         getModel: () => undefined,
         endpoint: 'https://example.test/functions/llm',
         apiKey: 'sk-test',
+        baseUrl: 'https://provider.test/v1',
+        model: 'test/model',
         method: 'auto',
         fetchFn: async (_url, init) => {
           sentBody = String(init?.body ?? '');

@@ -62,6 +62,8 @@ export interface UserProgress {
   lastAiAvailability?: AiAvailability; // UX hint for next visit
   terms?: Record<string, TermProgress>; // optional for backward-compatible load
   lessonsRead?: Record<string, string>; // lessonId → ISO read-at; optional for backward-compatible load
+  lessonBookmarks?: Record<string, string>; // lessonId → ISO bookmarked-at; optional for backward-compatible load
+  questionBookmarks?: Record<string, string>; // questionId → ISO bookmarked-at; optional for backward-compatible load
   lessonComments?: Record<string, CachedLessonComment>; // lessonId → cached AI comment; optional for backward-compatible load
   activity?: Record<string, string>; // activity kind → last-done ISO; distinguishes practice/review/interview
   pet?: PetState; // optional for backward-compatible load

@@ -179,8 +179,10 @@ sudo systemctl restart bkdojo
 ответы пойдут через Chrome Built-in AI или режим самопроверки).
 
 ## Заметки по эксплуатации
-- bkdojo раздаёт только статику — секретов и платных вызовов на нём нет. Расход
-  OpenRouter, выбор модели (`OPENROUTER_MODEL`), gateway (`OPENROUTER_BASE_URL`) и
-  лимиты живут на стороне прокси micro-platform, а оплачивает вызовы сам
-  пользователь своим ключом.
+- bkdojo раздаёт только статику — секретов и платных вызовов на нём нет.
+  Провайдера (OpenRouter/OpenAI/routerai.ru), модель и ключ пользователь выбирает
+  прямо в настройках приложения; они уходят в прокси заголовками
+  `X-Provider-Base-Url` / `X-Provider-Key` и в поле `model`. На сервере
+  micro-platform при желании ограничь список провайдеров через
+  `LLM_ALLOWED_BASE_URLS` (пусто = разрешён любой хост).
 - Логи: `journalctl -u bkdojo -f`.
