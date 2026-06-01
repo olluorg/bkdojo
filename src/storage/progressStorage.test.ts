@@ -131,6 +131,22 @@ describe('mergeProgress', () => {
     });
   });
 
+  test('unions event logs and dedupes by id', () => {
+    const base = createDefaultProgress();
+    base.events = [
+      { id: 'e1', type: 'lesson_completed', at: '2026-05-01T10:00:00Z', refId: 'l1' },
+      { id: 'e2', type: 'session_completed', at: '2026-05-02T10:00:00Z', refId: 'practice' },
+    ];
+    const incoming = createDefaultProgress();
+    incoming.events = [
+      { id: 'e2', type: 'session_completed', at: '2026-05-02T10:00:00Z', refId: 'practice' }, // dup
+      { id: 'e3', type: 'term_drilled', at: '2026-05-03T10:00:00Z', refId: 't1', correct: true },
+    ];
+
+    const merged = mergeProgress(base, incoming);
+    expect(merged.events?.map((e) => e.id)).toEqual(['e1', 'e2', 'e3']);
+  });
+
   test('per-domain skill from the device with more answers wins', () => {
     const base = createDefaultProgress();
     base.skills['java-core'] = { domain: 'java-core', ability: 2, answered: 3, correct: 1 };

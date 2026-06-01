@@ -48,4 +48,34 @@ describe('validateLessons', () => {
     });
     expect(issues.some((i) => i.message.includes('does not match'))).toBe(true);
   });
+
+  test('accepts a section with a well-formed interactive widget', () => {
+    const { valid, issues } = validateLessons([
+      validLesson({
+        sections: [
+          { heading: 'H', paragraphs: ['p'], interactive: { kind: 'param-demo', id: 'integer-cache' } },
+        ],
+      }),
+    ]);
+    expect(valid).toHaveLength(1);
+    expect(issues).toHaveLength(0);
+  });
+
+  test('rejects an interactive widget with an unknown kind', () => {
+    const { issues } = validateLessons([
+      validLesson({
+        sections: [{ heading: 'H', paragraphs: ['p'], interactive: { kind: 'nope', id: 'x' } }],
+      }),
+    ]);
+    expect(issues.some((i) => i.message.includes('interactive.kind'))).toBe(true);
+  });
+
+  test('rejects an interactive widget without an id', () => {
+    const { issues } = validateLessons([
+      validLesson({
+        sections: [{ heading: 'H', paragraphs: ['p'], interactive: { kind: 'stepper' } }],
+      }),
+    ]);
+    expect(issues.some((i) => i.message.includes('interactive.id'))).toBe(true);
+  });
 });

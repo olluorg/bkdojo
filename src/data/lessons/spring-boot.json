@@ -7,6 +7,7 @@
     "title": "IoC и Dependency Injection",
     "summary": "Принцип инверсии управления, DI как его форма, три способа внедрения и почему конструктор, разрешение циклических зависимостей.",
     "relatedTags": ["ioc", "di", "core"],
+    "questionIds": ["sb-001", "sb-003", "sb-009", "sb-032"],
     "related": ["sb-lesson-bean", "sb-lesson-context-config"],
     "sections": [
       {
@@ -61,6 +62,7 @@
     "title": "Бины: жизненный цикл и scopes",
     "summary": "Бин и BeanDefinition, полный жизненный цикл, роль BeanPostProcessor, области видимости и их ловушки.",
     "relatedTags": ["bean", "lifecycle", "scope"],
+    "questionIds": ["sb-004", "sb-006"],
     "related": ["sb-lesson-ioc", "sb-lesson-context-config"],
     "sections": [
       {
@@ -76,6 +78,11 @@
           "Стадии создания singleton-бина: инстанцирование (конструктор) → внедрение зависимостей (populate) → Aware-колбэки (BeanNameAware, ApplicationContextAware) → BeanPostProcessor.postProcessBeforeInitialization → инициализация (@PostConstruct → InitializingBean.afterPropertiesSet → init-method) → BeanPostProcessor.postProcessAfterInitialization → бин готов. При остановке контекста: @PreDestroy → DisposableBean.destroy → destroy-method.",
           "Знать порядок важно: именно на стадии postProcessAfterInitialization бин при необходимости оборачивается в прокси."
         ],
+        "image": {
+          "src": "bean-lifecycle.png",
+          "alt": "Фазы жизненного цикла Spring-бина: создание, внедрение зависимостей, Aware-интерфейсы, BeanPostProcessor до, инициализация, BeanPostProcessor после, бин готов, уничтожение.",
+          "caption": "Жизненный цикл бина: от создания и внедрения зависимостей через инициализацию до готовности и уничтожения."
+        },
         "code": "@Component\nclass Cache {\n    @PostConstruct void init()  { /* прогрев после внедрения зависимостей */ }\n    @PreDestroy  void close() { /* очистка при остановке контекста */ }\n}"
       },
       {
@@ -115,6 +122,7 @@
     "title": "ApplicationContext и конфигурация",
     "summary": "BeanFactory против ApplicationContext, способы конфигурации, @Configuration full/lite, профили и Environment, @Conditional.",
     "relatedTags": ["applicationcontext", "configuration", "profiles"],
+    "questionIds": ["sb-016", "sb-017", "sb-012", "sb-030"],
     "related": ["sb-lesson-bean", "sb-lesson-boot"],
     "sections": [
       {
@@ -169,6 +177,7 @@
     "title": "Стереотипы, @Bean и автосвязывание",
     "summary": "Стереотипные аннотации и их семантика, @Bean против @Component, component-scan, @Autowired и разрешение неоднозначности.",
     "relatedTags": ["beans", "di", "qualifier"],
+    "questionIds": ["sb-007"],
     "related": ["sb-lesson-ioc", "sb-lesson-context-config"],
     "sections": [
       {
@@ -224,6 +233,7 @@
     "title": "Spring MVC: DispatcherServlet и обработка запроса",
     "summary": "Конвейер обработки запроса, @Controller против @RestController, маппинги, извлечение данных и контроль ответа.",
     "relatedTags": ["web", "rest", "mvc"],
+    "questionIds": ["sb-002", "sb-018", "sb-021", "sb-023"],
     "related": ["sb-lesson-rest-api", "sb-lesson-mvc-advanced"],
     "sections": [
       {
@@ -231,7 +241,12 @@
         "paragraphs": [
           "В центре Spring MVC стоит DispatcherServlet — единый front controller, через который проходят все запросы. Он не обрабатывает запрос сам, а оркеструет: по URL находит обработчик через HandlerMapping, вызывает его через подходящий HandlerAdapter, а результат превращает в ответ.",
           "Дальше развилка: для @RestController возвращённый объект сериализуется в тело ответа через HttpMessageConverter (обычно Jackson → JSON); для @Controller с именем представления подключается ViewResolver и рендерит шаблон. Понимание этого конвейера снимает вопрос «как Spring находит и вызывает мой метод»."
-        ]
+        ],
+        "image": {
+          "src": "spring-dispatcher-flow.png",
+          "alt": "Конвейер обработки запроса в Spring MVC: DispatcherServlet → сопоставление обработчиков → контроллер → конвертер ответа → ответ.",
+          "caption": "DispatcherServlet — единая точка входа: маршрутизирует запрос к контроллеру и формирует ответ."
+        }
       },
       {
         "heading": "@Controller против @RestController",
@@ -278,6 +293,7 @@
     "title": "REST API: статусы, согласование и семантика",
     "summary": "Ресурсы и HTTP-глаголы, статус-коды как контракт, content negotiation и message converters, идемпотентность и версионирование.",
     "relatedTags": ["rest", "http", "api"],
+    "questionIds": ["sb-041", "sb-013", "sb-056"],
     "related": ["sb-lesson-web", "sb-lesson-mvc-advanced"],
     "sections": [
       {
@@ -332,6 +348,7 @@
     "title": "@Transactional: propagation, isolation, rollback",
     "summary": "Декларативные транзакции через прокси, ловушка self-invocation, уровни распространения, правила отката и readOnly/isolation.",
     "relatedTags": ["transactions", "aop", "rollback"],
+    "questionIds": ["sb-005", "sb-008", "sb-058"],
     "related": ["sb-lesson-aop", "sb-lesson-data"],
     "sections": [
       {
@@ -387,6 +404,7 @@
     "title": "AOP: прокси и аспекты",
     "summary": "Сквозная функциональность, понятия aspect/advice/pointcut/join point, JDK против CGLIB прокси, self-invocation и что на AOP построено.",
     "relatedTags": ["aop", "proxy"],
+    "questionIds": ["sb-011"],
     "related": ["sb-lesson-bean", "sb-lesson-transactions"],
     "sections": [
       {
@@ -401,12 +419,18 @@
           "Aspect — модуль сквозной логики. Advice — что и когда выполнить: before, afterReturning, afterThrowing, after (finally) и around (оборачивает вызов, может изменить аргументы/результат и решить, вызывать ли целевой метод). Pointcut — выражение-выборка «где применять» (например, execution(...)). Join point — конкретная точка выполнения; в Spring AOP это всегда ВЫЗОВ метода (не доступ к полю).",
           "around — самый мощный advice: он получает ProceedingJoinPoint и сам решает, вызвать ли pjp.proceed()."
         ],
+        "image": {
+          "src": "aop-proxy.png",
+          "alt": "Вызов клиента идёт не напрямую в целевой бин, а через прокси-обёртку: совет «до» → реальный метод целевого бина → совет «после».",
+          "caption": "AOP работает через прокси: вызов оборачивается советами «до» и «после» вокруг реального метода бина."
+        },
         "code": "@Aspect @Component\nclass TimingAspect {\n    @Around(\"execution(* com.app.service..*(..))\")\n    Object time(ProceedingJoinPoint pjp) throws Throwable {\n        long t = System.nanoTime();\n        try { return pjp.proceed(); }\n        finally { metrics.record(pjp.getSignature(), System.nanoTime() - t); }\n    }\n}"
       },
       {
         "heading": "JDK proxy против CGLIB",
         "paragraphs": [
-          "Spring AOP — proxy-based: бин оборачивается в прокси-объект. Если у бина есть интерфейс, по умолчанию создаётся JDK dynamic proxy (реализует интерфейс); если интерфейса нет — CGLIB-прокси (наследует класс подклассом).",
+          "Spring AOP — proxy-based: бин оборачивается в прокси-объект. В «чистом» Spring логика такая: если у бина есть интерфейс, по умолчанию создаётся JDK dynamic proxy (реализует интерфейс); если интерфейса нет — CGLIB-прокси (наследует класс подклассом).",
+          "Важная деталь для собеседования: Spring Boot c 2.0 переопределяет этот дефолт — он включает spring.aop.proxy-target-class=true, поэтому на практике в Boot-приложении почти всегда CGLIB, даже когда у бина есть интерфейс. Так аспект не «теряется», если внедрять бин по классу, а не по интерфейсу.",
           "Отсюда ограничения: проксируются только public-методы (CGLIB вдобавок не может проксировать final-классы и final-методы — их некому переопределить). Понимание «прокси = обёртка» объясняет всю «магию» декларативных аннотаций."
         ]
       },
@@ -440,6 +464,7 @@
     "title": "Spring Data JPA: репозитории и Hibernate",
     "summary": "Абстракция репозитория, derived queries и @Query, persistence context и dirty checking, lazy/N+1 и почему DTO, а не entity.",
     "relatedTags": ["spring-data", "jpa", "databases"],
+    "questionIds": ["sb-014", "sb-057"],
     "related": ["sb-lesson-transactions", "sb-lesson-aop"],
     "sections": [
       {
@@ -495,6 +520,7 @@
     "title": "Spring Boot: автоконфигурация и starters",
     "summary": "@SpringBootApplication и starters, механизм автоконфигурации по условиям, переопределение через @ConditionalOnMissingBean, внешняя конфигурация и её приоритеты.",
     "relatedTags": ["spring-boot", "autoconfiguration", "configuration"],
+    "questionIds": ["sb-010", "sb-015", "sb-033"],
     "related": ["sb-lesson-actuator", "sb-lesson-context-config"],
     "sections": [
       {
@@ -556,6 +582,7 @@
     "title": "Actuator и наблюдаемость",
     "summary": "Production-эндпоинты, health-проверки и probes, метрики через Micrometer, трассировка и безопасность эндпоинтов.",
     "relatedTags": ["actuator", "observability", "metrics"],
+    "questionIds": ["sb-027", "sb-029"],
     "related": ["sb-lesson-boot", "sb-lesson-resilience-observability"],
     "sections": [
       {
@@ -610,6 +637,7 @@
     "title": "HTTP, cookies и сессии",
     "summary": "Семантика HTTP-методов и кэширование, cookies и их флаги безопасности, stateful против stateless сессий, HTTPS и граница authn/authz.",
     "relatedTags": ["http", "cookies", "session"],
+    "questionIds": ["sb-020", "sb-019"],
     "related": ["sb-lesson-rest-api", "sb-lesson-spring-security-deep"],
     "sections": [
       {
@@ -664,6 +692,7 @@
     "title": "Сервлеты, фильтры и встроенный контейнер",
     "summary": "Сервлет и встроенный Tomcat, модель thread-per-request, потокобезопасность контроллеров, Filter против Interceptor и forward/redirect.",
     "relatedTags": ["servlet", "web", "filter"],
+    "questionIds": ["sb-022", "sb-034"],
     "related": ["sb-lesson-web", "sb-lesson-mvc-advanced"],
     "sections": [
       {
@@ -717,6 +746,7 @@
     "title": "Reactive и Spring WebFlux",
     "summary": "Неблокирующая модель и event loop, Reactive Streams и Reactor (Mono/Flux), backpressure, реактивный стек целиком, выбор MVC/WebFlux и цена сложности.",
     "relatedTags": ["reactive", "webflux", "backpressure"],
+    "questionIds": ["sb-024", "sb-025"],
     "related": ["sb-lesson-servlet-runtime", "sb-lesson-web"],
     "sections": [
       {
@@ -785,6 +815,7 @@
     "title": "Resilience: таймауты, ретраи и circuit breaker",
     "summary": "Защита от каскадных отказов: таймауты, безопасные ретраи, состояния circuit breaker, bulkhead и rate limiter, fallback и порядок паттернов.",
     "relatedTags": ["resilience", "circuit-breaker", "retries"],
+    "questionIds": ["sb-026"],
     "related": ["sb-lesson-actuator", "sb-lesson-data"],
     "sections": [
       {
@@ -814,6 +845,11 @@
           "Circuit breaker (предохранитель) отслеживает долю ошибок к зависимости и имеет три состояния. CLOSED — вызовы проходят, считается частота сбоев. При превышении порога он переходит в OPEN — на время вызовы НЕ идут вовсе, а сразу падают (fail fast), давая зависимости восстановиться и не тратя на неё потоки. Через паузу — HALF-OPEN: пропускается несколько пробных вызовов; успех → CLOSED, провал → снова OPEN.",
           "Это ключевая защита от каскада: вместо того чтобы 10 000 запросов висели на таймаутах упавшего сервиса, предохранитель мгновенно отклоняет их."
         ],
+        "image": {
+          "src": "circuit-breaker.png",
+          "alt": "Автомат circuit breaker с тремя состояниями: Закрыт (запросы проходят), Открыт (запросы сразу отклоняются), Полуоткрыт (пробный запрос); переходы по порогу ошибок, таймауту, успеху и ошибке.",
+          "caption": "Circuit breaker: Закрыт → Открыт при превышении порога ошибок, через таймаут → Полуоткрыт, далее успех возвращает в Закрыт, ошибка — снова в Открыт."
+        },
         "code": "@CircuitBreaker(name = \"payments\", fallbackMethod = \"fallback\")\n@Retry(name = \"payments\")\nPayment charge(Order o) { return paymentsClient.charge(o); }\n\nPayment fallback(Order o, Throwable t) { return Payment.pending(); } // деградация"
       },
       {
@@ -846,6 +882,7 @@
     "title": "Тестирование Spring Boot",
     "summary": "Пирамида тестов, unit без Spring, slice-тесты, @SpringBootTest и @MockBean, MockMvc/WebTestClient, Testcontainers и контрактные тесты.",
     "relatedTags": ["testing", "testcontainers", "integration-test"],
+    "questionIds": ["sb-028"],
     "related": ["sb-lesson-data", "sb-lesson-ioc"],
     "sections": [
       {
@@ -908,6 +945,7 @@
     "title": "Контейнер: события, FactoryBean и тонкое связывание",
     "summary": "События приложения и @EventListener, FactoryBean, Aware-интерфейсы, порядок бинов (@Order/@DependsOn) и отложенное получение (ObjectProvider/@Lazy/@Lookup).",
     "relatedTags": ["applicationcontext", "lifecycle"],
+    "questionIds": ["sb-031", "sb-059"],
     "related": ["sb-lesson-bean", "sb-lesson-context-config"],
     "sections": [
       {
@@ -962,6 +1000,7 @@
     "title": "Валидация и обработка ошибок",
     "summary": "Bean Validation и @Valid/@Validated, превращение ошибок в ответ, @ControllerAdvice и единый контракт, ProblemDetail (RFC 7807), multipart и interceptors.",
     "relatedTags": ["validation", "exception-handler", "mvc"],
+    "questionIds": ["sb-035"],
     "related": ["sb-lesson-web", "sb-lesson-rest-api"],
     "sections": [
       {
@@ -1017,6 +1056,7 @@
     "title": "Spring Cloud: config, discovery, gateway, tracing",
     "summary": "Config Server, Eureka/DiscoveryClient, Spring Cloud Gateway и распределённая трассировка.",
     "relatedTags": ["spring-cloud", "config-server", "gateway", "eureka", "service-discovery", "distributed-tracing"],
+    "questionIds": ["sb-036", "sb-037", "sb-038"],
     "related": ["sb-lesson-resilience-observability", "sb-lesson-http-security"],
     "sections": [
       {
@@ -1065,15 +1105,17 @@
     "title": "Spring Batch, Integration и API styles",
     "summary": "Batch jobs, enterprise integration patterns, Spring Data REST, HATEOAS и GraphQL.",
     "relatedTags": ["spring-batch", "spring-integration", "spring-data-rest", "hateoas", "graphql"],
+    "questionIds": ["sb-039", "sb-040", "sb-042"],
     "related": ["sb-lesson-data", "sb-lesson-cloud-platform"],
     "sections": [
       {
         "heading": "Spring Batch",
         "paragraphs": [
           "Spring Batch нужен для пакетной обработки: большие файлы, nightly jobs, миграции, отчёты, регулярная синхронизация.",
-          "Модель строится вокруг Job, Step, ItemReader, ItemProcessor и ItemWriter. Важные свойства: restartability, chunk processing, skip/retry и job repository."
+          "Модель строится вокруг Job, Step, ItemReader, ItemProcessor и ItemWriter. Важные свойства: restartability, chunk processing, skip/retry и job repository.",
+          "Ключевая деталь chunk-обработки — commit-interval: Step читает и обрабатывает элементы по одному, но писатель вызывается раз на пачку (chunk), и каждая пачка — это одна транзакция. Размер chunk-а определяет границу транзакции и компромисс: большой chunk быстрее (меньше коммитов), но при сбое откатывается и переобрабатывается вся пачка, плюс растёт потребление памяти. Job repository хранит метаданные выполнения (какие Step/chunk завершились), поэтому после падения job можно перезапустить с места, а не с нуля. Для устойчивости к «плохим» строкам настраивают skip (пропустить запись с ошибкой до лимита) и retry (повторить транзиентную ошибку)."
         ],
-        "code": "read chunk -> process items -> write chunk -> commit"
+        "code": "// chunk(100): на каждые 100 элементов — один writer-вызов в одной транзакции\nstepBuilder.<Input, Output>chunk(100, txManager)\n    .reader(reader).processor(processor).writer(writer)\n    .faultTolerant().skipLimit(10).skip(ParseException.class);"
       },
       {
         "heading": "Spring Integration",
@@ -1093,7 +1135,8 @@
         "heading": "GraphQL",
         "paragraphs": [
           "GraphQL позволяет клиенту запросить ровно нужные поля и объединить связанные данные одним запросом.",
-          "Главные backend-риски: N+1 на resolvers, сложность authorization на уровне полей и защита от слишком дорогих запросов."
+          "Главные backend-риски: N+1 на resolvers, сложность authorization на уровне полей и защита от слишком дорогих запросов.",
+          "N+1 в GraphQL особенно коварен: клиент запрашивает список из N объектов и по вложенному полю каждого — резолвер этого поля вызывается N раз, по запросу в БД на каждый. Стандартное решение — DataLoader: он откладывает (батчит) обращения внутри одного тика и склеивает их в один запрос по списку ключей (плюс кэш в рамках запроса). В Spring for GraphQL это @BatchMapping или BatchLoaderRegistry. Дорогие запросы ограничивают лимитом глубины/сложности (query depth/complexity limit), иначе клиент может уронить сервер одним глубоко вложенным запросом."
         ]
       },
       {
@@ -1113,6 +1156,7 @@
     "title": "Spring Kafka",
     "summary": "KafkaTemplate, @KafkaListener, listener containers, offset ack, error handling, retries и DLT.",
     "relatedTags": ["spring-kafka", "kafkatemplate", "kafkalistener", "dlt", "offset"],
+    "questionIds": ["sb-043", "sb-044", "sb-045"],
     "related": ["sb-lesson-integration-batch-api", "mb-lesson-kafka-consumer"],
     "sections": [
       {
@@ -1142,6 +1186,7 @@
         "heading": "Retries, DLT и идемпотентность",
         "paragraphs": [
           "DefaultErrorHandler может ретраить обработку с backoff, а после исчерпания попыток отправлять запись в DLT через DeadLetterPublishingRecoverer.",
+          "Отдельная ловушка — poison pill: запись, которую невозможно десериализовать (битый JSON, сменившаяся схема). Ошибка возникает ещё ДО вызова вашего listener-а, в десериализаторе, поэтому обычный error handler её не ловит, и контейнер встаёт в бесконечный цикл на одном offset. Лекарство — ErrorHandlingDeserializer: он оборачивает реальный десериализатор, ловит исключение и кладёт запись с пометкой, чтобы её можно было отправить в DLT, а не зацикливаться.",
           "DLT не заменяет идемпотентность consumer-а. Любой retry/ре-баланс/падение между business commit и offset commit может дать повтор."
         ]
       },
@@ -1175,13 +1220,15 @@
     "title": "Spring AMQP и RabbitMQ",
     "summary": "RabbitTemplate, @RabbitListener, exchanges, bindings, manual ack, retries, DLQ и prefetch.",
     "relatedTags": ["spring-amqp", "rabbittemplate", "rabbitlistener", "rabbitmq", "prefetch", "dlq"],
+    "questionIds": ["sb-046", "sb-047", "sb-048"],
     "related": ["sb-lesson-spring-kafka", "mb-lesson-rabbitmq-sqs"],
     "sections": [
       {
         "heading": "RabbitTemplate",
         "paragraphs": [
           "RabbitTemplate отправляет сообщения в exchange с routing key. В отличие от Kafka, producer обычно не пишет напрямую в queue: exchange маршрутизирует по bindings.",
-          "Для JSON payload настраивают MessageConverter, например Jackson2JsonMessageConverter, и следят за совместимостью формата."
+          "Для JSON payload настраивают MessageConverter, например Jackson2JsonMessageConverter, и следят за совместимостью формата.",
+          "Надёжная отправка: publisher confirms — это асинхронное подтверждение от брокера, что сообщение принято (включается publisher-confirm-type: correlated), а publisher returns возвращает сообщение, которое не попало ни в одну очередь (mandatory=true, когда нет подходящего binding). Без confirms «успешный» convertAndSend лишь значит, что сообщение ушло в сокет, а не что брокер его сохранил, — на сбое сети оно может потеряться молча."
         ],
         "code": "rabbitTemplate.convertAndSend(\n    \"orders.exchange\",\n    \"order.paid\",\n    new OrderPaid(orderId)\n);"
       },
@@ -1230,6 +1277,7 @@
     "title": "Spring Cloud Stream",
     "summary": "Binder abstraction, functional model, bindings, consumer groups, partitioning и trade-offs поверх Kafka/RabbitMQ.",
     "relatedTags": ["spring-cloud-stream", "binder", "bindings", "functional-bean", "partitioning"],
+    "questionIds": ["sb-049", "sb-050", "sb-051"],
     "related": ["sb-lesson-spring-kafka", "sb-lesson-spring-amqp"],
     "sections": [
       {
@@ -1284,6 +1332,7 @@
     "title": "Spring Security: фильтр-цепочка и авторизация",
     "summary": "SecurityFilterChain, аутентификация (UserDetailsService/PasswordEncoder), SecurityContext, авторизация запросов и CSRF/CORS/сессии.",
     "relatedTags": ["spring-security", "security-filter-chain", "csrf"],
+    "questionIds": ["sb-052", "sb-054"],
     "related": ["sb-lesson-http-security", "sb-lesson-security-auth"],
     "sections": [
       {
@@ -1292,6 +1341,11 @@
           "Spring Security — это цепочка сервлет-фильтров ПЕРЕД DispatcherServlet (а не MVC-interceptor!). Запрос проходит через фильтры, каждый из которых отвечает за свой аспект: извлечь credentials, построить Authentication, проверить авторизацию, обработать отказ. Поэтому security срабатывает раньше контроллеров.",
           "Современная конфигурация — это бин SecurityFilterChain (через HttpSecurity DSL). Старый WebSecurityConfigurerAdapter удалён в Spring Security 6, поэтому актуальные примеры — на бинах."
         ],
+        "image": {
+          "src": "spring-security-filter-chain.png",
+          "alt": "Цепочка фильтров Spring Security: запрос проходит фильтры аутентификации и авторизации до контроллера; любой фильтр может отклонить запрос раньше.",
+          "caption": "Запрос проходит упорядоченную цепочку фильтров; любой из них может прервать обработку до контроллера."
+        },
         "code": "@Bean\nSecurityFilterChain api(HttpSecurity http) throws Exception {\n    return http\n        .csrf(c -> c.disable())                 // stateless API\n        .sessionManagement(s -> s.sessionCreationPolicy(STATELESS))\n        .authorizeHttpRequests(a -> a\n            .requestMatchers(\"/actuator/health\").permitAll()\n            .requestMatchers(\"/admin/**\").hasRole(\"ADMIN\")\n            .anyRequest().authenticated())\n        .oauth2ResourceServer(o -> o.jwt(Customizer.withDefaults()))\n        .build();\n}"
       },
       {
@@ -1338,13 +1392,15 @@
     "title": "Аутентификация: JWT, OAuth2/OIDC и method security",
     "summary": "Структура и валидация JWT, проблема отзыва, роли OAuth2 и authorization code flow, OIDC, и авторизация на уровне методов.",
     "relatedTags": ["jwt", "oauth2", "method-security"],
+    "questionIds": ["sb-053", "sb-055"],
     "related": ["sb-lesson-spring-security-deep", "sb-lesson-http-security"],
     "sections": [
       {
         "heading": "JWT: структура и валидация",
         "paragraphs": [
           "JWT — самодостаточный токен из трёх частей через точку: header.payload.signature (каждая — base64url). В payload лежат claims (sub, iss, aud, exp, роли), а signature — подпись (HMAC на секрете или RSA/EC на паре ключей).",
-          "Resource server (ваше API) проверяет подпись, issuer (iss), audience (aud) и срок (exp), а затем маппит claims в authorities. Важно: payload ПОДПИСАН, но НЕ зашифрован — его может прочитать любой. Поэтому секреты в JWT не кладут."
+          "Resource server (ваше API) проверяет подпись, issuer (iss), audience (aud) и срок (exp), а затем маппит claims в authorities. Важно: payload ПОДПИСАН, но НЕ зашифрован — его может прочитать любой. Поэтому секреты в JWT не кладут.",
+          "Классическая атака — подмена алгоритма в header. alg:none: злоумышленник ставит заголовок \"alg\":\"none\" и шлёт токен без подписи; наивная библиотека «проверяет» подпись none и принимает токен. Algorithm confusion: токен, который сервер ждёт подписанным RSA (RS256, проверка публичным ключом), злоумышленник переподписывает HMAC (HS256), используя публичный RSA-ключ как HMAC-секрет. Защита одна: сервер должен жёстко фиксировать ожидаемый алгоритм и не доверять полю alg из токена. В Spring Security это закрыто из коробки (NimbusJwtDecoder с заданным алгоритмом) — главное не отключать и не «чинить» проверку вручную."
         ]
       },
       {
@@ -1359,7 +1415,12 @@
         "paragraphs": [
           "OAuth2 — протокол делегированного доступа с тремя ролями: authorization server выдаёт токены, resource server защищает API и проверяет токены (это типичная роль Spring-приложения, oauth2ResourceServer), client получает токен от имени пользователя.",
           "Базовый сценарий — authorization code flow: пользователь логинится у authorization server, приложение получает короткоживущий code, меняет его на токены на бэкенде. Так пароль пользователя не проходит через ваше приложение."
-        ]
+        ],
+        "image": {
+          "src": "oauth2-flow.png",
+          "alt": "Поток OAuth2 между клиентом, сервером авторизации и ресурс-сервером: запрос авторизации, согласие пользователя, код авторизации, обмен кода на токен, доступ к ресурсу по access-токену.",
+          "caption": "OAuth2 authorization code flow: код авторизации обменивается на access-токен, с которым клиент идёт к ресурс-серверу."
+        }
       },
       {
         "heading": "OIDC",

@@ -36,6 +36,20 @@ function sampleProgress(): UserProgress {
     },
   };
   p.activity = { practice: '2026-05-02T11:30:00.000Z' };
+  p.events = [
+    {
+      id: '2026-05-01T09:00:00.000Z#lesson_completed#lesson-a',
+      type: 'lesson_completed',
+      at: '2026-05-01T09:00:00.000Z',
+      refId: 'lesson-a',
+    },
+    {
+      id: '2026-05-02T11:30:00.000Z#session_completed#practice',
+      type: 'session_completed',
+      at: '2026-05-02T11:30:00.000Z',
+      refId: 'practice',
+    },
+  ];
   return p;
 }
 
@@ -64,6 +78,14 @@ describe('decompose / recompose', () => {
     ]);
   });
 
+  test('preserves events order regardless of stored record order', () => {
+    const p = sampleProgress();
+    const records = decompose(p);
+    records.events = [...records.events].reverse();
+    const restored = recompose(records);
+    expect(restored.events?.map((e) => e.type)).toEqual(['lesson_completed', 'session_completed']);
+  });
+
   test('singletons round-trip scalar fields', () => {
     const p = sampleProgress();
     const restored = recompose(decompose(p));
@@ -79,6 +101,7 @@ describe('decompose / recompose', () => {
       lessonsRead: [],
       lessonComments: [],
       activity: [],
+      events: [],
       singletons: [],
     });
     // Don't deep-compare to createDefaultProgress(): the default pet carries a

@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { ChoiceQuestionCard } from '../../components/ChoiceQuestionCard';
 import { CodeQuestionCard } from '../../components/CodeQuestionCard';
 import { EvaluationResultView } from '../../components/EvaluationResultView';
@@ -36,6 +36,15 @@ export function MockInterviewRunner({ index, domain, title, onExit, onRestart }:
   const [busy, setBusy] = useState(false);
   const [results, setResults] = useState<Result[]>([]);
   const [finished, setFinished] = useState(false);
+
+  // A mock interview isn't resumed across refreshes, so each mount with real
+  // questions is a fresh session start.
+  useEffect(() => {
+    if (session.items.length > 0) {
+      dispatch({ type: 'logEvent', event: { type: 'session_started', refId: 'interview', domain } });
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   if (session.items.length === 0) {
     return (

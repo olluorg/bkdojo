@@ -4,6 +4,7 @@ import { useAiCapability } from '../hooks/useAiCapability';
 import { BookmarksScreen } from '../features/bookmarks/BookmarksScreen';
 import { CoursesScreen } from '../features/courses/CoursesScreen';
 import { GlossaryScreen } from '../features/glossary/GlossaryScreen';
+import { HistoryScreen } from '../features/history/HistoryScreen';
 import { InterviewScreen } from '../features/interview/InterviewScreen';
 import { LessonsScreen } from '../features/lessons/LessonsScreen';
 import { OnboardingScreen } from '../features/onboarding/OnboardingScreen';
@@ -30,6 +31,7 @@ type Route =
   | 'interview'
   | 'review'
   | 'stats'
+  | 'history'
   | 'pet'
   | 'settings';
 
@@ -54,6 +56,7 @@ const PRIMARY: NavItem[] = [
 const MORE: NavItem[] = [
   { route: 'bookmarks', label: 'Закладки', icon: '🔖' },
   { route: 'glossary', label: 'Словарь', icon: '📖' },
+  { route: 'history', label: 'История', icon: '📜' },
   { route: 'interview', label: 'Интервью', icon: '🎤' },
   { route: 'level', label: 'Уровень', icon: '🎚️' },
 ];
@@ -70,6 +73,7 @@ const RENDERABLE = new Set<Route>([
   'interview',
   'review',
   'stats',
+  'history',
   'pet',
   'settings',
 ]);
@@ -212,6 +216,7 @@ export function App() {
         {route === 'interview' && <InterviewScreen />}
         {route === 'review' && <ReviewScreen />}
         {route === 'stats' && <StatsScreen />}
+        {route === 'history' && <HistoryScreen />}
         {route === 'pet' && <PetScreen />}
         {route === 'settings' && <SettingsScreen />}
       </main>

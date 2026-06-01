@@ -18,6 +18,7 @@ export function ReviewRunner({ index, onRestart }: { index: ContentIndex; onRest
       emptyMessage="Отличная работа — явных слабых мест сейчас нет. Загляни в практику или зайди позже."
       onRestart={onRestart}
       restartLabel="Обновить"
+      activityKind="review"
       onComplete={() => dispatch({ type: 'recordActivity', kind: 'review' })}
     />
   );

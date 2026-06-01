@@ -10,6 +10,7 @@
  */
 
 import type { Domain } from '../domain/models/common';
+import type { AppEvent } from '../domain/models/event';
 import type {
   AnswerRecord,
   CachedLessonComment,
@@ -50,6 +51,7 @@ interface ActivityRecord {
   id: string;
   at: string;
 }
+type EventRecord = AppEvent; // keyPath 'id'
 interface SingletonRecord {
   key: string;
   value: unknown;
@@ -91,12 +93,13 @@ export function decompose(progress: UserProgress): DecomposedProgress {
   const activity: ActivityRecord[] = Object.entries(progress.activity ?? {}).map(
     ([id, at]) => ({ id, at }),
   );
+  const events: EventRecord[] = [...(progress.events ?? [])];
   const singletons: SingletonRecord[] = SINGLETON_KEYS.flatMap((key) => {
     const value = (progress as unknown as Record<string, unknown>)[key];
     return value === undefined ? [] : [{ key, value }];
   });
 
-  return { skills, history, terms, lessonsRead, lessonComments, activity, singletons };
+  return { skills, history, terms, lessonsRead, lessonComments, activity, events, singletons };
 }
 
 export function recompose(records: DecomposedProgress): UserProgress {
@@ -121,6 +124,8 @@ export function recompose(records: DecomposedProgress): UserProgress {
   const activity: Record<string, string> = {};
   for (const a of records.activity as ActivityRecord[]) activity[a.id] = a.at;
 
+  const events = [...(records.events as EventRecord[])].sort((a, b) => a.at.localeCompare(b.at));
+
   const singletons: Partial<Record<SingletonKey, unknown>> = {};
   for (const row of records.singletons as SingletonRecord[]) {
     singletons[row.key as SingletonKey] = row.value;
@@ -137,6 +142,7 @@ export function recompose(records: DecomposedProgress): UserProgress {
     lessonsRead,
     lessonComments,
     activity,
+    events,
   } as UserProgress;
   return normalizeProgress(assembled);
 }
@@ -178,6 +184,7 @@ const EMPTY: DecomposedProgress = {
   lessonsRead: [],
   lessonComments: [],
   activity: [],
+  events: [],
   singletons: [],
 };
 

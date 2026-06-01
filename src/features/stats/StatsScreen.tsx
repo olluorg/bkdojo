@@ -12,6 +12,7 @@ import { useGlossary } from '../../hooks/useGlossary';
 import { useLessons } from '../../hooks/useLessons';
 import { useStreak } from '../../hooks/useStreak';
 import { useProgress } from '../../state/ProgressContext';
+import { ProgressDynamics } from './ProgressDynamics';
 
 export function StatsScreen() {
   const { progress } = useProgress();
@@ -47,6 +48,8 @@ export function StatsScreen() {
         <div className="stat-block__head">Общий прогресс</div>
         <ProgressBar value={rank.coverage} />
       </div>
+
+      <ProgressDynamics progress={progress} index={index} />
 
       <div className="stat-block">
         <div className="stat-block__head">

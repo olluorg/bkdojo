@@ -1,5 +1,6 @@
 import type { OutcomeSource } from './answer';
 import type { Domain } from './common';
+import type { AppEvent } from './event';
 import type { AiAvailability, ConceptResult, Verdict } from './evaluation';
 import type { PetState } from './pet';
 import type { OverrideCredits } from '../progress/overrideCredits';
@@ -66,6 +67,7 @@ export interface UserProgress {
   questionBookmarks?: Record<string, string>; // questionId → ISO bookmarked-at; optional for backward-compatible load
   lessonComments?: Record<string, CachedLessonComment>; // lessonId → cached AI comment; optional for backward-compatible load
   activity?: Record<string, string>; // activity kind → last-done ISO; distinguishes practice/review/interview
+  events?: AppEvent[]; // append-only learning-event log (lessons/terms/sessions); optional for backward-compatible load
   pet?: PetState; // optional for backward-compatible load
   settings?: Settings; // optional for backward-compatible load
   /** Self-override credits ("я считаю, что ответил верно"); optional for backward-compatible load. */

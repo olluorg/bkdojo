@@ -1,3 +1,4 @@
+import { useEffect } from 'react';
 import { LessonCommentPanel } from '../../components/LessonCommentPanel';
 import { LessonReader } from '../../components/LessonReader';
 import { DOMAIN_LABELS } from '../../domain/models/common';
@@ -28,6 +29,19 @@ export function LessonsScreen() {
   const lessonId = parts[1];
   const practicing = parts[2] === 'practice';
   const selected = lessonId ? byId.get(lessonId) ?? null : null;
+
+  // Log opening a lesson's reader once per lesson navigation (not when entering
+  // its practice test, and not on re-renders for the same lesson).
+  const openedDomain = selected?.domain;
+  useEffect(() => {
+    if (selected && !practicing) {
+      dispatch({
+        type: 'logEvent',
+        event: { type: 'lesson_started', refId: selected.id, domain: openedDomain },
+      });
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [selected?.id]);
 
   if (selected && practicing) {
     return (

@@ -15,6 +15,7 @@ import {
   shouldClarify,
 } from '../domain/lesson/clarify';
 import type { AnswerOutcome, ChoiceSubmission } from '../domain/models/answer';
+import type { SessionKind } from '../domain/models/event';
 import type { EvaluationResult, SelfAssessment } from '../domain/models/evaluation';
 import { isChoiceQuestion, isOpenQuestion } from '../domain/models/question';
 import type { Session, SessionItem } from '../domain/models/session';
@@ -51,6 +52,12 @@ interface Props {
   restartLabel?: string;
   /** Fired once when the last question is recorded (the session is completed). */
   onComplete?: () => void;
+  /**
+   * When set, a `session_started` event is logged once on a fresh start (skipped
+   * on resume after a refresh). Lesson tests pass nothing — they aren't one of
+   * the tracked daily-loop session kinds.
+   */
+  activityKind?: SessionKind;
   /**
    * Optional primary action on the completion screen, e.g. "next lesson". When
    * present it becomes the primary button and the restart action is demoted to a
@@ -90,6 +97,7 @@ export function SessionRunner({
   onComplete,
   buildCorrectiveRound,
   nextAction,
+  activityKind,
 }: Props) {
   const { progress, dispatch } = useProgress();
   const method = progress.settings?.evalMethod ?? 'auto';
@@ -122,6 +130,11 @@ export function SessionRunner({
     if (activeSession.items.length === 0) return;
     saveActiveSession(storeKey, activeSession, step);
     writeStepToHash(step);
+    // Log the start of a fresh session once. `restored` means we resumed after a
+    // refresh — don't double-count that as a new session.
+    if (activityKind && !restored) {
+      dispatch({ type: 'logEvent', event: { type: 'session_started', refId: activityKind } });
+    }
     // Mount-only: subsequent updates are handled in handleNext.
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);

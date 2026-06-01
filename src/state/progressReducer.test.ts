@@ -22,10 +22,11 @@ describe('progressReducer', () => {
     expect(next.history).toHaveLength(1);
   });
 
-  test('completePlacement is idempotent', () => {
+  test('completePlacement is idempotent and logs one event', () => {
     const once = progressReducer(createDefaultProgress(), { type: 'completePlacement' });
     expect(once.placementDone).toBe(true);
-    expect(progressReducer(once, { type: 'completePlacement' })).toBe(once); // same reference
+    expect(once.events?.filter((e) => e.type === 'placement_completed')).toHaveLength(1);
+    expect(progressReducer(once, { type: 'completePlacement' })).toBe(once); // same reference, no extra event
   });
 
   test('setAiAvailability stores and de-dupes', () => {
@@ -65,6 +66,28 @@ describe('progressReducer', () => {
     });
     expect(next.activity?.review).toBeTruthy();
     expect(next.activity?.practice).toBeUndefined();
+  });
+
+  test('learning actions append events, toggling read off does not', () => {
+    let p = createDefaultProgress();
+    p = progressReducer(p, { type: 'setLessonRead', lessonId: 'java-core-oop', read: true });
+    p = progressReducer(p, { type: 'recordTerm', termId: 'closures', correct: true });
+    p = progressReducer(p, { type: 'recordActivity', kind: 'practice' });
+    p = progressReducer(p, { type: 'setLessonRead', lessonId: 'java-core-oop', read: false });
+
+    const types = (p.events ?? []).map((e) => e.type).sort();
+    expect(types).toEqual(['lesson_completed', 'session_completed', 'term_drilled']);
+    const term = p.events!.find((e) => e.type === 'term_drilled');
+    expect(term).toMatchObject({ refId: 'closures', correct: true });
+  });
+
+  test('logEvent appends an arbitrary event (session_started)', () => {
+    const next = progressReducer(createDefaultProgress(), {
+      type: 'logEvent',
+      event: { type: 'session_started', refId: 'practice' },
+    });
+    expect(next.events).toHaveLength(1);
+    expect(next.events![0]).toMatchObject({ type: 'session_started', refId: 'practice' });
   });
 
   test('reset returns a fresh default', () => {

@@ -1,10 +1,13 @@
 import { useEffect, useMemo, useRef, useState, type ReactNode } from 'react';
+import { createPortal } from 'react-dom';
 import type { GlossaryTerm } from '../domain/models/glossary';
-import type { Lesson } from '../domain/models/lesson';
+import type { Lesson, LessonImage } from '../domain/models/lesson';
 import type { LessonStatus } from '../domain/progress/lessonStatus';
+import { resolveLessonAsset } from '../domain/content/lessonAssets';
 import { buildCandidates } from '../domain/glossary/termHighlight';
 import { useGlossary } from '../hooks/useGlossary';
 import { GlossaryPopup } from './GlossaryPopup';
+import { LessonInteractiveBlock } from './lessonWidgets';
 import { TermAwareText } from './TermAwareText';
 
 interface RelatedLink {
@@ -41,6 +44,63 @@ interface Props {
   onOpenRelated: (id: string) => void;
   /** Extra content rendered below the lesson actions (e.g. the comment panel). */
   extra?: ReactNode;
+}
+
+/** Renders a lesson infographic; silently skips if the asset is missing. */
+function LessonFigure({ image }: { image: LessonImage }) {
+  const url = resolveLessonAsset(image.src);
+  const [zoomed, setZoomed] = useState(false);
+
+  // While zoomed: close on Esc and lock background scroll.
+  useEffect(() => {
+    if (!zoomed) return;
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') setZoomed(false);
+    };
+    window.addEventListener('keydown', onKey);
+    const prevOverflow = document.body.style.overflow;
+    document.body.style.overflow = 'hidden';
+    return () => {
+      window.removeEventListener('keydown', onKey);
+      document.body.style.overflow = prevOverflow;
+    };
+  }, [zoomed]);
+
+  if (!url) return null;
+  return (
+    <figure className="lesson-figure">
+      <button
+        type="button"
+        className="lesson-figure__zoom"
+        onClick={() => setZoomed(true)}
+        aria-label="Открыть изображение во весь экран"
+      >
+        <img className="lesson-figure__img" src={url} alt={image.alt} loading="lazy" />
+      </button>
+      {image.caption && <figcaption className="lesson-figure__caption">{image.caption}</figcaption>}
+      {zoomed &&
+        createPortal(
+          <div
+            className="lesson-lightbox"
+            role="dialog"
+            aria-modal="true"
+            aria-label={image.alt}
+            onClick={() => setZoomed(false)}
+          >
+            <img className="lesson-lightbox__img" src={url} alt={image.alt} />
+            <button
+              type="button"
+              className="lesson-lightbox__close"
+              aria-label="Закрыть"
+              onClick={() => setZoomed(false)}
+            >
+              ×
+            </button>
+          </div>,
+          document.body,
+        )}
+    </figure>
+  );
 }
 
 export function LessonReader({
@@ -127,7 +187,9 @@ export function LessonReader({
               />
             </p>
           ))}
+          {section.image && <LessonFigure image={section.image} />}
           {section.code && <pre className="lesson-code">{section.code}</pre>}
+          {section.interactive && <LessonInteractiveBlock spec={section.interactive} />}
         </div>
       ))}
 

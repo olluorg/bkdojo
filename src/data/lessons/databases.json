@@ -7,13 +7,18 @@
     "title": "SQL: операторы, NULL и фильтрация",
     "summary": "Группы команд, логический порядок SELECT, трёхзначная логика NULL и разница WHERE/HAVING — с ловушками, на которых валятся на собеседовании.",
     "relatedTags": ["sql", "group-by", "filtering"],
+    "questionIds": ["db-013", "db-012", "db-009", "db-014", "db-025"],
     "related": ["db-lesson-joins-keys", "db-lesson-transactions"],
     "sections": [
       {
         "heading": "Что делает SQL и группы команд",
         "paragraphs": [
           "SQL — декларативный язык: ты описываешь, какой результат хочешь, а планировщик СУБД сам решает, как его получить. Поэтому один и тот же запрос может выполняться по-разному в зависимости от данных, индексов и статистики.",
-          "Команды делят на четыре группы. DDL (Data Definition Language) определяет схему: CREATE, ALTER, DROP. DML (Data Manipulation Language) работает с данными: SELECT, INSERT, UPDATE, DELETE. TCL (Transaction Control Language) управляет транзакциями: COMMIT, ROLLBACK, SAVEPOINT. DCL (Data Control Language) управляет правами: GRANT, REVOKE.",
+          "Команды делят на четыре группы:",
+          "• DDL (Data Definition Language) — определяет схему: CREATE, ALTER, DROP.",
+          "• DML (Data Manipulation Language) — работает с данными: SELECT, INSERT, UPDATE, DELETE.",
+          "• TCL (Transaction Control Language) — управляет транзакциями: COMMIT, ROLLBACK, SAVEPOINT.",
+          "• DCL (Data Control Language) — управляет правами: GRANT, REVOKE.",
           "Важно не просто перечислить, а понимать разницу рисков: DML меняет строки и обычно откатывается, а DDL меняет структуру и во многих СУБД фиксирует транзакцию неявно — откатить ALTER уже не выйдет."
         ]
       },
@@ -43,6 +48,15 @@
         "code": "select user_id, count(*) as orders\nfrom orders\nwhere status = 'PAID'   -- сначала отсекли строки\ngroup by user_id\nhaving count(*) > 10;     -- затем отсекли группы"
       },
       {
+        "heading": "Подзапросы и CTE",
+        "paragraphs": [
+          "Подзапрос — это запрос внутри запроса. Скалярный подзапрос возвращает одно значение и подставляется как выражение; подзапрос в IN/EXISTS используется для фильтрации. EXISTS обычно эффективнее IN, когда важен лишь факт наличия строки (и он безопасен относительно NULL, в отличие от NOT IN).",
+          "Коррелированный подзапрос ссылается на строку внешнего запроса и потому логически выполняется для каждой такой строки — это удобно читать, но легко получить медленный план; часто его переписывают в JOIN.",
+          "CTE (WITH ... AS) — это именованный подзапрос, вынесенный вперёд: он не быстрее сам по себе, но делает сложный запрос читаемым и позволяет переиспользовать промежуточный результат и писать рекурсию (WITH RECURSIVE для деревьев/иерархий)."
+        ],
+        "code": "-- EXISTS: есть ли у пользователя хоть один оплаченный заказ\nselect u.*\nfrom users u\nwhere exists (\n  select 1 from orders o\n  where o.user_id = u.id and o.status = 'PAID'\n);\n\n-- CTE для читаемости\nwith paid as (\n  select user_id, count(*) cnt from orders\n  where status = 'PAID' group by user_id\n)\nselect u.email, paid.cnt\nfrom users u join paid on paid.user_id = u.id;"
+      },
+      {
         "heading": "Частые ошибки и как звучать на собеседовании",
         "paragraphs": [
           "Типичные ловушки: сравнивать NULL через =, путать count(*) и count(column), фильтровать агрегат в WHERE, ожидать, что NOT IN корректно отработает при NULL в наборе.",
@@ -59,6 +73,7 @@
     "title": "JOIN, ключи и ограничения",
     "summary": "INNER/OUTER/CROSS JOIN, ловушка ON vs WHERE, первичные/внешние/уникальные ключи и ссылочная целостность.",
     "relatedTags": ["sql", "join", "constraints", "keys"],
+    "questionIds": ["db-008", "db-010", "db-011", "db-020"],
     "related": ["db-lesson-sql-basics", "db-lesson-indexes"],
     "sections": [
       {
@@ -74,6 +89,11 @@
           "INNER JOIN оставляет только совпавшие пары. LEFT (OUTER) JOIN сохраняет все строки левой таблицы, подставляя NULL там, где справа нет пары; RIGHT JOIN — зеркально. FULL OUTER JOIN сохраняет непарные строки с обеих сторон.",
           "CROSS JOIN даёт декартово произведение (каждая с каждой) — иногда нужно, но чаще это случайно забытое условие соединения."
         ],
+        "image": {
+          "src": "join-types.png",
+          "alt": "Четыре вида JOIN как диаграммы Венна двух таблиц: INNER — пересечение, LEFT — вся левая плюс пересечение, RIGHT — вся правая плюс пересечение, FULL — обе целиком.",
+          "caption": "INNER, LEFT, RIGHT и FULL JOIN — какие строки двух таблиц попадают в результат."
+        },
         "code": "-- все пользователи и их заказы; пользователи без заказов тоже попадут (с NULL)\nselect u.id, o.id\nfrom users u\nleft join orders o on o.user_id = u.id;"
       },
       {
@@ -116,6 +136,7 @@
     "title": "Индексы и планы запросов",
     "summary": "Устройство B-tree, hash vs B-tree, составной и covering индекс, цена записи и когда индекс не используется.",
     "relatedTags": ["index", "btree", "hash", "performance"],
+    "questionIds": ["db-004", "db-005", "db-015"],
     "related": ["db-lesson-joins-keys", "db-lesson-orm"],
     "sections": [
       {
@@ -130,13 +151,26 @@
         "paragraphs": [
           "B-tree (точнее B+-tree) — сбалансированное дерево, где значения упорядочены, а листья связаны в список. Поиск, вставка и удаление — O(log n), а упорядоченность даёт бесплатно диапазоны (>, <, BETWEEN), сортировку (ORDER BY) и поиск по префиксу.",
           "Именно из-за упорядоченности B-tree — индекс по умолчанию почти во всех СУБД: он покрывает и равенство, и диапазоны, и сортировку."
-        ]
+        ],
+        "image": {
+          "src": "btree-index.png",
+          "alt": "Сбалансированное B-дерево: путь поиска от корня через внутренние узлы к листу за O(log n) против полного сканирования таблицы.",
+          "caption": "B-tree спускается от корня к листу за O(log n) — намного дешевле полного сканирования."
+        }
       },
       {
         "heading": "Hash против B-tree",
         "paragraphs": [
           "Hash-индекс хранит хэш значения и хорош только для строгого равенства, зато поиск близок к O(1). Он не поддерживает диапазоны, сортировку и префиксы.",
           "Вывод: hash оправдан в узких сценариях равенства при особых нагрузках, но универсальный выбор — B-tree."
+        ]
+      },
+      {
+        "heading": "Где лежит строка: clustered, non-clustered и heap",
+        "paragraphs": [
+          "Индекс — это структура поиска, но важно ещё, где лежат сами данные строки. Кластерный индекс (clustered) задаёт физический порядок строк на диске: строки хранятся прямо в листьях B-tree этого индекса. Кластерный индекс может быть только один (нельзя разложить данные двумя способами сразу). В MySQL/InnoDB кластерный индекс — это первичный ключ (поэтому выбор PK влияет на раскладку всей таблицы).",
+          "Некластерный индекс (non-clustered) — отдельная структура: в её листьях лежат не строки, а указатели на строку. Если есть кластерный индекс, указатель — это значение ключа кластерного индекса; иначе таблица хранится как heap (куча, без порядка) и указатель — это физический адрес строки (RID/ctid).",
+          "Отсюда bookmark lookup (он же key/RID lookup): найдя строку в некластерном индексе, база делает второй переход за остальными колонками в кластерный индекс или heap. Это лишние чтения — именно поэтому covering index (включающий все нужные колонки) так выгоден: он убирает этот второй переход. У PostgreSQL модель чуть иная: таблица всегда heap, а кластеризацию даёт только разовая команда CLUSTER, не поддерживаемая автоматически."
         ]
       },
       {
@@ -177,6 +211,7 @@
     "title": "Транзакции, изоляция и блокировки",
     "summary": "ACID по буквам, аномалии чтения, уровни изоляции, MVCC и оптимистичные/пессимистичные блокировки.",
     "relatedTags": ["transactions", "acid", "isolation", "locking"],
+    "questionIds": ["db-001", "db-002", "db-019", "db-007"],
     "related": ["db-lesson-sql-basics", "db-lesson-jdbc"],
     "sections": [
       {
@@ -197,8 +232,15 @@
         "heading": "Уровни изоляции",
         "paragraphs": [
           "По стандарту SQL: READ UNCOMMITTED допускает все три аномалии; READ COMMITTED убирает dirty read; REPEATABLE READ убирает ещё и non-repeatable; и только SERIALIZABLE убирает все три, включая phantom.",
-          "Чем выше изоляция, тем меньше аномалий, но выше цена: больше блокировок/конфликтов и ниже параллелизм. Реальные СУБД отличаются деталями, поэтому стандарт и поведение конкретной базы стоит различать."
-        ]
+          "Чем выше изоляция, тем меньше аномалий, но выше цена: больше блокировок/конфликтов и ниже параллелизм.",
+          "Любимая ловушка: «по стандарту» ≠ «в жизни». В PostgreSQL уровень REPEATABLE READ реализован как snapshot isolation и фактически не допускает и phantom (то есть строже стандарта), а READ UNCOMMITTED ведёт себя как READ COMMITTED (грязного чтения в PostgreSQL нет вообще). В Oracle уровней REPEATABLE READ и READ UNCOMMITTED просто нет — есть READ COMMITTED (дефолт) и SERIALIZABLE. Поэтому называй и стандарт, и поведение конкретной СУБД.",
+          "Стандартных аномалий не «ровно три». Есть ещё lost update (потерянное обновление: две транзакции читают значение, обновляют и затирают чужой результат — read-modify-write без блокировки/версии) и write skew (две транзакции читают общий набор, каждая по отдельности проходит проверку, а вместе нарушают инвариант). Lost update лечится SELECT ... FOR UPDATE или оптимистичной блокировкой по версии; write skew снимается только настоящей сериализуемостью (в PostgreSQL — SSI, Serializable Snapshot Isolation)."
+        ],
+        "image": {
+          "src": "isolation-anomalies.png",
+          "alt": "Матрица уровней изоляции и аномалий: для каждого уровня (Read Uncommitted … Serializable) показано, какие аномалии (грязное, неповторяемое, фантомное чтение) возможны, а какие предотвращены.",
+          "caption": "Чем выше уровень изоляции, тем больше аномалий он предотвращает — ценой параллелизма."
+        }
       },
       {
         "heading": "MVCC: чтение без блокировок",
@@ -232,6 +274,7 @@
     "title": "JDBC и безопасные запросы",
     "summary": "Connection/Statement/ResultSet, PreparedStatement против инъекций, ручные транзакции, ресурсы и пул соединений.",
     "relatedTags": ["jdbc", "preparedstatement", "sql-injection"],
+    "questionIds": ["db-017", "db-018"],
     "related": ["db-lesson-transactions", "db-lesson-orm"],
     "sections": [
       {
@@ -265,9 +308,18 @@
         ]
       },
       {
+        "heading": "Batch и сгенерированные ключи",
+        "paragraphs": [
+          "Когда нужно вставить/обновить много строк, по одному executeUpdate на строку — это сетевой round-trip на каждую операцию, что катастрофически медленно. Batch (addBatch/executeBatch) накапливает команды и отправляет их пачкой за один-два round-trip, ускоряя массовую запись в разы. Для PreparedStatement обычно ставят addBatch в цикле и периодически делают executeBatch (раз в N строк, чтобы не раздувать память), всё внутри одной транзакции.",
+          "Важный нюанс для MySQL: реальное склеивание в один INSERT включается только с параметром драйвера rewriteBatchedStatements=true — без него batch почти не даёт выигрыша.",
+          "Авто-сгенерированный ключ (auto-increment/identity) после вставки получают через Statement.RETURN_GENERATED_KEYS и getGeneratedKeys(), а не отдельным SELECT — это и быстрее, и без гонки."
+        ],
+        "code": "try (PreparedStatement st = con.prepareStatement(\n        \"insert into orders(user_id, total) values (?, ?)\")) {\n    for (Order o : orders) {\n        st.setLong(1, o.userId());\n        st.setBigDecimal(2, o.total());\n        st.addBatch();              // накапливаем\n    }\n    st.executeBatch();              // одна пачка вместо N round-trips\n}"
+      },
+      {
         "heading": "На собеседовании",
         "paragraphs": [
-          "Ключевые тезисы: PreparedStatement параметризует и защищает от инъекций; транзакцию ведут через autoCommit=false + commit/rollback; ресурсы закрывают через try-with-resources; соединения берут из пула, потому что их создание дорого. В Spring ручное управление обычно заменяет @Transactional."
+          "Ключевые тезисы: PreparedStatement параметризует и защищает от инъекций; транзакцию ведут через autoCommit=false + commit/rollback; ресурсы закрывают через try-with-resources; соединения берут из пула, потому что их создание дорого; массовую запись делают через batch (addBatch/executeBatch, для MySQL — rewriteBatchedStatements), а сгенерированные ключи берут через getGeneratedKeys. В Spring ручное управление обычно заменяет @Transactional."
         ]
       }
     ]
@@ -280,6 +332,7 @@
     "title": "ORM, persistence context и N+1",
     "summary": "Что делает ORM, lazy/eager и proxy, механизм N+1, способы лечения и типичные грабли.",
     "relatedTags": ["orm", "hibernate", "jpa", "n+1"],
+    "questionIds": ["db-003", "db-037"],
     "related": ["db-lesson-indexes", "db-lesson-jdbc"],
     "sections": [
       {
@@ -302,12 +355,19 @@
           "N+1 возникает, когда один запрос получает список из N сущностей, а затем для каждой выполняется ещё один запрос за её связью — итого 1 + N запросов вместо одного-двух.",
           "Обнаруживают по SQL-логам (show_sql), p6spy или счётчику запросов в тестах. Симптом — рост числа запросов пропорционально размеру списка."
         ],
+        "image": {
+          "src": "n-plus-one.png",
+          "alt": "Проблема N+1: один запрос-список плюс по одному запросу на каждую сущность против одного запроса с JOIN.",
+          "caption": "N+1: список + N отдельных запросов на сущности; JOIN решает ту же задачу одним запросом."
+        },
         "code": "// 1 запрос за заказами + по запросу на orders.getItems() каждой строки\nfor (Order o : orderRepository.findAll()) {\n    total += o.getItems().size(); // lazy → N запросов\n}"
       },
       {
         "heading": "Как лечить",
         "paragraphs": [
           "JOIN FETCH или @EntityGraph подгружают связь одним запросом. Batch fetching (hibernate.default_batch_fetch_size) грузит связи пачками (1 + N/размер_пачки). DTO-проекция тянет только нужные поля одним запросом без полной загрузки сущностей.",
+          "@EntityGraph vs JOIN FETCH — это одно и то же по эффекту (превращают lazy-связь в один JOIN), но разные по форме: JOIN FETCH пишется прямо в JPQL/HQL, а @EntityGraph задаётся декларативно (аннотацией над репозиторием/именованным графом) и накладывается поверх обычного метода, не переписывая запрос. EntityGraph удобнее, когда один и тот же запрос нужен с разной «жадностью» загрузки.",
+          "Важная ловушка: JOIN FETCH коллекции вместе с пагинацией (setMaxResults/Pageable) Hibernate не может сделать на стороне БД — JOIN размножает строки, и чтобы отдать корректную «страницу сущностей», он тянет ВСЁ в память и режет там (в логах появляется предупреждение 'firstResult/maxResults specified with collection fetch; applying in memory'). На больших таблицах это OOM. Решения: пагинировать по id отдельным запросом, а затем дозагружать связи; или грузить коллекцию через batch fetching/EntityGraph без JOIN.",
           "Выбор зависит от сценария: для отчётов чаще выгодны проекции, для навигации по графу — JOIN FETCH/EntityGraph."
         ],
         "code": "@Query(\"select o from Order o join fetch o.items where o.userId = :uid\")\nList<Order> findWithItems(@Param(\"uid\") Long uid);"
@@ -329,6 +389,7 @@
     "title": "Практика оптимизации запросов",
     "summary": "EXPLAIN и чтение плана, порядок колонок индекса, keyset-пагинация и ловушки, мешающие индексу.",
     "relatedTags": ["sql", "explain", "performance", "composite-index"],
+    "questionIds": ["db-016", "db-036"],
     "related": ["db-lesson-indexes", "db-lesson-orm"],
     "sections": [
       {
@@ -378,6 +439,7 @@
     "title": "Моделирование данных и целостность",
     "summary": "Ключи и constraints, нормальные формы простыми словами, осознанная денормализация и каскадные действия.",
     "relatedTags": ["normalization", "schema-design", "constraints", "foreign-key"],
+    "questionIds": ["db-006"],
     "related": ["db-lesson-joins-keys", "db-lesson-transactions"],
     "sections": [
       {
@@ -425,6 +487,7 @@
     "title": "Redis и кэширование",
     "summary": "Cache-aside и стратегии записи, TTL и eviction, защита от stampede и аккуратные распределённые блокировки.",
     "relatedTags": ["redis", "cache", "ttl", "distributed-lock"],
+    "questionIds": ["db-021", "db-022"],
     "related": ["db-lesson-query-performance", "db-lesson-data-modeling"],
     "sections": [
       {
@@ -440,6 +503,11 @@
           "В cache-aside (lazy loading) приложение само управляет кэшем: при чтении сначала смотрит кэш, при промахе читает БД, кладёт значение в кэш и возвращает. При записи кэш инвалидируют или обновляют.",
           "Главный риск — рассинхронизация: между записью в БД и инвалидацией кэша возможно окно с устаревшими данными. TTL ограничивает длительность такой рассинхронизации."
         ],
+        "image": {
+          "src": "cache-patterns.png",
+          "alt": "Три паттерна кэширования: cache-aside (приложение читает кэш, при промахе идёт в БД и заполняет кэш), write-through (запись в кэш синхронно в БД), write-back (запись в кэш, в БД асинхронно позже).",
+          "caption": "Cache-aside, write-through и write-back — как приложение, кэш и БД обмениваются данными при чтении и записи."
+        },
         "code": "User user = cache.get(id);\nif (user == null) {            // cache miss\n    user = repository.findById(id);\n    cache.set(id, user, ttl);  // заполняем кэш\n}\nreturn user;"
       },
       {
@@ -473,6 +541,7 @@
     "title": "NoSQL: семейства и когда их выбирать",
     "summary": "Почему появился NoSQL, моделирование от access patterns, четыре семейства хранилищ, BASE против ACID и горизонтальное масштабирование.",
     "relatedTags": ["nosql", "schema-design", "scalability"],
+    "questionIds": ["db-023"],
     "related": ["db-lesson-data-modeling", "db-lesson-cap-consistency"],
     "sections": [
       {
@@ -534,6 +603,7 @@
     "title": "CAP, PACELC и модели согласованности",
     "summary": "Точная формулировка CAP, выбор CP/AP, расширение PACELC, спектр consistency и кворумы N/W/R.",
     "relatedTags": ["cap", "consistency", "eventual-consistency", "distributed"],
+    "questionIds": ["db-026", "db-027", "db-028"],
     "related": ["db-lesson-nosql-overview", "db-lesson-transactions"],
     "sections": [
       {
@@ -541,7 +611,12 @@
         "paragraphs": [
           "CAP-теорема: распределённая система не может одновременно гарантировать Consistency (все читатели видят последнюю запись), Availability (каждый запрос получает ответ) и Partition tolerance (система работает при потере связи между узлами).",
           "Ключевой нюанс, который часто упускают: сетевые разделения (P) в реальной распределённой системе неизбежны, поэтому P нельзя «не выбрать». Реальный выбор происходит только во время разделения — между C и A."
-        ]
+        ],
+        "image": {
+          "src": "cap-theorem.png",
+          "alt": "Треугольник CAP: согласованность, доступность, устойчивость к разделению; при сетевом разделении приходится выбирать одно из C/A.",
+          "caption": "При сетевом разделении (P неизбежно) система выбирает между согласованностью и доступностью."
+        }
       },
       {
         "heading": "CP против AP на примере",
@@ -595,6 +670,7 @@
     "title": "Документоориентированные БД (MongoDB)",
     "summary": "Модель документа, embedding против referencing, индексы, aggregation pipeline, атомарность документа и шардирование.",
     "relatedTags": ["nosql", "mongodb", "document", "schema-design"],
+    "questionIds": ["db-032", "db-033"],
     "related": ["db-lesson-nosql-overview", "db-lesson-data-modeling"],
     "sections": [
       {
@@ -658,6 +734,7 @@
     "title": "Key-value хранилища",
     "summary": "Простейшая модель доступа по ключу, типичные применения, Redis против DynamoDB, партиционирование и ограничения.",
     "relatedTags": ["nosql", "key-value", "redis", "dynamodb"],
+    "questionIds": ["db-034", "db-035"],
     "related": ["db-lesson-nosql-overview", "db-lesson-redis-cache"],
     "sections": [
       {
@@ -711,6 +788,7 @@
     "title": "Колоночные БД: wide-column и аналитические",
     "summary": "Разница между wide-column (Cassandra) и column-oriented OLAP (ClickHouse), partition/clustering keys, LSM-дерево и зачем хранить по колонкам.",
     "relatedTags": ["nosql", "cassandra", "clickhouse", "columnar", "olap"],
+    "questionIds": ["db-031"],
     "related": ["db-lesson-nosql-overview", "db-lesson-indexes"],
     "sections": [
       {
@@ -765,6 +843,7 @@
     "title": "Базы данных временных рядов",
     "summary": "Чем особенны time-series, модель measurement/tags/fields, сжатие и chunking, downsampling/retention и когда хватит обычной БД.",
     "relatedTags": ["timeseries", "influxdb", "timescaledb", "metrics"],
+    "questionIds": ["db-029", "db-030"],
     "related": ["db-lesson-nosql-overview", "db-lesson-wide-column-db"],
     "sections": [
       {
@@ -818,6 +897,7 @@
     "title": "Полнотекстовый поиск (Elasticsearch)",
     "summary": "Почему LIKE не поиск, инвертированный индекс, анализаторы, релевантность BM25, query vs filter context и поиск как read model.",
     "relatedTags": ["elasticsearch", "search", "inverted-index", "read-model"],
+    "questionIds": ["db-024"],
     "related": ["db-lesson-nosql-overview", "db-lesson-document-db"],
     "sections": [
       {
