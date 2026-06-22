@@ -120,14 +120,11 @@ export function LessonReader({
   onOpenRelated,
   extra,
 }: Props) {
-  // Auto-mark the lesson read once its end scrolls into view — unless the learner
-  // already touched the toggle (we never override an explicit choice).
+  // Reaching the end is a UI hint only. The learner still explicitly marks the
+  // lesson read, so scrolling does not become a completion shortcut.
   const endRef = useRef<HTMLDivElement | null>(null);
-  const settledRef = useRef(false); // true after an auto-mark OR a manual toggle
-  const readRef = useRef(read);
-  readRef.current = read;
-  const onSetReadRef = useRef(onSetRead);
-  onSetReadRef.current = onSetRead;
+  const settledRef = useRef(false); // true after the end marker has been noticed for this view
+  const [reachedEnd, setReachedEnd] = useState(false);
 
   // Glossary highlight + popup. Candidates are built once per glossary load;
   // the popup carries the clicked term and the anchoring element.
@@ -137,7 +134,8 @@ export function LessonReader({
 
   useEffect(() => {
     window.scrollTo({ top: 0 });
-    settledRef.current = false; // re-arm auto-mark for the newly opened lesson
+    settledRef.current = false; // re-arm the end-of-lesson hint for the newly opened lesson
+    setReachedEnd(false);
     setPopup(null); // dismiss any open glossary popup when switching lessons
   }, [lesson.id]);
 
@@ -147,9 +145,9 @@ export function LessonReader({
     const observer = new IntersectionObserver(
       (entries) => {
         for (const entry of entries) {
-          if (entry.isIntersecting && !settledRef.current && !readRef.current) {
+          if (entry.isIntersecting && !settledRef.current) {
             settledRef.current = true;
-            onSetReadRef.current(true);
+            setReachedEnd(true);
           }
         }
       },
@@ -193,8 +191,17 @@ export function LessonReader({
         </div>
       ))}
 
-      {/* Marker for "reached the end of the lesson" → auto-mark as read. */}
+      {/* Marker for "reached the end of the lesson" → show explicit read CTA. */}
       <div ref={endRef} aria-hidden className="lesson-end" />
+
+      {reachedEnd && !read && (
+        <div className="lesson-read-nudge">
+          <span>Дошёл до конца урока.</span>
+          <button className="btn btn--sm" onClick={() => onSetRead(true)}>
+            Отметить прочитанным
+          </button>
+        </div>
+      )}
 
       <div className="lesson-actions">
         <button className="btn" onClick={() => onPractice()}>

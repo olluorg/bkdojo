@@ -20,13 +20,16 @@ export interface ScheduleInput {
 }
 
 /**
- * Schedules the next review. A correct answer promotes the item to a longer
- * interval; anything less resets it to box 1 so weak items resurface quickly.
+ * Schedules the next review. Box 1 (the shortest interval) is reserved for
+ * lapses: a non-correct answer resets the item there so weak spots resurface
+ * the next day. A correct answer starts at box 2 — freshly learned material
+ * shouldn't reappear the very next day — and climbs toward longer intervals
+ * with each consecutive correct answer.
  */
 export function scheduleReview(input: ScheduleInput): ReviewSchedule {
   const correct = input.verdict === 'correct';
   const box = correct
-    ? Math.min(input.priorConsecutiveCorrect + 1, REVIEW_INTERVALS_DAYS.length)
+    ? Math.min(input.priorConsecutiveCorrect + 2, REVIEW_INTERVALS_DAYS.length)
     : 1;
   const intervalDays = REVIEW_INTERVALS_DAYS[box - 1] ?? 1;
   const nextReviewAt = new Date(input.now.getTime() + intervalDays * DAY_MS).toISOString();

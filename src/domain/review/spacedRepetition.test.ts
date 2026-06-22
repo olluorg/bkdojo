@@ -17,16 +17,22 @@ function rec(questionId: string, verdict: AnswerRecord['verdict']): AnswerRecord
 }
 
 describe('scheduleReview', () => {
-  test('first correct → box 1 interval', () => {
+  test('first correct → box 2 interval (not due the next day)', () => {
     const s = scheduleReview({ priorConsecutiveCorrect: 0, verdict: 'correct', now });
-    expect(s.box).toBe(1);
-    expect(s.intervalDays).toBe(REVIEW_INTERVALS_DAYS[0]);
+    expect(s.box).toBe(2);
+    expect(s.intervalDays).toBe(REVIEW_INTERVALS_DAYS[1]);
   });
 
   test('repeated correct promotes the interval', () => {
     const s = scheduleReview({ priorConsecutiveCorrect: 2, verdict: 'correct', now });
-    expect(s.box).toBe(3);
-    expect(s.intervalDays).toBe(REVIEW_INTERVALS_DAYS[2]);
+    expect(s.box).toBe(4);
+    expect(s.intervalDays).toBe(REVIEW_INTERVALS_DAYS[3]);
+  });
+
+  test('correct box is capped at the longest interval', () => {
+    const s = scheduleReview({ priorConsecutiveCorrect: 10, verdict: 'correct', now });
+    expect(s.box).toBe(REVIEW_INTERVALS_DAYS.length);
+    expect(s.intervalDays).toBe(REVIEW_INTERVALS_DAYS.at(-1)!);
   });
 
   test('a non-correct answer resets to box 1', () => {
@@ -37,7 +43,7 @@ describe('scheduleReview', () => {
 
   test('nextReviewAt is now + interval', () => {
     const s = scheduleReview({ priorConsecutiveCorrect: 0, verdict: 'correct', now });
-    const expected = new Date(now.getTime() + 1 * 86_400_000).toISOString();
+    const expected = new Date(now.getTime() + REVIEW_INTERVALS_DAYS[1] * 86_400_000).toISOString();
     expect(s.nextReviewAt).toBe(expected);
   });
 });

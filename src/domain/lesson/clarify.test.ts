@@ -1,15 +1,25 @@
 import { describe, expect, test } from 'bun:test';
 import type { AnswerOutcome } from '../models/answer';
-import type { EvaluationResult, Verdict } from '../models/evaluation';
-import { BRIEF_WORD_LIMIT, combineAnswers, pickBetterOutcome, shouldClarify } from './clarify';
+import type { ConceptCoverage, EvaluationResult, Verdict } from '../models/evaluation';
+import type { OpenQuestion } from '../models/question';
+import {
+  BRIEF_WORD_LIMIT,
+  combineAnswers,
+  fallbackHint,
+  pickBetterOutcome,
+  shouldClarify,
+} from './clarify';
 
-function evaluation(verdict: Verdict): EvaluationResult {
+function evaluation(
+  verdict: Verdict,
+  concepts: { conceptId: string; coverage: ConceptCoverage }[] = [],
+): EvaluationResult {
   return {
     source: 'chrome-prompt',
     status: 'ok',
     score: verdict === 'correct' ? 1 : verdict === 'partial' ? 0.5 : 0,
     verdict,
-    concepts: [],
+    concepts,
     strengths: [],
     gaps: [],
     feedback: '',
@@ -42,13 +52,44 @@ describe('shouldClarify', () => {
     expect(shouldClarify('коротко', evaluation('incorrect'))).toBe(false);
   });
 
-  test('does not probe a long, detailed answer', () => {
+  test('probes a long near-miss (partial) — the "almost" second chance', () => {
     const long = Array.from({ length: BRIEF_WORD_LIMIT + 5 }, (_, i) => `слово${i}`).join(' ');
-    expect(shouldClarify(long, evaluation('partial'))).toBe(false);
+    expect(shouldClarify(long, evaluation('partial'))).toBe(true);
+  });
+
+  test('does not probe a long, detailed correct answer', () => {
+    const long = Array.from({ length: BRIEF_WORD_LIMIT + 5 }, (_, i) => `слово${i}`).join(' ');
+    expect(shouldClarify(long, evaluation('correct'))).toBe(false);
   });
 
   test('does not probe without an evaluation', () => {
     expect(shouldClarify('коротко', undefined)).toBe(false);
+  });
+});
+
+describe('fallbackHint', () => {
+  const question = {
+    id: 'q',
+    domain: 'java-core',
+    difficulty: 2,
+    tags: [],
+    type: 'open',
+    prompt: 'Что такое volatile?',
+    rubric: [
+      { id: 'c-visibility', title: 'Видимость между потоками' },
+      { id: 'c-atomicity', title: 'Не гарантирует атомарность' },
+    ],
+    answerGuide: { summary: '', points: [] },
+  } as unknown as OpenQuestion;
+
+  test('names the weakest uncovered aspect without revealing the answer', () => {
+    const ev = evaluation('partial', [
+      { conceptId: 'c-visibility', coverage: 'covered' },
+      { conceptId: 'c-atomicity', coverage: 'missing' },
+    ]);
+    const hint = fallbackHint(question, ev);
+    expect(hint).toContain('Не гарантирует атомарность');
+    expect(hint).not.toContain('volatile'); // the prompt's term/answer isn't echoed
   });
 });
 

@@ -27,6 +27,8 @@ export interface AnswerRecord {
   selectedOptionIds?: string[];
   /** True when the learner overrode the AI verdict via a self-override credit. */
   selfOverride?: boolean;
+  /** True when the verdict was reached with help (clarifying question or repair). */
+  assisted?: boolean;
   answeredAt: string; // ISO
   nextReviewAt?: string; // ISO, for spaced repetition
 }

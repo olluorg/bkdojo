@@ -1,7 +1,7 @@
 import type { ContentIndex } from '../content/contentIndex';
 import { getByDomain } from '../content/contentIndex';
-import { DOMAINS, type Domain } from '../models/common';
-import { isChoiceQuestion, isOpenQuestion } from '../models/question';
+import { DOMAIN_LABELS, DOMAINS, type Domain } from '../models/common';
+import { isOpenQuestion } from '../models/question';
 import type { DomainSkill, UserProgress } from '../models/progress';
 import type { Session, SessionItem } from '../models/session';
 import { pickByDifficulty, targetDifficulty } from './adaptiveSelector';
@@ -61,11 +61,17 @@ export function buildDailySession(
       const offset = recoveryOffset(progress.history, domain);
       const target = targetDifficulty(progress.skills[domain].ability, offset);
       const full = getByDomain(index, domain);
-      const pool = relaxed || openCount < maxOpen ? full : full.filter(isChoiceQuestion);
+      // The cap is on AI-evaluated open answers; fill-blank is locally scored, so
+      // treat it like choice and keep it available even while capping.
+      const pool = relaxed || openCount < maxOpen ? full : full.filter((q) => !isOpenQuestion(q));
       const question = pickByDifficulty(pool, target, { excludeIds: used, rng });
       if (question) {
         used.add(question.id);
-        items.push({ question, reason: 'daily' });
+        items.push({
+          question,
+          reason: 'daily',
+          reasonText: `Свободная практика: адаптивный вопрос по ${DOMAIN_LABELS[domain]}.`,
+        });
         if (isOpenQuestion(question)) openCount += 1;
         progressed = true;
       }

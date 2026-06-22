@@ -1,7 +1,7 @@
 import type { ContentIndex } from '../content/contentIndex';
 import { getByDomain } from '../content/contentIndex';
 import { DOMAINS } from '../models/common';
-import { isChoiceQuestion, type Question } from '../models/question';
+import { isChoiceQuestion, isOpenQuestion, type Question } from '../models/question';
 import type { Session, SessionItem } from '../models/session';
 
 export interface PlacementOptions {
@@ -44,7 +44,7 @@ export function buildPlacementSession(
     const picked: Question[] = pickSpread(pool.filter(isChoiceQuestion), perDomain);
 
     if (!choiceOnly && picked.length < perDomain) {
-      const open = pool.filter((q) => !isChoiceQuestion(q));
+      const open = pool.filter(isOpenQuestion);
       picked.push(...pickSpread(open, perDomain - picked.length));
     }
 

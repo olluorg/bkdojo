@@ -1,7 +1,7 @@
 import { hrefFor } from '../app/router';
 import type { ConceptLesson } from '../hooks/useConceptLessons';
 import type { UserProgress } from '../domain/models/progress';
-import { rankWeakConcepts } from '../domain/review/weakSpotDetection';
+import { rankWeakConceptStatuses } from '../domain/review/weakSpotLifecycle';
 
 interface Props {
   progress: UserProgress;
@@ -12,9 +12,7 @@ interface Props {
 
 /** Shows the concepts the user most often fails to cover, linked to the lesson that teaches them. */
 export function WeakConceptsPanel({ progress, conceptTitles, conceptLessons, limit = 5 }: Props) {
-  const weak = rankWeakConcepts(progress)
-    .filter((c) => c.missRate > 0)
-    .slice(0, limit);
+  const weak = rankWeakConceptStatuses(progress).slice(0, limit);
 
   if (weak.length === 0) return null;
 
@@ -28,9 +26,12 @@ export function WeakConceptsPanel({ progress, conceptTitles, conceptLessons, lim
             <li key={concept.conceptId} className="weak-row">
               <div className="weak-row__head">
                 <span>{conceptTitles.get(concept.conceptId) ?? concept.conceptId}</span>
-                <span className="ability-list__level">
-                  {Math.round(concept.missRate * 100)}% пропусков · {concept.attempts} попыт.
+                <span className={`weak-row__state weak-row__state--${concept.state}`}>
+                  {concept.label}
                 </span>
+              </div>
+              <div className="weak-row__meta">
+                {Math.round(concept.missRate * 100)}% пропусков · {concept.attempts} попыт.
               </div>
               {lesson && (
                 <a className="weak-row__lesson" href={hrefFor(`/lessons/${lesson.id}`)}>

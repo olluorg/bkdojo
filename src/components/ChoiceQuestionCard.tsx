@@ -7,9 +7,10 @@ import { orderedOptions } from '../domain/util/shuffle';
 interface Props {
   question: ChoiceQuestion;
   onSubmit: (submission: ChoiceSubmission) => void;
+  reasonText?: string;
 }
 
-export function ChoiceQuestionCard({ question, onSubmit }: Props) {
+export function ChoiceQuestionCard({ question, onSubmit, reasonText }: Props) {
   const [selected, setSelected] = useState<string[]>([]);
   const multiple = question.type === 'multiple';
   // Stable per-question shuffle so the correct answer isn't always first.
@@ -56,6 +57,7 @@ export function ChoiceQuestionCard({ question, onSubmit }: Props) {
         {DOMAIN_LABELS[question.domain]} · сложность {question.difficulty}
         {multiple ? ' · можно выбрать несколько' : ''}
       </div>
+      {reasonText && <p className="card__reason">{reasonText}</p>}
       <p className="card__prompt">{question.prompt}</p>
 
       <div className="options" role="group" aria-label="Варианты ответа">

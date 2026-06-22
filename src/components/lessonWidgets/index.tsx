@@ -2,6 +2,10 @@ import type { ComponentType } from 'react';
 import type { LessonInteractive } from '../../domain/models/lesson';
 import { IntegerCacheDemo } from './IntegerCacheDemo';
 import { HashMapStepper } from './HashMapStepper';
+import { ImmutableBuilder } from './ImmutableBuilder';
+import { LockChooser } from './LockChooser';
+import { CircuitBreakerDemo } from './CircuitBreakerDemo';
+import { IdempotencyDemo } from './IdempotencyDemo';
 
 /**
  * Registry mapping a lesson's `interactive.id` to its renderer. Lesson JSON only
@@ -11,6 +15,10 @@ import { HashMapStepper } from './HashMapStepper';
 const REGISTRY: Record<string, ComponentType> = {
   'integer-cache': IntegerCacheDemo,
   'hashmap-put': HashMapStepper,
+  'immutable-builder': ImmutableBuilder,
+  'lock-chooser': LockChooser,
+  'circuit-breaker': CircuitBreakerDemo,
+  'idempotency-dedup': IdempotencyDemo,
 };
 
 /**

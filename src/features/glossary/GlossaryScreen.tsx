@@ -1,28 +1,41 @@
 import { useState } from 'react';
+import { navigate, segments, useHashPath } from '../../app/router';
 import { COURSE_LEVEL_LABELS, courseLevelOf, maxUnlockedLevel } from '../../domain/course/courses';
 import { termsByCourse, unlockedTerms } from '../../domain/glossary/glossaryAccess';
 import { DOMAIN_LABELS } from '../../domain/models/common';
+import { buildDailyMission } from '../../domain/today/dailyMission';
 import { countMasteredTerms, termMastery } from '../../domain/progress/termProgress';
 import { useContentIndex } from '../../hooks/useContentIndex';
 import { useGlossary } from '../../hooks/useGlossary';
+import { useLessons } from '../../hooks/useLessons';
 import { useProgress } from '../../state/ProgressContext';
 import { TermDrill } from './TermDrill';
 
 export function GlossaryScreen() {
   const terms = useGlossary();
+  const { all: lessons } = useLessons();
   const index = useContentIndex();
   const { progress } = useProgress();
+  const path = useHashPath();
   const [mode, setMode] = useState<'browse' | 'drill'>('browse');
   const [drillKey, setDrillKey] = useState(0);
 
   const unlocked = unlockedTerms(terms, progress, index);
-
-  if (mode === 'drill') {
+  const routeMode = segments(path)[1];
+  const mission = routeMode === 'today'
+    ? buildDailyMission({ progress, index, lessons, terms })
+    : undefined;
+  if (mode === 'drill' || mission) {
     return (
       <TermDrill
-        key={drillKey}
+        key={`${drillKey}:${mission?.focusDomain ?? 'all'}`}
         terms={unlocked}
-        onExit={() => setMode('browse')}
+        focusDomain={mission?.focusDomain}
+        title={mission ? `Термины: ${DOMAIN_LABELS[mission.focusDomain]}` : undefined}
+        onExit={() => {
+          setMode('browse');
+          if (mission) navigate('/glossary');
+        }}
         onRestart={() => setDrillKey((k) => k + 1)}
       />
     );

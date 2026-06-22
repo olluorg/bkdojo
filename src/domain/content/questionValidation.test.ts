@@ -44,11 +44,53 @@ function validSingle(overrides: Record<string, unknown> = {}) {
   };
 }
 
+function validFillBlank(overrides: Record<string, unknown> = {}) {
+  return {
+    id: 'q-fill',
+    domain: 'java-core',
+    difficulty: 2,
+    type: 'fill-blank',
+    mode: 'definition',
+    prompt: 'prompt?',
+    tags: ['x'],
+    template: 'от {{lo}} до {{hi}}',
+    blanks: [
+      { id: 'lo', accept: ['-128'] },
+      { id: 'hi', accept: ['127'] },
+    ],
+    answerGuide: guide,
+    ...overrides,
+  };
+}
+
 describe('validateQuestions', () => {
   test('accepts valid open and choice questions', () => {
     const { valid, issues } = validateQuestions([validOpen(), validSingle()]);
     expect(valid).toHaveLength(2);
     expect(issues).toHaveLength(0);
+  });
+
+  test('accepts a valid fill-blank question', () => {
+    const { valid, issues } = validateQuestions([validFillBlank()]);
+    expect(valid).toHaveLength(1);
+    expect(issues).toHaveLength(0);
+  });
+
+  test('rejects fill-blank with an empty accept list', () => {
+    const { issues } = validateQuestions([
+      validFillBlank({ blanks: [{ id: 'lo', accept: [] }, { id: 'hi', accept: ['127'] }] }),
+    ]);
+    expect(issues.some((i) => i.message.includes('accept'))).toBe(true);
+  });
+
+  test('rejects fill-blank whose template marker has no matching blank', () => {
+    const { issues } = validateQuestions([validFillBlank({ template: 'от {{lo}} до {{zzz}}' })]);
+    expect(issues.some((i) => i.message.includes('no matching blank'))).toBe(true);
+  });
+
+  test('rejects fill-blank with a blank not referenced in the template', () => {
+    const { issues } = validateQuestions([validFillBlank({ template: 'от {{lo}} до …' })]);
+    expect(issues.some((i) => i.message.includes('not referenced'))).toBe(true);
   });
 
   test('root must be an array', () => {

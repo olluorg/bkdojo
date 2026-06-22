@@ -1,3 +1,4 @@
+import type { Domain } from '../models/common';
 import type { GlossaryTerm } from '../models/glossary';
 import type { UserProgress } from '../models/progress';
 import { getTermProgress, termMastery } from '../progress/termProgress';
@@ -16,6 +17,40 @@ export interface DrillOptions {
   optionsCount?: number;
   now?: Date;
   rng?: () => number;
+  /**
+   * When set, the drill is split ~50/50 between this course (the day's focus) and
+   * all other unlocked terms — so the learner revisits the focus without drilling
+   * only one course. Empty/short focus is backfilled from the rest (no wasted slots).
+   */
+  focusDomain?: Domain;
+}
+
+/**
+ * Splits the (already ranked) terms ~50/50: up to half from the focus course,
+ * the rest from other courses, backfilling either side so no slot is wasted.
+ */
+function selectHalfFocus(
+  ranked: GlossaryTerm[],
+  focusDomain: Domain,
+  size: number,
+): GlossaryTerm[] {
+  const focusQuota = Math.ceil(size / 2);
+  const focusRanked = ranked.filter((t) => t.domain === focusDomain);
+  const restRanked = ranked.filter((t) => t.domain !== focusDomain);
+
+  const picked = new Map<string, GlossaryTerm>();
+  const take = (list: GlossaryTerm[], limit: number) => {
+    for (const t of list) {
+      if (picked.size >= limit) break;
+      picked.set(t.id, t);
+    }
+  };
+
+  take(focusRanked, focusQuota); // ~half from the focus course
+  take(restRanked, size); // fill the rest from other courses
+  take(focusRanked, size); // backfill from focus if the rest ran short
+
+  return [...picked.values()].slice(0, size);
 }
 
 /** Due first, then least-mastered: the terms most worth drilling right now. */
@@ -42,7 +77,9 @@ export function buildTermDrill(
   const now = (options.now ?? new Date()).getTime();
 
   const ranked = [...terms].sort((a, b) => priority(progress, a, now) - priority(progress, b, now));
-  const chosen = ranked.slice(0, size);
+  const chosen = options.focusDomain
+    ? selectHalfFocus(ranked, options.focusDomain, size)
+    : ranked.slice(0, size);
 
   return chosen.map((term, i) => {
     const sameCourse = terms.filter((t) => t.id !== term.id && t.domain === term.domain);

@@ -10,14 +10,15 @@ import { isQuestionBookmarked } from '../domain/progress/questionBookmarks';
 import { applyHintPenalty, hintsFor } from '../domain/hints/hints';
 import {
   combineAnswers,
+  fallbackHint,
   pickBetterOutcome,
   requestClarifyingQuestion,
   shouldClarify,
 } from '../domain/lesson/clarify';
-import type { AnswerOutcome, ChoiceSubmission } from '../domain/models/answer';
+import type { AnswerOutcome, ChoiceSubmission, FillBlankSubmission } from '../domain/models/answer';
 import type { SessionKind } from '../domain/models/event';
 import type { EvaluationResult, SelfAssessment } from '../domain/models/evaluation';
-import { isChoiceQuestion, isOpenQuestion } from '../domain/models/question';
+import { isChoiceQuestion, isFillBlankQuestion, isOpenQuestion } from '../domain/models/question';
 import type { Session, SessionItem } from '../domain/models/session';
 import { clearStepFromHash, hrefFor, routeBase, stepFromHash, writeStepToHash } from '../app/router';
 import {
@@ -30,6 +31,7 @@ import { Celebration } from './Celebration';
 import { ChoiceQuestionCard } from './ChoiceQuestionCard';
 import { ClarifyCard } from './ClarifyCard';
 import { CodeQuestionCard } from './CodeQuestionCard';
+import { FillBlankQuestionCard } from './FillBlankQuestionCard';
 import { EvaluationResultView } from './EvaluationResultView';
 import { ManualAssessmentCard } from './ManualAssessmentCard';
 import { OpenQuestionCard } from './OpenQuestionCard';
@@ -70,6 +72,30 @@ interface Props {
    * parts). Returning an empty list means there is nothing to revisit.
    */
   buildCorrectiveRound?: (outcomes: AnswerOutcome[]) => Promise<SessionItem[]>;
+}
+
+function sessionGaps(outcomes: AnswerOutcome[], items: SessionItem[]): string[] {
+  const byId = new Map(items.map((item) => [item.question.id, item.question]));
+  const seen = new Set<string>();
+  const gaps: string[] = [];
+
+  for (const outcome of outcomes) {
+    if (outcome.verdict === 'correct') continue;
+    const question = byId.get(outcome.questionId);
+    if (!question || !isOpenQuestion(question) || !outcome.evaluation) continue;
+
+    for (const concept of outcome.evaluation.concepts) {
+      if (concept.coverage === 'covered') continue;
+      const rubric = question.rubric.find((r) => r.id === concept.conceptId);
+      const title = rubric?.title ?? concept.conceptId;
+      if (seen.has(title)) continue;
+      seen.add(title);
+      gaps.push(title);
+      if (gaps.length >= 4) return gaps;
+    }
+  }
+
+  return gaps;
 }
 
 function clampStep(step: number, session: Session): number {
@@ -176,6 +202,7 @@ export function SessionRunner({
     const partial = results.filter((o) => o.verdict === 'partial').length;
     const wrong = results.filter((o) => o.verdict === 'incorrect').length;
     const accuracy = total ? Math.round((correct / total) * 100) : 0;
+    const gaps = sessionGaps(results, activeSession.items);
     const praise =
       accuracy >= 80
         ? { emoji: '🎉', title: 'Отлично!' }
@@ -217,6 +244,24 @@ export function SessionRunner({
           </li>
         </ul>
 
+        <div className="session-done__next">
+          <h2 className="session-done__next-title">Что дальше</h2>
+          {gaps.length > 0 ? (
+            <>
+              <p className="screen__note">В ответах чаще всего не хватило этих частей:</p>
+              <ul className="session-done__gaps">
+                {gaps.map((gap) => (
+                  <li key={gap}>{gap}</li>
+                ))}
+              </ul>
+            </>
+          ) : (
+            <p className="screen__note">
+              Явных пробелов в открытых ответах нет. Следующий шаг — закрепить тему повторением.
+            </p>
+          )}
+        </div>
+
         <p className="session-done__streak">
           <span aria-hidden>🔥</span> Серия: <strong>{progress.streakDays}</strong> дн.
         </p>
@@ -257,14 +302,26 @@ export function SessionRunner({
 
   // All evaluated answers reach the result screen through here so the mild hint
   // penalty (score cap, verdict untouched) is applied in exactly one place.
-  function showResult(outcome: AnswerOutcome) {
-    setPhase({ kind: 'result', outcome: applyHintPenalty(outcome, hintsUsed) });
+  function showResult(outcome: AnswerOutcome, options: { assisted?: boolean } = {}) {
+    const penalized = applyHintPenalty(outcome, hintsUsed);
+    const marked = options.assisted ? { ...penalized, assisted: true } : penalized;
+    setPhase({ kind: 'result', outcome: marked });
   }
 
   const hints = hintsFor(question);
   const revealed = hints.slice(0, hintsUsed);
 
   async function handleChoice(submission: ChoiceSubmission) {
+    setBusy(true);
+    try {
+      const result = await evaluateAnswer(question, submission, { resolver: { method } });
+      if (result.kind === 'outcome') showResult(result.outcome);
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  async function handleFillBlank(submission: FillBlankSubmission) {
     setBusy(true);
     try {
       const result = await evaluateAnswer(question, submission, { resolver: { method } });
@@ -288,13 +345,16 @@ export function SessionRunner({
       }
       const outcome = result.outcome;
       const ev = outcome.evaluation;
-      // Directive 3: a brief but on-track verbal answer earns one clarifying
-      // question to probe depth instead of an immediate verdict. Code tasks are
-      // excluded — a worded follow-up doesn't fit a coding exercise.
+      // Second chance before any "error" screen: a near-miss (partial) — or a
+      // brief but correct answer (depth check, directive 3) — gets one hint to
+      // reconsider. We try an AI clarifying question first, and fall back to a
+      // rubric-based nudge for a partial so the hint works even without AI. Code
+      // tasks are excluded — a worded follow-up doesn't fit a coding exercise.
       if (isOpenQuestion(question) && !question.language && ev && shouldClarify(text, ev)) {
-        const clarifyQuestion = await requestClarifyingQuestion(question, ev, { method });
-        if (clarifyQuestion) {
-          setPhase({ kind: 'clarify', originalAnswer: text, baseOutcome: outcome, clarifyQuestion });
+        let hint = await requestClarifyingQuestion(question, ev, { method });
+        if (!hint && ev.verdict === 'partial') hint = fallbackHint(question, ev);
+        if (hint) {
+          setPhase({ kind: 'clarify', originalAnswer: text, baseOutcome: outcome, clarifyQuestion: hint });
           return;
         }
       }
@@ -318,7 +378,10 @@ export function SessionRunner({
         result.kind === 'outcome'
           ? pickBetterOutcome(phase.baseOutcome, result.outcome)
           : phase.baseOutcome;
-      showResult(outcome);
+      // A near-miss that needed the hint is a weak spot even once it lands; a brief
+      // correct answer (depth check) is not penalised.
+      const assisted = phase.baseOutcome.verdict === 'partial';
+      showResult(outcome, { assisted });
     } finally {
       setBusy(false);
     }
@@ -326,7 +389,7 @@ export function SessionRunner({
 
   function handleSkipClarify() {
     if (phase.kind !== 'clarify') return;
-    showResult(phase.baseOutcome);
+    showResult(phase.baseOutcome, { assisted: phase.baseOutcome.verdict === 'partial' });
   }
 
   async function handleManual(selfAssessment: SelfAssessment) {
@@ -438,14 +501,40 @@ export function SessionRunner({
       </p>
 
       {phase.kind === 'answering' && isChoiceQuestion(question) && (
-        <ChoiceQuestionCard key={question.id} question={question} onSubmit={handleChoice} />
+        <ChoiceQuestionCard
+          key={question.id}
+          question={question}
+          reasonText={item.reasonText}
+          onSubmit={handleChoice}
+        />
+      )}
+      {phase.kind === 'answering' && isFillBlankQuestion(question) && (
+        <FillBlankQuestionCard
+          key={question.id}
+          question={question}
+          reasonText={item.reasonText}
+          onSubmit={handleFillBlank}
+          busy={busy}
+        />
       )}
       {phase.kind === 'answering' &&
         isOpenQuestion(question) &&
         (question.language ? (
-          <CodeQuestionCard key={question.id} question={question} onSubmit={handleOpen} busy={busy} />
+          <CodeQuestionCard
+            key={question.id}
+            question={question}
+            reasonText={item.reasonText}
+            onSubmit={handleOpen}
+            busy={busy}
+          />
         ) : (
-          <OpenQuestionCard key={question.id} question={question} onSubmit={handleOpen} busy={busy} />
+          <OpenQuestionCard
+            key={question.id}
+            question={question}
+            reasonText={item.reasonText}
+            onSubmit={handleOpen}
+            busy={busy}
+          />
         ))}
 
       {phase.kind === 'answering' && hints.length > 0 && (
@@ -476,6 +565,7 @@ export function SessionRunner({
       {phase.kind === 'clarify' && (
         <ClarifyCard
           question={phase.clarifyQuestion}
+          variant={phase.baseOutcome.verdict === 'partial' ? 'almost' : 'depth'}
           onSubmit={handleClarify}
           onSkip={handleSkipClarify}
           busy={busy}

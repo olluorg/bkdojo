@@ -1,5 +1,6 @@
 import type { ContentIndex } from '../content/contentIndex';
 import { getByDomain } from '../content/contentIndex';
+import { buildCourses, nextStep as nextCourseStep, type Course } from '../course/courses';
 import { buildConceptLessonMap } from '../lesson/conceptLessons';
 import { DOMAIN_LABELS, DOMAINS, type Domain } from '../models/common';
 import type { GlossaryTerm } from '../models/glossary';
@@ -143,7 +144,19 @@ export function buildDailyMission(input: MissionInput): DailyMission {
     };
   }
 
-  // 2) Otherwise: the domain furthest from the goal.
+  // 2) Otherwise: rotate through the courses. A course (java/spring/db/…) is
+  //    picked deterministically from the date — stable across the day, but
+  //    different days favour different courses so the learner doesn't tire of one.
+  //    The focus lesson is that course's next not-yet-cleared step.
+  if (!focusDomain) {
+    const course = pickDailyCourse(lessons, now);
+    if (course) {
+      focusDomain = course.domain;
+      focusLesson = nextCourseStep(progress, index, course);
+    }
+  }
+
+  // Safety net if no courses exist yet (e.g. no lessons authored for any domain).
   if (!focusDomain) focusDomain = lowestReadinessDomain(readiness, index);
 
   if (!focusLesson) focusLesson = weakestLessonInDomain(progress, index, lessons, focusDomain);
@@ -183,6 +196,21 @@ export function buildDailyMission(input: MissionInput): DailyMission {
     primaryPath: nextStep?.path ?? '/practice',
     primaryLabel: nextStep?.title ?? 'Позаниматься ещё',
   };
+}
+
+/** A stable per-day hash from the calendar date (local). */
+function dayHash(date: Date): number {
+  const key = `${date.getFullYear()}-${date.getMonth()}-${date.getDate()}`;
+  let h = 0;
+  for (let i = 0; i < key.length; i++) h = (h * 31 + key.charCodeAt(i)) >>> 0;
+  return h;
+}
+
+/** The course in focus today — rotated by date so it varies day to day. */
+function pickDailyCourse(lessons: Lesson[], now: Date): Course | undefined {
+  const courses = buildCourses(lessons).filter((c) => c.steps.length > 0);
+  if (courses.length === 0) return undefined;
+  return courses[dayHash(now) % courses.length];
 }
 
 function lowestReadinessDomain(readiness: ReadinessSnapshot, index: ContentIndex): Domain {
@@ -229,7 +257,7 @@ function buildReason(
   if (kind === 'weak-spot') {
     lines.push('Эта тема просела в практике и mock-интервью — открытые ответы её не раскрывают.');
   } else {
-    lines.push(`${DOMAIN_LABELS[domain]} — самый большой разрыв до цели (готовность ${pct}%).`);
+    lines.push(`Тема дня по курсу «${DOMAIN_LABELS[domain]}» — продолжаем по программе (готовность ${pct}%).`);
   }
   lines.push('Она важна для перехода на Middle-уровень.');
   if (dueInFocus > 0) lines.push(`На повторение в этой теме накопилось: ${dueInFocus}.`);
@@ -262,29 +290,29 @@ function buildSteps(
     {
       kind: 'practice',
       title: 'Пройти практику',
-      detail: 'Адаптивные вопросы по слабым темам',
-      path: '/practice',
+      detail: `Вопросы по фокусу дня: ${DOMAIN_LABELS[domain]}`,
+      path: '/practice/today',
       done: wasActiveOn(progress, 'practice', now),
     },
     {
       kind: 'review',
       title: 'Отработать слабое место',
       detail: 'Повторить то, что недавно не получилось',
-      path: '/review',
+      path: '/review/today',
       done: wasActiveOn(progress, 'review', now),
     },
     {
       kind: 'terms',
       title: 'Повторить 3 термина',
       detail: domainTerms > 0 ? `Короткий дрилл по словарю (${DOMAIN_LABELS[domain]})` : 'Короткий дрилл по словарю',
-      path: '/glossary',
+      path: '/glossary/today',
       done: countTermsAnsweredOn(progress, now) > 0,
     },
     {
       kind: 'interview',
       title: 'При готовности — mini interview',
       detail: `Мок-интервью: ${DOMAIN_LABELS[domain]}`,
-      path: '/interview',
+      path: '/interview/today',
       done: wasActiveOn(progress, 'interview', now),
     },
   ];

@@ -5134,5 +5134,120 @@
       "lastReviewedAt": "2026-05-24",
       "reviewer": "seed"
     }
+  },
+  {
+    "id": "jc-fb-001",
+    "domain": "java-core",
+    "difficulty": 2,
+    "type": "fill-blank",
+    "mode": "definition",
+    "prompt": "Заполни пропуски: диапазон кэша Integer и правильное сравнение обёрток.",
+    "tags": [
+      "primitives",
+      "autoboxing",
+      "integer-cache"
+    ],
+    "template": "Integer.valueOf кэширует объекты для значений от {{lo}} до {{hi}}, поэтому маленькие значения дают одну ссылку. Сравнивать обёртки нужно через {{cmp}}, а не через ==.",
+    "blanks": [
+      {
+        "id": "lo",
+        "accept": [
+          "-128"
+        ],
+        "placeholder": "число"
+      },
+      {
+        "id": "hi",
+        "accept": [
+          "127"
+        ],
+        "placeholder": "число"
+      },
+      {
+        "id": "cmp",
+        "accept": [
+          "equals",
+          "equals()",
+          ".equals()"
+        ],
+        "placeholder": "метод"
+      }
+    ],
+    "wordBank": [
+      "-128",
+      "127",
+      "255",
+      "equals",
+      "==",
+      "compareTo"
+    ],
+    "answerGuide": {
+      "short": "Кэш Integer — это диапазон -128..127; обёртки сравнивают через equals, а не ==.",
+      "normal": "Integer.valueOf (и автобоксинг) кэширует объекты для -128..127: одинаковые значения в этом диапазоне дают одну и ту же ссылку, поэтому == «случайно» работает только тут. Для 1000 уже разные объекты и == даёт false. Правильное сравнение по значению — equals.",
+      "traps": [
+        "Сравнивать Integer через == и опираться на «совпадение» в диапазоне кэша.",
+        "Думать, что кэш покрывает все значения, а не только -128..127."
+      ],
+      "followUps": [
+        "Как поднять верхнюю границу кэша? (-XX:AutoBoxCacheMax)",
+        "Что гарантирует JLS §5.1.7 для Boolean/Byte/Short/Character?"
+      ]
+    },
+    "meta": {
+      "verified": true,
+      "source": "original"
+    }
+  },
+  {
+    "id": "jc-fb-002",
+    "domain": "java-core",
+    "difficulty": 2,
+    "type": "fill-blank",
+    "mode": "code_review",
+    "prompt": "Впиши недостающий код: безопасное сравнение обёрток.",
+    "tags": [
+      "primitives",
+      "autoboxing",
+      "integer-cache"
+    ],
+    "code": true,
+    "template": "Integer a = 1000, b = 1000;\nSystem.out.println(a {{op}} b);      // false — разные объекты\nSystem.out.println(a.{{method}}(b)); // true  — сравнение по значению",
+    "blanks": [
+      {
+        "id": "op",
+        "accept": [
+          "=="
+        ],
+        "placeholder": "оператор"
+      },
+      {
+        "id": "method",
+        "accept": [
+          "equals"
+        ],
+        "placeholder": "метод"
+      }
+    ],
+    "wordBank": [
+      "==",
+      "!=",
+      "equals",
+      "compareTo"
+    ],
+    "answerGuide": {
+      "short": "== сравнивает ссылки (для 1000 — false), equals сравнивает по значению (true).",
+      "normal": "Для значений вне диапазона кэша (-128..127) автобоксинг создаёт разные объекты, поэтому == возвращает false. Корректно сравнивать обёртки по значению через equals.",
+      "traps": [
+        "Полагаться на == для обёрток.",
+        "Забывать про NPE при equals на возможном null — вызывай на заведомо не-null стороне или Objects.equals."
+      ],
+      "followUps": [
+        "Чем поможет Objects.equals(a, b)?"
+      ]
+    },
+    "meta": {
+      "verified": true,
+      "source": "original"
+    }
   }
 ]

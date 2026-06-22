@@ -2,8 +2,7 @@ import { ProgressBar } from '../../components/ProgressBar';
 import { WeakConceptsPanel } from '../../components/WeakConceptsPanel';
 import { levelLabel, LEVEL_LABELS } from '../../domain/ability/level';
 import { DOMAIN_LABELS, DOMAINS } from '../../domain/models/common';
-import { countLessonsRead } from '../../domain/progress/lessonProgress';
-import { lessonProgress } from '../../domain/progress/lessonStatus';
+import { domainLearningStatus, lessonLearningStatus } from '../../domain/progress/learningStatus';
 import { domainMastery, overallRank, RANK_LABELS } from '../../domain/progress/mastery';
 import { countMasteredTerms } from '../../domain/progress/termProgress';
 import { useConceptLessons } from '../../hooks/useConceptLessons';
@@ -27,10 +26,9 @@ export function StatsScreen() {
     progress,
     terms.map((t) => t.id),
   );
-  const lessonsRead = countLessonsRead(
-    progress,
-    allLessons.map((l) => l.id),
-  );
+  const allLessonStatuses = allLessons.map((lesson) => lessonLearningStatus(progress, index, lesson));
+  const lessonsRead = allLessonStatuses.filter((s) => s.read === 'read').length;
+  const testsPassed = allLessonStatuses.filter((s) => s.test.state === 'passed').length;
 
   return (
     <section>
@@ -63,17 +61,18 @@ export function StatsScreen() {
 
       <div className="stat-block">
         <div className="stat-block__head">
-          <span>Уроки пройдены</span>
+          <span>Уроки и тесты</span>
           <span className="ability-list__level">
-            {lessonsRead} / {allLessons.length}
+            {lessonsRead} прочитано · {testsPassed} тестов
           </span>
         </div>
-        <ProgressBar value={allLessons.length === 0 ? 0 : lessonsRead / allLessons.length} />
+        <ProgressBar value={allLessons.length === 0 ? 0 : testsPassed / allLessons.length} />
       </div>
 
       {DOMAINS.map((domain) => {
         const skill = progress.skills[domain];
         const lessons = lessonsByDomain.get(domain) ?? [];
+        const status = domainLearningStatus(progress, index, domain, lessons);
         return (
           <div key={domain} className="stat-block">
             <div className="stat-block__head">
@@ -83,15 +82,22 @@ export function StatsScreen() {
               </span>
             </div>
             <ProgressBar value={domainMastery(progress, index, domain)} />
+            <p className="stat-block__note">{status.summary}</p>
 
             {lessons.length > 0 && (
               <ul className="topic-list">
-                {lessons.map((lesson) => (
-                  <li key={lesson.id} className="topic-row">
-                    <span className="topic-row__title">{lesson.title}</span>
-                    <ProgressBar value={lessonProgress(progress, index, lesson)} />
-                  </li>
-                ))}
+                {lessons.map((lesson) => {
+                  const lessonStatus = lessonLearningStatus(progress, index, lesson);
+                  return (
+                    <li key={lesson.id} className="topic-row">
+                      <span className="topic-row__title">
+                        {lesson.title}
+                        <span className="topic-row__meta">{lessonStatus.test.label}</span>
+                      </span>
+                      <ProgressBar value={lessonStatus.test.progress} />
+                    </li>
+                  );
+                })}
               </ul>
             )}
           </div>

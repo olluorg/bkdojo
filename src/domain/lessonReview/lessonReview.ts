@@ -6,7 +6,7 @@ import {
 } from '../evaluation/freeformAi';
 import type { Lesson } from '../models/lesson';
 import type { AnswerRecord, UserProgress } from '../models/progress';
-import { isOpenQuestion, type Question } from '../models/question';
+import { isFillBlankQuestion, isOpenQuestion, type Question } from '../models/question';
 import type { EvalMethod } from '../models/settings';
 import { lessonQuestionIds } from '../progress/lessonStatus';
 import { buildLessonReviewPrompt, type LessonReviewItem } from './lessonReviewPrompt';
@@ -69,7 +69,7 @@ export function lessonAnswersFingerprint(
 
 function resolveUserAnswer(question: Question, record: AnswerRecord): string {
   if (record.evaluatedBy === 'skipped') return '(пропущено — «Я не знаю»)';
-  if (isOpenQuestion(question)) {
+  if (isOpenQuestion(question) || isFillBlankQuestion(question)) {
     return record.answer?.trim() || '(ответ не сохранён)';
   }
   const ids = new Set(record.selectedOptionIds ?? []);
@@ -80,6 +80,9 @@ function resolveUserAnswer(question: Question, record: AnswerRecord): string {
 function resolveReference(question: Question): string {
   if (isOpenQuestion(question)) {
     return question.answerGuide.normal || question.answerGuide.short || '';
+  }
+  if (isFillBlankQuestion(question)) {
+    return question.blanks.map((b) => `${b.id}: ${b.accept[0]}`).join('; ');
   }
   const correct = new Set(question.correctOptionIds);
   return question.options

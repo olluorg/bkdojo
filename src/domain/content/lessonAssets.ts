@@ -1,7 +1,8 @@
 // Lesson infographics live in `src/data/lessons/assets`. Vite hashes each file
 // and gives us its final URL (base-path aware), so lesson JSON only stores the
-// bare file name and we resolve it here.
-const MODULES = import.meta.glob<string>('../../data/lessons/assets/*.png', {
+// bare file name and we resolve it here. Both raster (`.png`) and authored
+// vector (`.svg`) diagrams are supported.
+const MODULES = import.meta.glob<string>('../../data/lessons/assets/*.{png,svg}', {
   eager: true,
   import: 'default',
   query: '?url',

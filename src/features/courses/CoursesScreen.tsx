@@ -3,13 +3,11 @@ import { ProgressBar } from '../../components/ProgressBar';
 import {
   buildCourses,
   courseLevelOf,
-  courseProgress,
   COURSE_LEVEL_LABELS,
   isStepDone,
   nextStep,
-  stepProgress,
 } from '../../domain/course/courses';
-import { isLessonRead } from '../../domain/progress/lessonProgress';
+import { domainLearningStatus, lessonLearningStatus } from '../../domain/progress/learningStatus';
 import { useContentIndex } from '../../hooks/useContentIndex';
 import { useLessons } from '../../hooks/useLessons';
 import { useProgress } from '../../state/ProgressContext';
@@ -28,6 +26,12 @@ export function CoursesScreen() {
   if (course) {
     const upcoming = nextStep(progress, index, course);
     const currentIndex = course.steps.findIndex((s) => !isStepDone(progress, index, s.lesson));
+    const courseStatus = domainLearningStatus(
+      progress,
+      index,
+      course.domain,
+      course.steps.map((s) => s.lesson),
+    );
 
     return (
       <section>
@@ -39,9 +43,9 @@ export function CoursesScreen() {
           <span className={`rank__badge rank__badge--${courseLevelOf(progress, index, course.domain)}`}>
             {COURSE_LEVEL_LABELS[courseLevelOf(progress, index, course.domain)]}
           </span>
-          <div className="rank__meta">Твой уровень в этом курсе</div>
+          <div className="rank__meta">{courseStatus.summary}</div>
         </div>
-        <ProgressBar value={courseProgress(progress, index, course)} />
+        <ProgressBar value={courseStatus.completion} />
 
         {upcoming && (
           <button className="btn" onClick={() => navigate(`/lessons/${upcoming.id}`)}>
@@ -51,8 +55,9 @@ export function CoursesScreen() {
 
         <ol className="path">
           {course.steps.map((step, i) => {
-            const done = isStepDone(progress, index, step.lesson);
-            const read = isLessonRead(progress, step.lesson.id);
+            const status = lessonLearningStatus(progress, index, step.lesson);
+            const done = status.test.state === 'passed';
+            const read = status.read === 'read';
             // Mastered (done) is the strong state; "read" is a lighter marker that
             // still lifts the step out of the dimmed "upcoming" look.
             const state = done
@@ -69,9 +74,11 @@ export function CoursesScreen() {
                   <span className="path-step__body">
                     <span className="path-step__title">
                       {step.lesson.title}
-                      {read && !done && <span className="path-step__read">прочитано</span>}
                     </span>
-                    <ProgressBar value={stepProgress(progress, index, step.lesson)} />
+                    <span className="path-step__meta">
+                      {status.labels.join(' · ')}
+                    </span>
+                    <ProgressBar value={status.test.progress} />
                   </span>
                 </a>
               </li>
@@ -90,16 +97,26 @@ export function CoursesScreen() {
 
       <div className="course-list">
         {courses.map((c) => (
-          <a key={c.domain} className="course-card" href={hrefFor(`/courses/${c.domain}`)}>
-            <div className="course-card__head">
-              <span className="course-card__title">{c.title}</span>
-              <span className="course-card__count">
-                {COURSE_LEVEL_LABELS[courseLevelOf(progress, index, c.domain)]} · {c.steps.length}{' '}
-                уроков
-              </span>
-            </div>
-            <ProgressBar value={courseProgress(progress, index, c)} />
-          </a>
+          (() => {
+            const status = domainLearningStatus(
+              progress,
+              index,
+              c.domain,
+              c.steps.map((s) => s.lesson),
+            );
+            return (
+              <a key={c.domain} className="course-card" href={hrefFor(`/courses/${c.domain}`)}>
+                <div className="course-card__head">
+                  <span className="course-card__title">{c.title}</span>
+                  <span className="course-card__count">
+                    {COURSE_LEVEL_LABELS[courseLevelOf(progress, index, c.domain)]}
+                  </span>
+                </div>
+                <span className="course-card__summary">{status.summary}</span>
+                <ProgressBar value={status.completion} />
+              </a>
+            );
+          })()
         ))}
       </div>
     </section>

@@ -7,10 +7,11 @@ interface Props {
   question: OpenQuestion;
   onSubmit: (text: string) => void;
   busy?: boolean;
+  reasonText?: string;
 }
 
 /** Live-coding card: a monospaced editor seeded with the question's starter code. */
-export function CodeQuestionCard({ question, onSubmit, busy }: Props) {
+export function CodeQuestionCard({ question, onSubmit, busy, reasonText }: Props) {
   const [code, setCode] = useState(question.starterCode ?? '');
   const canSubmit = !busy && code.trim().length > 0;
   const submit = () => {
@@ -23,6 +24,7 @@ export function CodeQuestionCard({ question, onSubmit, busy }: Props) {
         {DOMAIN_LABELS[question.domain]} · сложность {question.difficulty} · live coding
         {question.language ? ` · ${question.language}` : ''}
       </div>
+      {reasonText && <p className="card__reason">{reasonText}</p>}
       <p className="card__prompt">{question.prompt}</p>
 
       <textarea

@@ -5,7 +5,7 @@ import {
 } from '../evaluation/freeformAi';
 import type { AnswerOutcome } from '../models/answer';
 import type { Verdict } from '../models/evaluation';
-import { isOpenQuestion, type Question } from '../models/question';
+import { isFillBlankQuestion, isOpenQuestion, type Question } from '../models/question';
 import type { EvalMethod } from '../models/settings';
 
 export type { ChatMessage } from '../evaluation/freeformAi';
@@ -26,7 +26,9 @@ function truncate(text: string, max: number): string {
 /** The learner's answer as text — open text, chosen options, or a "skipped" note. */
 export function outcomeAnswerText(question: Question, outcome: AnswerOutcome): string {
   if (outcome.evaluatedBy === 'skipped') return '(пропущено — «Я не знаю»)';
-  if (isOpenQuestion(question)) return outcome.answer?.trim() || '(ответ не сохранён)';
+  if (isOpenQuestion(question) || isFillBlankQuestion(question)) {
+    return outcome.answer?.trim() || '(ответ не сохранён)';
+  }
   const ids = new Set(outcome.selectedOptionIds ?? []);
   const picked = question.options.filter((o) => ids.has(o.id)).map((o) => o.text);
   return picked.length > 0 ? picked.join('; ') : '(не выбрано)';
@@ -35,6 +37,9 @@ export function outcomeAnswerText(question: Question, outcome: AnswerOutcome): s
 function reference(question: Question): string {
   if (isOpenQuestion(question)) {
     return question.answerGuide.normal || question.answerGuide.short || '';
+  }
+  if (isFillBlankQuestion(question)) {
+    return question.blanks.map((b) => b.accept[0]).join('; ');
   }
   const correct = new Set(question.correctOptionIds);
   return question.options

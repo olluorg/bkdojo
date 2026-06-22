@@ -7,9 +7,10 @@ interface Props {
   question: OpenQuestion;
   onSubmit: (text: string) => void;
   busy?: boolean;
+  reasonText?: string;
 }
 
-export function OpenQuestionCard({ question, onSubmit, busy }: Props) {
+export function OpenQuestionCard({ question, onSubmit, busy, reasonText }: Props) {
   const [text, setText] = useState('');
   const canSubmit = !busy && text.trim().length > 0;
   const submit = () => {
@@ -21,6 +22,7 @@ export function OpenQuestionCard({ question, onSubmit, busy }: Props) {
       <div className="card__meta">
         {DOMAIN_LABELS[question.domain]} · сложность {question.difficulty} · открытый ответ
       </div>
+      {reasonText && <p className="card__reason">{reasonText}</p>}
       <p className="card__prompt" id={`prompt-${question.id}`}>
         {question.prompt}
       </p>

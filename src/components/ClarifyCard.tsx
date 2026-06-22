@@ -2,20 +2,39 @@ import { useState } from 'react';
 import { SUBMIT_HINT, onCmdEnter } from './keyboard';
 
 interface Props {
-  /** The AI's single clarifying question. */
+  /** The AI's single clarifying question, or a rubric-based nudge. */
   question: string;
+  /**
+   * `almost` — a near-miss (partial) answer: encouraging "you're close, think
+   * again" tone. `depth` — a brief but correct answer probed for depth.
+   */
+  variant?: 'depth' | 'almost';
   onSubmit: (text: string) => void;
   onSkip: () => void;
   busy?: boolean;
 }
 
+const COPY = {
+  almost: {
+    meta: 'Почти! Небольшая наводка',
+    placeholder: 'Допиши, чего не хватило…',
+    submit: 'Проверить',
+  },
+  depth: {
+    meta: 'Уточняющий вопрос · проверим глубину',
+    placeholder: 'Коротко добавь — это поможет оценке…',
+    submit: 'Ответить',
+  },
+} as const;
+
 /**
- * Shown after a brief-but-on-track open answer (directive 3): the AI asks one
- * clarifying question to probe depth. Answering can only help the verdict;
- * skipping accepts the original one — a short answer is fine.
+ * Shown before the verdict as a gentle "second chance": instead of jumping to
+ * the result, the learner gets one hint to reconsider. Answering can only help
+ * the verdict (best of the two is kept); skipping accepts the original.
  */
-export function ClarifyCard({ question, onSubmit, onSkip, busy }: Props) {
+export function ClarifyCard({ question, variant = 'depth', onSubmit, onSkip, busy }: Props) {
   const [text, setText] = useState('');
+  const copy = COPY[variant];
   const canSubmit = !busy && text.trim().length > 0;
   const submit = () => {
     if (canSubmit) onSubmit(text);
@@ -23,7 +42,7 @@ export function ClarifyCard({ question, onSubmit, onSkip, busy }: Props) {
 
   return (
     <div className="card">
-      <div className="card__meta">Уточняющий вопрос · проверим глубину</div>
+      <div className="card__meta">{copy.meta}</div>
       <p className="card__prompt">{question}</p>
 
       <textarea
@@ -31,7 +50,7 @@ export function ClarifyCard({ question, onSubmit, onSkip, busy }: Props) {
         rows={4}
         value={text}
         disabled={busy}
-        placeholder="Коротко добавь — это поможет оценке…"
+        placeholder={copy.placeholder}
         aria-label="Ответ на уточняющий вопрос"
         onChange={(e) => setText(e.target.value)}
         onKeyDown={onCmdEnter(submit)}
@@ -39,7 +58,7 @@ export function ClarifyCard({ question, onSubmit, onSkip, busy }: Props) {
 
       <div className="card__actions">
         <button className="btn" disabled={!canSubmit} onClick={submit}>
-          {busy ? 'Проверяю…' : 'Ответить'}
+          {busy ? 'Проверяю…' : copy.submit}
         </button>
         <button className="btn btn--ghost" disabled={busy} onClick={onSkip}>
           Пропустить
