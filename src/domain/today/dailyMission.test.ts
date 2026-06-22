@@ -45,16 +45,33 @@ describe('buildDailyMission', () => {
       'terms',
       'interview',
     ]);
+    expect(mission.steps.find((s) => s.kind === 'practice')?.path).toBe('/practice/today');
+    expect(mission.steps.find((s) => s.kind === 'review')?.path).toBe('/review/today');
+    expect(mission.steps.find((s) => s.kind === 'terms')?.path).toBe('/glossary/today');
+    expect(mission.steps.find((s) => s.kind === 'interview')?.path).toBe('/interview/today');
   });
 
-  test('picks the weakest domain (biggest gap) when there are no concept weak spots', () => {
+  test('rotates the focus through courses by date when there are no weak spots', () => {
     const progress = createDefaultProgress();
     progress.placementDone = true;
-    progress.skills['message-brokers'].ability = 1.2; // clearly the lowest
-    const mission = build(progress);
 
-    expect(mission.focusDomain).toBe('message-brokers');
+    const mission = build(progress);
     expect(mission.reason.kind).toBe('gap');
+    // Focus lesson is the course's next step, in the focus domain.
+    expect(mission.focusLesson).toBeDefined();
+    const lesson = lessons.find((l) => l.id === mission.focusLesson!.id);
+    expect(lesson?.domain).toBe(mission.focusDomain);
+
+    // Deterministic within a single day.
+    expect(build(progress).focusDomain).toBe(mission.focusDomain);
+
+    // Varies across days: scanning two weeks surfaces more than one course.
+    const domains = new Set<string>();
+    for (let d = 1; d <= 14; d++) {
+      const day = new Date(2026, 4, d, 12);
+      domains.add(buildDailyMission({ progress, index, lessons, terms, now: day }).focusDomain);
+    }
+    expect(domains.size).toBeGreaterThan(1);
   });
 
   test('prioritises a repeatedly-missed concept over the gap, with a weak-spot reason', () => {
@@ -117,7 +134,7 @@ describe('buildDailyMission', () => {
     const read = setLessonRead(progress, before.focusLesson!.id, true, now);
     const after = build(read);
     expect(after.steps.find((s) => s.kind === 'lesson')?.done).toBe(true);
-    expect(after.primaryPath).toBe('/practice');
+    expect(after.primaryPath).toBe('/practice/today');
     expect(after.primaryPath).not.toBe(`/lessons/${after.focusLesson?.id}`);
   });
 

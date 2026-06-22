@@ -18,15 +18,17 @@ function wordCount(text: string): number {
 }
 
 /**
- * Whether to ask one clarifying question before settling the verdict. We probe a
- * brief answer that is on track (correct or partial) to check its depth; a
- * clearly wrong answer (verdict `incorrect`) is left to the corrective round and
- * mentor chat, not nagged with a follow-up.
+ * Whether to give one pre-verdict hint instead of showing the result straight
+ * away — so a near-miss doesn't feel like an error first. We probe:
+ *  - any `partial` answer ("почти" — a small mistake), regardless of length;
+ *  - a brief but `correct` answer, to check its depth (directive 3).
+ * A clearly wrong answer (`incorrect`) goes straight to the result/diagnosis.
  */
 export function shouldClarify(answer: string, evaluation: EvaluationResult | undefined): boolean {
   if (!evaluation) return false;
-  if (evaluation.verdict === 'incorrect') return false;
-  return wordCount(answer) < BRIEF_WORD_LIMIT;
+  if (evaluation.verdict === 'partial') return true;
+  if (evaluation.verdict === 'correct') return wordCount(answer) < BRIEF_WORD_LIMIT;
+  return false;
 }
 
 /** Builds a prompt for ONE clarifying question probing the weakest concept. */
@@ -48,6 +50,18 @@ export function buildClarifyPrompt(
   if (probe) lines.push(`Углуби именно тему: ${probe.title}`);
 
   return { system, user: lines.join('\n') };
+}
+
+/**
+ * A deterministic, no-AI nudge for a near-miss: names the weakest uncovered
+ * rubric aspect to think about, without revealing the answer. Used when the
+ * AI clarifying channel is unavailable so the "almost" second chance still works.
+ */
+export function fallbackHint(question: OpenQuestion, evaluation: EvaluationResult): string {
+  const probeId = priorityUncoveredConcept(evaluation);
+  const probe = question.rubric.find((c) => c.id === probeId) ?? question.rubric[0];
+  const aspect = probe?.title ?? 'ключевой момент';
+  return `Ты почти у цели. Подумай ещё над аспектом «${aspect}» — что здесь важно добавить?`;
 }
 
 /** Merges the original answer and the learner's clarification for re-evaluation. */

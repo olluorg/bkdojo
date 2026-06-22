@@ -1,5 +1,5 @@
 import type { AnswerOutcome } from '../models/answer';
-import { isOpenQuestion, type Question } from '../models/question';
+import { isFillBlankQuestion, isOpenQuestion, type Question } from '../models/question';
 
 /**
  * Progressive, no-spoiler hints for a question, revealed one at a time.
@@ -7,6 +7,7 @@ import { isOpenQuestion, type Question } from '../models/question';
  * - Open questions surface their rubric concept *titles* (highest weight first):
  *   "what a strong answer touches" without handing over the wording.
  * - Choice questions eliminate one wrong option per hint.
+ * - Fill-blank questions reveal the first character of each gap, in order.
  *
  * Deterministic so the same question always yields the same hint order.
  */
@@ -15,6 +16,13 @@ export function hintsFor(question: Question): string[] {
     return [...question.rubric]
       .sort((a, b) => b.weight - a.weight)
       .map((c) => `Затронь в ответе: ${c.title}`);
+  }
+  if (isFillBlankQuestion(question)) {
+    return question.blanks.map((b) => {
+      const answer = b.accept[0] ?? '';
+      const first = answer.slice(0, 1);
+      return first ? `Пропуск «${b.id}» начинается с «${first}…»` : `Заполни пропуск «${b.id}»`;
+    });
   }
   const correct = new Set(question.correctOptionIds);
   return question.options

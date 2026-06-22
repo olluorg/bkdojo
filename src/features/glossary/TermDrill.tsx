@@ -1,17 +1,26 @@
 import { useState } from 'react';
 import { buildTermDrill } from '../../domain/glossary/termTrainer';
+import type { Domain } from '../../domain/models/common';
 import type { GlossaryTerm } from '../../domain/models/glossary';
 import { useProgress } from '../../state/ProgressContext';
 
 interface Props {
   terms: GlossaryTerm[];
+  title?: string;
+  focusDomain?: Domain;
   onExit: () => void;
   onRestart: () => void;
 }
 
-export function TermDrill({ terms, onExit, onRestart }: Props) {
+export function TermDrill({
+  terms,
+  title = 'Тренировка терминов',
+  focusDomain,
+  onExit,
+  onRestart,
+}: Props) {
   const { progress, dispatch } = useProgress();
-  const [drill] = useState(() => buildTermDrill(terms, progress, { size: 10 }));
+  const [drill] = useState(() => buildTermDrill(terms, progress, { size: 10, focusDomain }));
   const [step, setStep] = useState(0);
   const [picked, setPicked] = useState<string | null>(null);
   const [correctCount, setCorrectCount] = useState(0);
@@ -20,8 +29,8 @@ export function TermDrill({ terms, onExit, onRestart }: Props) {
   if (drill.length === 0) {
     return (
       <section>
-        <h1 className="screen__title">Тренировка терминов</h1>
-        <p className="screen__note">Словарь пуст.</p>
+        <h1 className="screen__title">{title}</h1>
+        <p className="screen__note">Нет доступных терминов для тренировки.</p>
         <button className="btn btn--ghost" onClick={onExit}>
           К словарю
         </button>
@@ -72,7 +81,7 @@ export function TermDrill({ terms, onExit, onRestart }: Props) {
       <button className="link-back" onClick={onExit}>
         ← К словарю
       </button>
-      <h1 className="screen__title">Тренировка терминов</h1>
+      <h1 className="screen__title">{title}</h1>
       <p className="screen__note">
         Вопрос {step + 1} из {drill.length}
       </p>

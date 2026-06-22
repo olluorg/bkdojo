@@ -24,6 +24,31 @@ function isStringArray(value: unknown): value is string[] {
   return Array.isArray(value) && value.every((v) => typeof v === 'string');
 }
 
+const INTERACTIVE_KINDS = new Set(['param-demo', 'stepper']);
+
+/**
+ * Validates the *shape* of `section.interactive` only. Whether `id` maps to a real
+ * widget is the renderer's concern (the registry lives in the components layer, so
+ * importing it here would cross domain→UI boundaries); an unknown id degrades
+ * gracefully at render time.
+ */
+function validateInteractive(raw: unknown, errors: string[]): void {
+  if (!isRecord(raw)) {
+    errors.push('section.interactive must be an object when present');
+    return;
+  }
+  if (typeof raw.kind !== 'string' || !INTERACTIVE_KINDS.has(raw.kind)) {
+    errors.push('section.interactive.kind must be one of: param-demo, stepper');
+  }
+  if (!isNonEmptyString(raw.id)) errors.push('section.interactive.id must be a non-empty string');
+  if (raw.title !== undefined && typeof raw.title !== 'string') {
+    errors.push('section.interactive.title must be a string when present');
+  }
+  if (raw.caption !== undefined && typeof raw.caption !== 'string') {
+    errors.push('section.interactive.caption must be a string when present');
+  }
+}
+
 function validateSections(raw: unknown, errors: string[]): LessonSection[] | undefined {
   if (!Array.isArray(raw) || raw.length === 0) {
     errors.push('sections must be a non-empty array');
@@ -41,6 +66,7 @@ function validateSections(raw: unknown, errors: string[]): LessonSection[] | und
     if (section.code !== undefined && typeof section.code !== 'string') {
       errors.push('section.code must be a string when present');
     }
+    if (section.interactive !== undefined) validateInteractive(section.interactive, errors);
   }
   return errors.length === 0 ? (raw as unknown as LessonSection[]) : undefined;
 }

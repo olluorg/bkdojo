@@ -1,4 +1,5 @@
 import { useEffect, useLayoutEffect, useRef, useState } from 'react';
+import { createPortal } from 'react-dom';
 import type { GlossaryTerm } from '../domain/models/glossary';
 
 interface Props {
@@ -9,6 +10,23 @@ interface Props {
 
 const WIDTH = 320;
 const GAP = 8;
+
+const HAS_SPEECH = typeof window !== 'undefined' && 'speechSynthesis' in window;
+const CYRILLIC = /[Ѐ-ӿ]/;
+
+/**
+ * Reads the term aloud via the Web Speech API. Picks a Russian voice for
+ * Cyrillic terms and English otherwise, so technical English jargon
+ * ("ReentrantLock", "cache stampede") is pronounced the way an interviewer would.
+ */
+function speak(text: string): void {
+  if (!HAS_SPEECH) return;
+  window.speechSynthesis.cancel();
+  const u = new SpeechSynthesisUtterance(text);
+  u.lang = CYRILLIC.test(text) ? 'ru-RU' : 'en-US';
+  u.rate = 0.95;
+  window.speechSynthesis.speak(u);
+}
 
 /**
  * Floating popover anchored to the clicked glossary term. Auto-flips below the
@@ -61,7 +79,18 @@ export function GlossaryPopup({ term, anchor, onClose }: Props) {
     };
   }, [anchor, onClose]);
 
-  return (
+  // Stop any in-flight speech when the popup unmounts.
+  useEffect(() => {
+    return () => {
+      if (HAS_SPEECH) window.speechSynthesis.cancel();
+    };
+  }, []);
+
+  // Rendered through a portal to document.body: the popup uses document-relative
+  // coordinates (scrollX/Y + rect), but an ancestor's CSS transform (the
+  // screen-in animation on .app__main) would otherwise become its containing
+  // block and throw the absolute positioning off. The portal escapes that.
+  return createPortal(
     <div
       ref={ref}
       className="glossary-popup"
@@ -77,11 +106,25 @@ export function GlossaryPopup({ term, anchor, onClose }: Props) {
       >
         ×
       </button>
-      <div className="glossary-popup__title">{term.term}</div>
+      <div className="glossary-popup__title">
+        <span>{term.term}</span>
+        {HAS_SPEECH && (
+          <button
+            type="button"
+            className="glossary-popup__speak"
+            onClick={() => speak(term.term)}
+            aria-label={`Произнести: ${term.term}`}
+            title="Произнести"
+          >
+            🔊
+          </button>
+        )}
+      </div>
       <div className="glossary-popup__def">{term.definition}</div>
       {term.aliases && term.aliases.length > 0 && (
         <div className="glossary-popup__aliases">также: {term.aliases.join(', ')}</div>
       )}
-    </div>
+    </div>,
+    document.body,
   );
 }

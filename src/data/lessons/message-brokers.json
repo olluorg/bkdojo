@@ -7,6 +7,7 @@
     "title": "Очереди, pub/sub и гарантии доставки",
     "summary": "Зачем брокер сообщений, queue против pub/sub, три семантики доставки, роль идемпотентности и компромисс порядок/масштаб.",
     "relatedTags": ["messaging", "delivery-semantics", "reliability"],
+    "questionIds": ["mb-001", "mb-006", "mb-007", "mb-003"],
     "related": ["mb-lesson-kafka-core", "mb-lesson-dlq-retries"],
     "sections": [
       {
@@ -21,7 +22,12 @@
         "paragraphs": [
           "Две базовые модели. Queue (work queue) — одно сообщение получает ОДИН consumer из группы, остальные конкурируют за следующие; так распределяют задачи. Pub/sub — каждое логическое подписавшееся приложение получает свою копию потока и обрабатывает независимо.",
           "В Kafka обе модели реализуются через consumer groups: одна группа конкурирует за партиции (work queue), а разные группы получают свои независимые копии потока (pub/sub). У классических брокеров (RabbitMQ) очереди явные, а pub/sub строится через exchange и bindings."
-        ]
+        ],
+        "image": {
+          "src": "queue-vs-pubsub.png",
+          "alt": "Сравнение моделей: в очереди сообщение получает один конкурирующий консьюмер, в pub/sub каждый подписчик получает свою копию; внизу три семантики доставки.",
+          "caption": "Queue — сообщение одному консьюмеру из группы; Pub/Sub — копия каждому подписчику."
+        }
       },
       {
         "heading": "Три семантики доставки",
@@ -67,6 +73,7 @@
     "title": "Kafka: topic, partition, offset",
     "summary": "Распределённый append-only лог, партиция как единица масштаба и упорядоченности, ключ и порядок, retention и log compaction, replay.",
     "relatedTags": ["kafka", "topic", "partition", "offset"],
+    "questionIds": ["mb-009", "mb-012", "mb-013", "mb-010"],
     "related": ["mb-lesson-kafka-producer", "mb-lesson-kafka-consumer"],
     "sections": [
       {
@@ -81,7 +88,12 @@
         "paragraphs": [
           "Партиция — единица сразу нескольких вещей. Единица распределения: партиции разъезжаются по брокерам кластера. Единица репликации: у каждой партиции есть leader и followers с фактором replication factor. Единица упорядоченности: порядок есть только внутри одной партиции.",
           "Главное практическое следствие — параллелизм consumer group ограничен ЧИСЛОМ партиций. Если в группе consumer'ов больше, чем партиций, лишние будут простаивать без работы. Поэтому число партиций — главный параметр пропускной способности группы."
-        ]
+        ],
+        "image": {
+          "src": "kafka-topic-partition.png",
+          "alt": "Топик из нескольких партиций-логов; продюсер дописывает записи в конец, консьюмер читает по своему оффсету.",
+          "caption": "Топик делится на партиции — упорядоченные append-only логи; позиция чтения — это оффсет."
+        }
       },
       {
         "heading": "Ключ и порядок",
@@ -127,6 +139,7 @@
     "title": "Kafka Producer",
     "summary": "Запись и сериализация, выбор партиции, батчинг и сжатие, acks и долговечность, идемпотентный producer и транзакции.",
     "relatedTags": ["kafka", "producer", "acks", "idempotence"],
+    "questionIds": ["mb-014", "mb-015", "mb-016"],
     "related": ["mb-lesson-kafka-core", "mb-lesson-kafka-replication"],
     "sections": [
       {
@@ -188,6 +201,7 @@
     "title": "Kafka Consumer и consumer group",
     "summary": "Группа и распределение партиций, poll-цикл, heartbeat и таймауты, модели commit offset, ребаланс и роль идемпотентности.",
     "relatedTags": ["kafka", "consumer", "consumer-group", "offset"],
+    "questionIds": ["mb-005", "mb-011", "mb-017", "mb-018"],
     "related": ["mb-lesson-kafka-core", "mb-lesson-dlq-retries"],
     "sections": [
       {
@@ -195,7 +209,12 @@
         "paragraphs": [
           "group.id задаёт логического подписчика. Брокер распределяет партиции темы между consumer'ами группы (assignment): в каждый момент одна партиция принадлежит ровно одному consumer'у группы. Так одна группа = work queue, разные группы = независимые pub/sub-потоки поверх того же лога.",
           "Стратегия распределения настраивается: range и round-robin — классические; sticky и особенно cooperative-sticky стараются МИНИМИЗИРОВАТЬ движение партиций при ребалансе (важно для горячих кэшей). Если consumer'ов в группе больше, чем партиций, лишние простаивают без работы."
-        ]
+        ],
+        "image": {
+          "src": "kafka-consumer-group.png",
+          "alt": "Партиции топика распределены между консьюмерами группы — по одному владельцу на партицию; при подключении нового консьюмера происходит ребаланс.",
+          "caption": "Каждую партицию читает ровно один консьюмер группы; при изменении состава происходит ребаланс."
+        }
       },
       {
         "heading": "Poll loop",
@@ -248,6 +267,7 @@
     "title": "Kafka replication и отказоустойчивость",
     "summary": "Leader/followers, ISR и lag, связка acks/min.insync, high watermark и видимость для consumer, выборы лидера и unclean election, rack awareness.",
     "relatedTags": ["kafka", "replication", "isr", "acks"],
+    "questionIds": ["mb-027", "mb-028", "mb-029", "mb-030"],
     "related": ["mb-lesson-kafka-producer", "mb-lesson-kafka-ecosystem"],
     "sections": [
       {
@@ -255,7 +275,12 @@
         "paragraphs": [
           "У каждой партиции один leader и несколько followers. Все чтения и записи идут через leader; followers непрерывно подтягивают данные с него и держат у себя точную копию лога.",
           "Сколько копий держать — задаёт replication.factor (типично 3). Реплики размещают на РАЗНЫХ брокерах, а в облаке — желательно ещё и в разных зонах/стойках через broker.rack, чтобы пережить падение целого узла или AZ."
-        ]
+        ],
+        "image": {
+          "src": "kafka-replication.png",
+          "alt": "Реплика-лидер на одном брокере и реплики-фолловеры на других; продюсер пишет лидеру, синхронные реплики образуют ISR, отстающая — вне ISR.",
+          "caption": "Продюсер пишет только лидеру; синхронные фолловеры входят в ISR, отстающие выпадают из него."
+        }
       },
       {
         "heading": "ISR (in-sync replicas)",
@@ -308,6 +333,7 @@
     "title": "Retries, DLQ и идемпотентность",
     "summary": "Что повторять и почему не всё, backoff/jitter, non-blocking retry, дизайн DLQ и redrive, идемпотентность как фундамент.",
     "relatedTags": ["dlq", "retries", "idempotence", "error-handling"],
+    "questionIds": ["mb-008"],
     "related": ["mb-lesson-messaging-basics", "mb-lesson-kafka-consumer"],
     "sections": [
       {
@@ -336,7 +362,12 @@
         "paragraphs": [
           "DLQ (Dead Letter Queue/Topic) хранит то, что не удалось обработать после исчерпания ретраев или из-за невосстановимой ошибки. В Kafka это отдельный топик, в RabbitMQ — очередь, связанная с DLX (Dead Letter Exchange).",
           "Хорошая DLQ-запись несёт: оригинальный payload без модификации, причину (заголовки error.class, error.message, stacktrace), originating-topic/partition/offset и correlation id для трассировки. Без этого в DLQ остаётся непригодный для разбора мусор."
-        ]
+        ],
+        "image": {
+          "src": "dlq-retries.png",
+          "alt": "Обработка сообщения: при ошибке — повтор с backoff до N раз; после исчерпания попыток сообщение уходит в очередь мёртвых сообщений (DLQ), при успехе — обработано.",
+          "caption": "Сообщение повторяется с backoff до N раз; после исчерпания попыток уходит в DLQ."
+        }
       },
       {
         "heading": "Redrive и владелец",
@@ -369,6 +400,7 @@
     "title": "Kafka API и экосистема",
     "summary": "Клиентские API, Kafka Connect и Debezium, Streams и stream-processing, ksqlDB, Schema Registry и MirrorMaker для multi-DC.",
     "relatedTags": ["kafka", "streams", "schema-registry"],
+    "questionIds": ["mb-020", "mb-021"],
     "related": ["mb-lesson-kafka-core", "mb-lesson-kafka-replication"],
     "sections": [
       {
@@ -429,6 +461,7 @@
     "title": "Kafka в эксплуатации",
     "summary": "Consumer lag и его причины, ребаланс и безопасный commit, poison-сообщения, ZooKeeper → KRaft, schema evolution, изменения partitions и ключевые метрики.",
     "relatedTags": ["kafka", "rebalance", "consumer", "schema-registry", "reliability"],
+    "questionIds": ["mb-019", "mb-031"],
     "related": ["mb-lesson-kafka-consumer", "mb-lesson-kafka-ecosystem"],
     "sections": [
       {
@@ -497,6 +530,7 @@
     "title": "Проектирование событий и команд",
     "summary": "Event vs command, обязательные поля envelope, idempotency key, schema evolution, thick vs thin payload и transactional outbox.",
     "relatedTags": ["messaging", "idempotence", "delivery-semantics", "error-handling"],
+    "questionIds": ["mb-004", "mb-035"],
     "related": ["mb-lesson-messaging-basics", "mb-lesson-dlq-retries"],
     "sections": [
       {
@@ -558,6 +592,7 @@
     "title": "RabbitMQ, SQS и классические очереди",
     "summary": "Модель exchange/binding/queue, ack/nack и publisher confirms, prefetch, DLQ через DLX, отложенные сообщения, SQS Standard vs FIFO и visibility timeout.",
     "relatedTags": ["rabbitmq", "sqs", "exchange", "visibility-timeout", "prefetch"],
+    "questionIds": ["mb-023", "mb-024", "mb-022", "mb-002", "mb-032", "mb-033", "mb-034"],
     "related": ["mb-lesson-messaging-basics", "mb-lesson-dlq-retries"],
     "sections": [
       {
@@ -565,7 +600,12 @@
         "paragraphs": [
           "В RabbitMQ продюсер пишет НЕ напрямую в очередь, а в EXCHANGE с routing key. Exchange по bindings распределяет сообщение по очередям. Это ключевое отличие от Kafka, где продюсер пишет в топик-партицию напрямую.",
           "Типы exchange: direct (точное совпадение routing key с binding), topic (шаблоны с точкой и подстановками * и #), fanout (рассылка во все привязанные очереди — pub/sub), headers (маршрутизация по заголовкам). Так одной моделью покрываются и точечная доставка, и широковещание, и фильтрация."
-        ]
+        ],
+        "image": {
+          "src": "rabbitmq-topology.png",
+          "alt": "Топология RabbitMQ: producer → exchange, который по ключу маршрутизации через bindings направляет сообщение в одну или несколько очередей, откуда читают консьюмеры.",
+          "caption": "В RabbitMQ продюсер пишет в exchange; тот по ключу маршрутизации раскладывает сообщения по очередям через bindings."
+        }
       },
       {
         "heading": "Ack/nack и publisher confirms",
@@ -618,6 +658,7 @@
     "title": "Saga, CDC и event-driven consistency",
     "summary": "Почему 2PC не подходит, сага и компенсации, хореография vs оркестрация, CDC и outbox-relay, eventual consistency и границы.",
     "relatedTags": ["saga", "cdc", "outbox", "eventual-consistency", "microservices"],
+    "questionIds": ["mb-025", "mb-026"],
     "related": ["mb-lesson-message-design", "mb-lesson-kafka-operations"],
     "sections": [
       {
@@ -632,7 +673,12 @@
         "paragraphs": [
           "Сага — последовательность локальных транзакций. Каждый шаг успешно коммитится в своём сервисе, после чего публикует событие, на которое реагирует следующий шаг. Если какой-то шаг провалился, запускаются КОМПЕНСИРУЮЩИЕ действия для уже совершённых.",
           "Ключевая идея: компенсация — не «технический rollback», а БИЗНЕС-обратное действие. Списали деньги → возврат на счёт; забронировали склад → освободили резерв; отправили письмо «вы оформили заказ» → отправляют «извините, заказ отменён». Не всё бывает компенсируемым (отправленный физический товар — компенсация это return); компенсации тоже должны быть идемпотентными."
-        ]
+        ],
+        "image": {
+          "src": "saga.png",
+          "alt": "Сага как цепочка локальных транзакций T1→T2→T3; при сбое на шаге запускаются компенсирующие транзакции C3←C2←C1 в обратном порядке.",
+          "caption": "Сага: цепочка локальных транзакций; при сбое выполняются компенсации в обратном порядке."
+        }
       },
       {
         "heading": "Хореография",

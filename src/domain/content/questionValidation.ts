@@ -5,11 +5,13 @@ import {
   type Domain,
   type QuestionMode,
 } from '../models/common';
-import type {
-  AnswerGuide,
-  ChoiceOption,
-  EvaluationConcept,
-  Question,
+import {
+  templateBlankIds,
+  type AnswerGuide,
+  type BlankSpec,
+  type ChoiceOption,
+  type EvaluationConcept,
+  type Question,
 } from '../models/question';
 
 export interface ValidationIssue {
@@ -107,6 +109,33 @@ function validateRubric(raw: unknown, errors: string[]): EvaluationConcept[] | u
   return raw as unknown as EvaluationConcept[];
 }
 
+function validateBlanks(raw: unknown, errors: string[]): BlankSpec[] | undefined {
+  if (!Array.isArray(raw) || raw.length === 0) {
+    errors.push('blanks must be a non-empty array');
+    return undefined;
+  }
+  const ids = new Set<string>();
+  for (const b of raw) {
+    if (!isRecord(b)) {
+      errors.push('each blank must be an object');
+      return undefined;
+    }
+    if (!isNonEmptyString(b.id)) errors.push('blank id must be a non-empty string');
+    if (!isStringArray(b.accept) || b.accept.length === 0 || !b.accept.every(isNonEmptyString)) {
+      errors.push('blank accept must be a non-empty array of non-empty strings');
+    }
+    if (b.placeholder !== undefined && typeof b.placeholder !== 'string') {
+      errors.push('blank placeholder must be a string when present');
+    }
+    if (isNonEmptyString(b.id)) {
+      if (ids.has(b.id)) errors.push(`duplicate blank id "${b.id}"`);
+      ids.add(b.id);
+    }
+  }
+  if (errors.length > 0) return undefined;
+  return raw as unknown as BlankSpec[];
+}
+
 function validateQuestion(
   raw: unknown,
   opts: ValidateOptions,
@@ -153,8 +182,28 @@ function validateQuestion(
     if (raw.starterCode !== undefined && typeof raw.starterCode !== 'string') {
       errors.push('starterCode must be a string when present');
     }
+  } else if (type === 'fill-blank') {
+    if (!isNonEmptyString(raw.template)) errors.push('template must be a non-empty string');
+    const blanks = validateBlanks(raw.blanks, errors);
+    if (isNonEmptyString(raw.template) && blanks) {
+      const markerIds = new Set(templateBlankIds(raw.template));
+      const blankIds = new Set(blanks.map((b) => b.id));
+      if (markerIds.size === 0) errors.push('template must contain at least one {{blankId}} marker');
+      for (const id of markerIds) {
+        if (!blankIds.has(id)) errors.push(`template marker "${id}" has no matching blank`);
+      }
+      for (const id of blankIds) {
+        if (!markerIds.has(id)) errors.push(`blank "${id}" is not referenced in the template`);
+      }
+    }
+    if (raw.wordBank !== undefined && !isStringArray(raw.wordBank)) {
+      errors.push('wordBank must be a string[] when present');
+    }
+    if (raw.code !== undefined && typeof raw.code !== 'boolean') {
+      errors.push('code must be a boolean when present');
+    }
   } else {
-    errors.push('type must be one of single | multiple | open');
+    errors.push('type must be one of single | multiple | open | fill-blank');
   }
 
   if (errors.length > 0) return { errors };

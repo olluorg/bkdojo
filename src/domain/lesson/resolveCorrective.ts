@@ -56,13 +56,25 @@ export async function resolveCorrectiveItems(
     if (!source) continue;
 
     if (need.kind === 'retry') {
-      items.push({ question: source, reason: 'review' });
+      items.push({
+        question: source,
+        reason: 'review',
+        reasonText: 'Работа над ошибками: повторяем вопрос, который не получился.',
+      });
       continue;
     }
 
     const fromBank = selectFollowupFromBank(deps.index, source, need.conceptId, exclude);
     if (fromBank) {
-      items.push({ question: fromBank, reason: 'review' });
+      items.push({
+        question: fromBank,
+        reason: 'review',
+        reasonText: `Работа над ошибками: проверяем пробел «${conceptTitle(
+          deps.index,
+          source,
+          need.conceptId,
+        )}».`,
+      });
       continue;
     }
 
@@ -74,10 +86,22 @@ export async function resolveCorrectiveItems(
     );
     if (generated) {
       persist(generated);
-      items.push({ question: generated, reason: 'review' });
+      items.push({
+        question: generated,
+        reason: 'review',
+        reasonText: `Работа над ошибками: новый вопрос на пробел «${conceptTitle(
+          deps.index,
+          source,
+          need.conceptId,
+        )}».`,
+      });
     } else {
       // No bank match and no AI: still give a chance to recover on the original.
-      items.push({ question: source, reason: 'review' });
+      items.push({
+        question: source,
+        reason: 'review',
+        reasonText: 'Работа над ошибками: возвращаемся к исходному вопросу.',
+      });
     }
   }
 

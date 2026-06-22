@@ -1,10 +1,13 @@
 import { useEffect, useMemo, useRef, useState, type ReactNode } from 'react';
+import { createPortal } from 'react-dom';
 import type { GlossaryTerm } from '../domain/models/glossary';
-import type { Lesson } from '../domain/models/lesson';
+import type { Lesson, LessonImage } from '../domain/models/lesson';
 import type { LessonStatus } from '../domain/progress/lessonStatus';
+import { resolveLessonAsset } from '../domain/content/lessonAssets';
 import { buildCandidates } from '../domain/glossary/termHighlight';
 import { useGlossary } from '../hooks/useGlossary';
 import { GlossaryPopup } from './GlossaryPopup';
+import { LessonInteractiveBlock } from './lessonWidgets';
 import { TermAwareText } from './TermAwareText';
 
 interface RelatedLink {
@@ -43,6 +46,63 @@ interface Props {
   extra?: ReactNode;
 }
 
+/** Renders a lesson infographic; silently skips if the asset is missing. */
+function LessonFigure({ image }: { image: LessonImage }) {
+  const url = resolveLessonAsset(image.src);
+  const [zoomed, setZoomed] = useState(false);
+
+  // While zoomed: close on Esc and lock background scroll.
+  useEffect(() => {
+    if (!zoomed) return;
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') setZoomed(false);
+    };
+    window.addEventListener('keydown', onKey);
+    const prevOverflow = document.body.style.overflow;
+    document.body.style.overflow = 'hidden';
+    return () => {
+      window.removeEventListener('keydown', onKey);
+      document.body.style.overflow = prevOverflow;
+    };
+  }, [zoomed]);
+
+  if (!url) return null;
+  return (
+    <figure className="lesson-figure">
+      <button
+        type="button"
+        className="lesson-figure__zoom"
+        onClick={() => setZoomed(true)}
+        aria-label="Открыть изображение во весь экран"
+      >
+        <img className="lesson-figure__img" src={url} alt={image.alt} loading="lazy" />
+      </button>
+      {image.caption && <figcaption className="lesson-figure__caption">{image.caption}</figcaption>}
+      {zoomed &&
+        createPortal(
+          <div
+            className="lesson-lightbox"
+            role="dialog"
+            aria-modal="true"
+            aria-label={image.alt}
+            onClick={() => setZoomed(false)}
+          >
+            <img className="lesson-lightbox__img" src={url} alt={image.alt} />
+            <button
+              type="button"
+              className="lesson-lightbox__close"
+              aria-label="Закрыть"
+              onClick={() => setZoomed(false)}
+            >
+              ×
+            </button>
+          </div>,
+          document.body,
+        )}
+    </figure>
+  );
+}
+
 export function LessonReader({
   lesson,
   related,
@@ -60,14 +120,11 @@ export function LessonReader({
   onOpenRelated,
   extra,
 }: Props) {
-  // Auto-mark the lesson read once its end scrolls into view — unless the learner
-  // already touched the toggle (we never override an explicit choice).
+  // Reaching the end is a UI hint only. The learner still explicitly marks the
+  // lesson read, so scrolling does not become a completion shortcut.
   const endRef = useRef<HTMLDivElement | null>(null);
-  const settledRef = useRef(false); // true after an auto-mark OR a manual toggle
-  const readRef = useRef(read);
-  readRef.current = read;
-  const onSetReadRef = useRef(onSetRead);
-  onSetReadRef.current = onSetRead;
+  const settledRef = useRef(false); // true after the end marker has been noticed for this view
+  const [reachedEnd, setReachedEnd] = useState(false);
 
   // Glossary highlight + popup. Candidates are built once per glossary load;
   // the popup carries the clicked term and the anchoring element.
@@ -77,7 +134,8 @@ export function LessonReader({
 
   useEffect(() => {
     window.scrollTo({ top: 0 });
-    settledRef.current = false; // re-arm auto-mark for the newly opened lesson
+    settledRef.current = false; // re-arm the end-of-lesson hint for the newly opened lesson
+    setReachedEnd(false);
     setPopup(null); // dismiss any open glossary popup when switching lessons
   }, [lesson.id]);
 
@@ -87,9 +145,9 @@ export function LessonReader({
     const observer = new IntersectionObserver(
       (entries) => {
         for (const entry of entries) {
-          if (entry.isIntersecting && !settledRef.current && !readRef.current) {
+          if (entry.isIntersecting && !settledRef.current) {
             settledRef.current = true;
-            onSetReadRef.current(true);
+            setReachedEnd(true);
           }
         }
       },
@@ -127,12 +185,23 @@ export function LessonReader({
               />
             </p>
           ))}
+          {section.image && <LessonFigure image={section.image} />}
           {section.code && <pre className="lesson-code">{section.code}</pre>}
+          {section.interactive && <LessonInteractiveBlock spec={section.interactive} />}
         </div>
       ))}
 
-      {/* Marker for "reached the end of the lesson" → auto-mark as read. */}
+      {/* Marker for "reached the end of the lesson" → show explicit read CTA. */}
       <div ref={endRef} aria-hidden className="lesson-end" />
+
+      {reachedEnd && !read && (
+        <div className="lesson-read-nudge">
+          <span>Дошёл до конца урока.</span>
+          <button className="btn btn--sm" onClick={() => onSetRead(true)}>
+            Отметить прочитанным
+          </button>
+        </div>
+      )}
 
       <div className="lesson-actions">
         <button className="btn" onClick={() => onPractice()}>

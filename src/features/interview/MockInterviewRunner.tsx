@@ -1,15 +1,21 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { ChoiceQuestionCard } from '../../components/ChoiceQuestionCard';
 import { CodeQuestionCard } from '../../components/CodeQuestionCard';
 import { EvaluationResultView } from '../../components/EvaluationResultView';
+import { FillBlankQuestionCard } from '../../components/FillBlankQuestionCard';
 import { ManualAssessmentCard } from '../../components/ManualAssessmentCard';
 import { OpenQuestionCard } from '../../components/OpenQuestionCard';
 import type { ContentIndex } from '../../domain/content/contentIndex';
 import { evaluateAnswer, submitManualAssessment } from '../../domain/evaluation/evaluationService';
 import { buildMockInterview, summarizeInterview } from '../../domain/interview/mockInterview';
-import type { AnswerOutcome, ChoiceSubmission } from '../../domain/models/answer';
+import type { AnswerOutcome, ChoiceSubmission, FillBlankSubmission } from '../../domain/models/answer';
 import type { Domain } from '../../domain/models/common';
-import { isChoiceQuestion, isOpenQuestion, type Question } from '../../domain/models/question';
+import {
+  isChoiceQuestion,
+  isFillBlankQuestion,
+  isOpenQuestion,
+  type Question,
+} from '../../domain/models/question';
 import type { SelfAssessment } from '../../domain/models/evaluation';
 import { RANK_LABELS } from '../../domain/progress/mastery';
 import { useProgress } from '../../state/ProgressContext';
@@ -36,6 +42,15 @@ export function MockInterviewRunner({ index, domain, title, onExit, onRestart }:
   const [busy, setBusy] = useState(false);
   const [results, setResults] = useState<Result[]>([]);
   const [finished, setFinished] = useState(false);
+
+  // A mock interview isn't resumed across refreshes, so each mount with real
+  // questions is a fresh session start.
+  useEffect(() => {
+    if (session.items.length > 0) {
+      dispatch({ type: 'logEvent', event: { type: 'session_started', refId: 'interview', domain } });
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   if (session.items.length === 0) {
     return (
@@ -101,6 +116,16 @@ export function MockInterviewRunner({ index, domain, title, onExit, onRestart }:
     }
   }
 
+  async function handleFillBlank(submission: FillBlankSubmission) {
+    setBusy(true);
+    try {
+      const result = await evaluateAnswer(question, submission, { resolver: { method } });
+      if (result.kind === 'outcome') record(result.outcome);
+    } finally {
+      setBusy(false);
+    }
+  }
+
   async function handleOpen(text: string) {
     setBusy(true);
     try {
@@ -141,11 +166,36 @@ export function MockInterviewRunner({ index, domain, title, onExit, onRestart }:
           reason={method === 'manual' ? 'chosen' : 'fallback'}
         />
       ) : isChoiceQuestion(question) ? (
-        <ChoiceQuestionCard key={question.id} question={question} onSubmit={handleChoice} />
+        <ChoiceQuestionCard
+          key={question.id}
+          question={question}
+          reasonText={item.reasonText}
+          onSubmit={handleChoice}
+        />
+      ) : isFillBlankQuestion(question) ? (
+        <FillBlankQuestionCard
+          key={question.id}
+          question={question}
+          reasonText={item.reasonText}
+          onSubmit={handleFillBlank}
+          busy={busy}
+        />
       ) : isOpenQuestion(question) && question.language ? (
-        <CodeQuestionCard key={question.id} question={question} onSubmit={handleOpen} busy={busy} />
+        <CodeQuestionCard
+          key={question.id}
+          question={question}
+          reasonText={item.reasonText}
+          onSubmit={handleOpen}
+          busy={busy}
+        />
       ) : (
-        <OpenQuestionCard key={question.id} question={question} onSubmit={handleOpen} busy={busy} />
+        <OpenQuestionCard
+          key={question.id}
+          question={question}
+          reasonText={item.reasonText}
+          onSubmit={handleOpen}
+          busy={busy}
+        />
       )}
     </section>
   );

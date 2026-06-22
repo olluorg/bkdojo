@@ -1,6 +1,6 @@
 import { getByDomain, type ContentIndex } from '../content/contentIndex';
 import type { AnswerOutcome } from '../models/answer';
-import type { Domain } from '../models/common';
+import { DOMAIN_LABELS, type Domain } from '../models/common';
 import type { Question } from '../models/question';
 import type { Session, SessionItem } from '../models/session';
 import type { Rank } from '../progress/mastery';
@@ -48,7 +48,11 @@ export function buildMockInterview(
 
   const items: SessionItem[] = picked
     .sort((a, b) => a.difficulty - b.difficulty)
-    .map((question) => ({ question, reason: 'daily' as const }));
+    .map((question) => ({
+      question,
+      reason: 'daily' as const,
+      reasonText: `Интервью по теме: ${DOMAIN_LABELS[domain]}.`,
+    }));
 
   return { kind: 'daily', items };
 }

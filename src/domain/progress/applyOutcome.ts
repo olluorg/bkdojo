@@ -48,6 +48,7 @@ export function applyOutcome(
     answer: outcome.answer,
     selectedOptionIds: outcome.selectedOptionIds,
     selfOverride: outcome.selfOverride,
+    assisted: outcome.assisted,
     answeredAt: outcome.answeredAt,
     nextReviewAt: schedule.nextReviewAt,
   };

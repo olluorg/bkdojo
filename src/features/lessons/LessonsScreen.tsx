@@ -1,8 +1,10 @@
+import { useEffect } from 'react';
 import { LessonCommentPanel } from '../../components/LessonCommentPanel';
 import { LessonReader } from '../../components/LessonReader';
 import { DOMAIN_LABELS } from '../../domain/models/common';
 import type { Lesson } from '../../domain/models/lesson';
 import { lessonStatus, type LessonStatus } from '../../domain/progress/lessonStatus';
+import { lessonLearningStatus } from '../../domain/progress/learningStatus';
 import { isLessonBookmarked } from '../../domain/progress/lessonBookmarks';
 import { useContentIndex } from '../../hooks/useContentIndex';
 import { useLessons } from '../../hooks/useLessons';
@@ -28,6 +30,19 @@ export function LessonsScreen() {
   const lessonId = parts[1];
   const practicing = parts[2] === 'practice';
   const selected = lessonId ? byId.get(lessonId) ?? null : null;
+
+  // Log opening a lesson's reader once per lesson navigation (not when entering
+  // its practice test, and not on re-renders for the same lesson).
+  const openedDomain = selected?.domain;
+  useEffect(() => {
+    if (selected && !practicing) {
+      dispatch({
+        type: 'logEvent',
+        event: { type: 'lesson_started', refId: selected.id, domain: openedDomain },
+      });
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [selected?.id]);
 
   if (selected && practicing) {
     return (
@@ -85,6 +100,7 @@ export function LessonsScreen() {
 
   const renderItem = (lesson: Lesson) => {
     const badge = LIST_BADGE[lessonStatus(progress, index, lesson)];
+    const learning = lessonLearningStatus(progress, index, lesson);
     return (
       <li key={lesson.id}>
         <a className="lesson-item" href={hrefFor(`/lessons/${lesson.id}`)}>
@@ -98,6 +114,7 @@ export function LessonsScreen() {
             {badge && <span className={badge.className}>{badge.label}</span>}
           </span>
           <span className="lesson-item__summary">{lesson.summary}</span>
+          <span className="lesson-item__meta">{learning.labels.join(' · ')}</span>
         </a>
       </li>
     );

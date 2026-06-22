@@ -1,0 +1,105 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 900 490" font-family="ui-sans-serif, system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif">
+  <defs>
+    <marker id="arr" markerWidth="9" markerHeight="9" refX="6" refY="3" orient="auto">
+      <path d="M0,0 L6,3 L0,6 z" fill="#5a6675"/>
+    </marker>
+    <style>
+      .title { fill:#15202e; font-size:23px; font-weight:800; text-anchor:middle; }
+      .sub { fill:#5a6675; font-size:13px; text-anchor:middle; }
+      .ban { font-size:12.5px; font-weight:600; text-anchor:middle; }
+      .ch { font-size:15px; font-weight:800; fill:#15202e; }
+      .cs { font-size:12px; font-weight:700; fill:#1a52c4; letter-spacing:.4px; }
+      .num { fill:#ffffff; font-size:16px; font-weight:800; text-anchor:middle; }
+      .step { fill:#15202e; font-size:13.5px; }
+      .mut { fill:#5a6675; font-size:12px; }
+      .mono { font-family:ui-monospace, SFMono-Regular, Menlo, monospace; }
+      .fail { fill:#e5484d; font-size:11px; font-weight:700; }
+      .note { fill:#5a6675; font-size:11px; }
+      .warn { fill:#c98a12; font-size:9.5px; font-weight:700; text-anchor:middle; }
+    </style>
+  </defs>
+
+  <rect x="0" y="0" width="900" height="490" fill="#ffffff"/>
+
+  <text class="title" x="450" y="36">Три замка неизменяемости</text>
+  <text class="sub" x="450" y="58">запомни три замка — вспомнишь весь рецепт immutable-класса</text>
+
+  <!-- threat → outcome banner -->
+  <rect x="24" y="78" width="384" height="40" rx="12" fill="#fdeaea" stroke="#e5484d"/>
+  <text class="ban" x="216" y="103" fill="#e5484d">Снаружи хотят изменить объект после создания</text>
+  <line x1="416" y1="98" x2="486" y2="98" stroke="#5a6675" stroke-width="2" marker-end="url(#arr)"/>
+  <rect x="492" y="78" width="384" height="40" rx="12" fill="#e6f7ee" stroke="#1faa59"/>
+  <text class="ban" x="684" y="103" fill="#178a48">Все три пути закрыты — менять нечем</text>
+
+  <!-- ── Lock 1: assignment ───────────────────────────── -->
+  <g>
+    <rect x="24" y="140" width="276" height="312" rx="16" fill="#ffffff" stroke="#e2e8f1"/>
+    <circle cx="58" cy="176" r="17" fill="#2b6ef2"/>
+    <text class="num" x="58" y="182">1</text>
+    <text class="ch" x="84" y="172">Замок · присваивание</text>
+    <text class="cs" x="84" y="190">МЕНЯТЬ САМИ ПОЛЯ</text>
+
+    <circle cx="54" cy="226" r="9" fill="#e8f0ff"/>
+    <path d="M50.5,226 l2.5,2.5 l5,-6" fill="none" stroke="#2b6ef2" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+    <text class="step" x="72" y="231">Все поля <tspan class="mono" font-weight="700">final</tspan></text>
+    <text class="mut" x="72" y="258">→ нельзя переприсвоить</text>
+    <text class="mut" x="72" y="276">→ безопасная публикация</text>
+
+    <line x1="44" y1="372" x2="280" y2="372" stroke="#eef2f9" stroke-width="1.5"/>
+    <text class="fail" x="44" y="394">если пропустить:</text>
+    <text class="note" x="44" y="412">ссылку в поле заменят целиком</text>
+    <text class="note mono" x="44" y="429" fill="#e5484d">p.events = other;</text>
+  </g>
+
+  <!-- ── Lock 2: access ───────────────────────────────── -->
+  <g>
+    <rect x="312" y="140" width="276" height="312" rx="16" fill="#ffffff" stroke="#e2e8f1"/>
+    <circle cx="346" cy="176" r="17" fill="#2b6ef2"/>
+    <text class="num" x="346" y="182">2</text>
+    <text class="ch" x="372" y="172">Замок · доступ</text>
+    <text class="cs" x="372" y="190">ДОТЯНУТЬСЯ ДО ПОЛЕЙ</text>
+
+    <circle cx="342" cy="226" r="9" fill="#e8f0ff"/>
+    <path d="M338.5,226 l2.5,2.5 l5,-6" fill="none" stroke="#2b6ef2" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+    <text class="step" x="360" y="231">Поля <tspan class="mono" font-weight="700">private</tspan></text>
+
+    <circle cx="342" cy="258" r="9" fill="#e8f0ff"/>
+    <path d="M338.5,258 l2.5,2.5 l5,-6" fill="none" stroke="#2b6ef2" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+    <text class="step" x="360" y="263">Без сеттеров и мутаторов</text>
+
+    <circle cx="342" cy="290" r="9" fill="#e8f0ff"/>
+    <path d="M338.5,290 l2.5,2.5 l5,-6" fill="none" stroke="#2b6ef2" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+    <text class="step" x="360" y="295">Класс <tspan class="mono" font-weight="700">final</tspan> / фабрика</text>
+
+    <line x1="332" y1="372" x2="568" y2="372" stroke="#eef2f9" stroke-width="1.5"/>
+    <text class="fail" x="332" y="394">если пропустить:</text>
+    <text class="note" x="332" y="412">залезут в поле в обход геттера</text>
+    <text class="note" x="332" y="429">или подкласс добавит мутатор</text>
+  </g>
+
+  <!-- ── Lock 3: references (the forgotten one) ────────── -->
+  <g>
+    <rect x="600" y="140" width="276" height="312" rx="16" fill="#ffffff" stroke="#e2e8f1"/>
+    <circle cx="634" cy="176" r="17" fill="#2b6ef2"/>
+    <text class="num" x="634" y="182">3</text>
+    <text class="ch" x="660" y="172">Замок · ссылки</text>
+    <text class="cs" x="660" y="190">ПРОЛЕЗТЬ ПО ССЫЛКЕ</text>
+
+    <circle cx="630" cy="226" r="9" fill="#e8f0ff"/>
+    <path d="M626.5,226 l2.5,2.5 l5,-6" fill="none" stroke="#2b6ef2" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+    <text class="step" x="648" y="231">Защитная копия на входе</text>
+
+    <circle cx="630" cy="258" r="9" fill="#e8f0ff"/>
+    <path d="M626.5,258 l2.5,2.5 l5,-6" fill="none" stroke="#2b6ef2" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+    <text class="step" x="648" y="263">Защитная копия на выходе</text>
+
+    <circle cx="630" cy="290" r="9" fill="#e8f0ff"/>
+    <path d="M626.5,290 l2.5,2.5 l5,-6" fill="none" stroke="#2b6ef2" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+    <text class="step" x="648" y="295">Не публиковать <tspan class="mono" font-weight="700">this</tspan></text>
+
+    <line x1="620" y1="372" x2="856" y2="372" stroke="#eef2f9" stroke-width="1.5"/>
+    <text class="fail" x="620" y="394">если пропустить:</text>
+    <text class="note" x="620" y="412">общая ссылка на List / Date —</text>
+    <text class="note" x="620" y="429">лазейка прямо внутрь объекта</text>
+  </g>
+</svg>

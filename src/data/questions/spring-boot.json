@@ -260,7 +260,7 @@
     ],
     "answerGuide": {
       "short": "@Transactional работает через прокси; this.method() обходит прокси — транзакция не стартует.",
-      "normal": "Объясни проксирование (по умолчанию JDK/CGLIB), что аспект перехватывает внешний вызов, а внутренний вызов того же объекта идёт напрямую. Решение — вызвать через другой бин/прокси.",
+      "normal": "Объясни проксирование (в Spring Boot по умолчанию CGLIB — proxy-target-class=true; в чистом Spring JDK-прокси при наличии интерфейса), что аспект перехватывает внешний вызов, а внутренний вызов того же объекта идёт напрямую. Решение — вызвать через другой бин/прокси.",
       "traps": [
         "Ставить @Transactional на private-метод.",
         "Ожидать новую транзакцию при self-invocation с REQUIRES_NEW."
@@ -3156,6 +3156,162 @@
       "source": "seed",
       "lastReviewedAt": "2026-05-22",
       "reviewer": "seed"
+    }
+  },
+  {
+    "id": "sb-057",
+    "domain": "spring-boot",
+    "difficulty": 4,
+    "type": "single",
+    "mode": "scenario",
+    "prompt": "Почему изменение JPA-сущности внутри @Transactional сохраняется в БД без явного вызова save()?",
+    "tags": [
+      "spring-data",
+      "jpa",
+      "transactions"
+    ],
+    "options": [
+      {
+        "id": "a",
+        "text": "Это dirty checking: управляемая (managed) сущность находится в persistence context, и на flush/commit Hibernate сравнивает её с снимком и сам генерирует UPDATE для изменённых полей"
+      },
+      {
+        "id": "b",
+        "text": "Spring перехватывает все сеттеры и пишет в БД немедленно"
+      },
+      {
+        "id": "c",
+        "text": "Изменения сохраняются только если вызвать entityManager.refresh()"
+      },
+      {
+        "id": "d",
+        "text": "JPA пишет каждое изменение поля отдельным запросом сразу"
+      }
+    ],
+    "correctOptionIds": [
+      "a"
+    ],
+    "answerGuide": {
+      "short": "Dirty checking: managed-сущность в persistence context на flush сравнивается со снимком, и Hibernate сам шлёт UPDATE изменённых полей.",
+      "normal": "Сущность, загруженная или сохранённая в рамках транзакции, становится managed и попадает в persistence context (кэш 1-го уровня) с снимком исходного состояния. Перед коммитом (или при flush) Hibernate сравнивает текущее состояние со снимком и для изменившихся полей сам генерирует UPDATE — отсюда «save() не нужен» для managed-сущностей. Важные следствия: (1) изменение detached-сущности (вне сессии) так не сохранится — нужен merge/save; (2) случайная мутация managed-сущности приведёт к незапланированному UPDATE; (3) для read-only сценариев dirty checking — лишняя работа, его отключают (@Transactional(readOnly=true)).",
+      "traps": [
+        "Ждать сохранения от изменения detached-сущности без merge.",
+        "Случайно менять managed-сущность и удивляться лишнему UPDATE."
+      ],
+      "followUps": [
+        "Чем managed отличается от detached?",
+        "Что даёт @Transactional(readOnly=true)?"
+      ]
+    },
+    "meta": {
+      "verified": true,
+      "source": "original",
+      "lastReviewedAt": "2026-06-01",
+      "reviewer": "claude-review"
+    }
+  },
+  {
+    "id": "sb-058",
+    "domain": "spring-boot",
+    "difficulty": 5,
+    "type": "single",
+    "mode": "scenario",
+    "prompt": "Что делает propagation=REQUIRES_NEW и какой подводный камень с пулом соединений он несёт?",
+    "tags": [
+      "transactions",
+      "propagation",
+      "aop"
+    ],
+    "options": [
+      {
+        "id": "a",
+        "text": "Приостанавливает текущую транзакцию и стартует новую независимую (со своим commit/rollback); пока внешняя приостановлена, на время вложенной удерживаются ДВА соединения — при ограниченном пуле это риск deadlock-а на соединениях"
+      },
+      {
+        "id": "b",
+        "text": "Присоединяется к существующей транзакции, если она есть"
+      },
+      {
+        "id": "c",
+        "text": "Полностью отключает транзакции для метода"
+      },
+      {
+        "id": "d",
+        "text": "Делает транзакцию только для чтения"
+      }
+    ],
+    "correctOptionIds": [
+      "a"
+    ],
+    "answerGuide": {
+      "short": "REQUIRES_NEW приостанавливает текущую и открывает новую независимую транзакцию; на это время нужны два соединения — риск исчерпать пул.",
+      "normal": "REQUIRES_NEW нужен, когда вложенная работа должна зафиксироваться или откатиться независимо от внешней (например, запись в audit/лог, которая должна сохраниться, даже если основная транзакция откатится). Spring приостанавливает (suspend) внешнюю транзакцию и берёт ВТОРОЕ соединение под новую — поэтому в момент выполнения вложенной заняты два соединения от одного потока. На маленьком пуле (например, Hikari на 10) массовые REQUIRES_NEW могут привести к тому, что потоки держат по соединению и ждут второго — connection-pool deadlock. Плюс, как любой @Transactional через self-invocation (вызов внутри того же бина), он не сработает без прокси.",
+      "traps": [
+        "Массово использовать REQUIRES_NEW на маленьком пуле соединений.",
+        "Вызывать REQUIRES_NEW-метод через this (self-invocation) — прокси не перехватит."
+      ],
+      "followUps": [
+        "Чем REQUIRES_NEW отличается от NESTED?",
+        "Почему self-invocation ломает @Transactional?"
+      ]
+    },
+    "meta": {
+      "verified": true,
+      "source": "original",
+      "lastReviewedAt": "2026-06-01",
+      "reviewer": "claude-review"
+    }
+  },
+  {
+    "id": "sb-059",
+    "domain": "spring-boot",
+    "difficulty": 5,
+    "type": "single",
+    "mode": "scenario",
+    "prompt": "Как корректно получать prototype-бин внутри singleton-бина, чтобы каждый раз создавался новый экземпляр?",
+    "tags": [
+      "beans",
+      "scope",
+      "di"
+    ],
+    "options": [
+      {
+        "id": "a",
+        "text": "Через ObjectProvider/Provider (или lookup-метод/scoped proxy): обычное конструкторное внедрение даст один и тот же экземпляр, зафиксированный при создании singleton-а"
+      },
+      {
+        "id": "b",
+        "text": "Просто внедрить prototype через конструктор — Spring сам создаст новый при каждом обращении"
+      },
+      {
+        "id": "c",
+        "text": "Пометить singleton аннотацией @Prototype"
+      },
+      {
+        "id": "d",
+        "text": "Вызвать System.gc() перед обращением к бину"
+      }
+    ],
+    "correctOptionIds": [
+      "a"
+    ],
+    "answerGuide": {
+      "short": "Через ObjectProvider/Provider, lookup-метод или scoped proxy — иначе prototype внедрится один раз и «застынет» в singleton-е.",
+      "normal": "Если prototype-бин внедрить в singleton обычным конструкторным DI, Spring разрешит зависимость ОДИН раз — при создании singleton-а, и дальше будет один и тот же экземпляр, несмотря на prototype-scope. Чтобы получать новый экземпляр на каждое обращение, нужен явный запрос у контейнера: ObjectProvider<T> (objectProvider.getObject()) или jakarta.inject.Provider<T>, либо @Lookup-метод, либо scoped-proxy (@Scope(proxyMode=TARGET_CLASS)). Это распространённый вопрос на понимание того, что scope бина действует при разрешении зависимости, а не при каждом её использовании.",
+      "traps": [
+        "Ждать нового prototype-экземпляра от обычного field/constructor-внедрения в singleton.",
+        "Путать lifecycle prototype-бина (Spring не управляет его уничтожением) с singleton."
+      ],
+      "followUps": [
+        "Почему Spring не вызывает destroy у prototype-бинов?",
+        "Что делает scoped proxy?"
+      ]
+    },
+    "meta": {
+      "verified": true,
+      "source": "original",
+      "lastReviewedAt": "2026-06-01",
+      "reviewer": "claude-review"
     }
   }
 ]

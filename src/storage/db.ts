@@ -14,6 +14,7 @@
  *   lessonsRead     keyPath 'id'      — lessonId -> read-at ISO
  *   lessonComments  keyPath 'id'      — lessonId -> cached AI comment
  *   activity        keyPath 'id'      — activity kind -> last-done ISO
+ *   events          keyPath 'id'      — append-only learning-event log
  *   singletons      keyPath 'key'     — scalar/singleton progress fields
  *
  * The SDK's own internal stores (`_outbox`, `_kv`, `_meta`) are underscore-prefixed
@@ -23,7 +24,8 @@
 export const DB_NAME = 'bkdojo';
 // v2: also create the SDK's internal stores up front (see SDK_INTERNAL_STORES),
 // so enabling sync against a DB first created without the proxy still works.
-export const DB_VERSION = 2;
+// v3: add the `events` store (append-only learning-event log).
+export const DB_VERSION = 3;
 
 /**
  * Stores the @ollu sync proxy keeps for itself (outbox / kv / cursor meta). The
@@ -45,6 +47,7 @@ export type ProgressStoreName =
   | 'lessonsRead'
   | 'lessonComments'
   | 'activity'
+  | 'events'
   | 'singletons';
 
 /** Store -> inline keyPath. Order is the on-disk creation order; also the sync set. */
@@ -55,6 +58,7 @@ export const STORE_KEY_PATHS: Record<ProgressStoreName, string> = {
   lessonsRead: 'id',
   lessonComments: 'id',
   activity: 'id',
+  events: 'id',
   singletons: 'key',
 };
 

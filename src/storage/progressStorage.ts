@@ -47,6 +47,7 @@ export function createDefaultProgress(): UserProgress {
     questionBookmarks: {},
     lessonComments: {},
     activity: {},
+    events: [],
     pet: createDefaultPet(),
     settings: { ...DEFAULT_SETTINGS },
   };
@@ -85,6 +86,7 @@ export function normalizeProgress(parsed: UserProgress): UserProgress {
     questionBookmarks: parsed.questionBookmarks ?? {},
     lessonComments: parsed.lessonComments ?? {},
     activity: parsed.activity ?? {},
+    events: parsed.events ?? [],
     pet: parsed.pet ?? defaults.pet,
     settings: { ...DEFAULT_SETTINGS, ...parsed.settings },
     overrideCredits: parsed.overrideCredits,
@@ -197,6 +199,15 @@ export function mergeProgress(base: UserProgress, incoming: UserProgress): UserP
     activity[kind] = laterIso(activity[kind], iso)!;
   }
 
+  const eventSeen = new Set<string>();
+  const events = [...(base.events ?? []), ...(incoming.events ?? [])]
+    .filter((e) => {
+      if (eventSeen.has(e.id)) return false;
+      eventSeen.add(e.id);
+      return true;
+    })
+    .sort((a, b) => a.at.localeCompare(b.at));
+
   return {
     ...base,
     version: PROGRESS_VERSION,
@@ -211,5 +222,6 @@ export function mergeProgress(base: UserProgress, incoming: UserProgress): UserP
     questionBookmarks: mergeIsoMap(base.questionBookmarks, incoming.questionBookmarks),
     lessonComments,
     activity,
+    events,
   };
 }

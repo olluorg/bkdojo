@@ -1,5 +1,6 @@
 import type { ContentIndex } from '../content/contentIndex';
 import { getById } from '../content/contentIndex';
+import { DOMAIN_LABELS } from '../models/common';
 import type { AnswerRecord, UserProgress } from '../models/progress';
 import type { Session, SessionItem } from '../models/session';
 
@@ -41,7 +42,13 @@ export function buildReviewSession(
   for (const entry of due) {
     if (items.length >= size) break;
     const question = getById(index, entry.questionId);
-    if (question) items.push({ question, reason: 'review' });
+    if (question) {
+      items.push({
+        question,
+        reason: 'review',
+        reasonText: `Повторение: вопрос по ${DOMAIN_LABELS[question.domain]} уже пора закрепить.`,
+      });
+    }
   }
 
   return { kind: 'review', items };

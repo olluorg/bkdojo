@@ -1,4 +1,5 @@
 import { scoreChoice } from '../scoring/choiceScorer';
+import { scoreFillBlank } from '../scoring/fillBlankScorer';
 import type { Difficulty } from '../models/common';
 import type { AnswerOutcome, AnswerSubmission, OutcomeSource } from '../models/answer';
 import type {
@@ -7,7 +8,12 @@ import type {
   SelfAssessment,
   Verdict,
 } from '../models/evaluation';
-import { isChoiceQuestion, type OpenQuestion, type Question } from '../models/question';
+import {
+  isChoiceQuestion,
+  isFillBlankQuestion,
+  type OpenQuestion,
+  type Question,
+} from '../models/question';
 import { ManualFallbackEvaluator } from './ManualFallbackEvaluator';
 import { resolveEvaluators, type ResolverConfig } from './evaluatorResolver';
 
@@ -31,6 +37,7 @@ export type EvaluateResult =
 interface CapturedAnswer {
   answer?: string;
   selectedOptionIds?: string[];
+  blankAnswers?: Record<string, string>;
 }
 
 function buildOutcome(
@@ -53,6 +60,7 @@ function buildOutcome(
     evaluation,
     answer: captured.answer,
     selectedOptionIds: captured.selectedOptionIds,
+    blankAnswers: captured.blankAnswers,
     answeredAt: now.toISOString(),
   };
 }
@@ -105,14 +113,31 @@ export async function evaluateAnswer(
   const now = options.now ?? new Date();
 
   if (isChoiceQuestion(question)) {
-    if (submission.type === 'open') {
-      throw new Error(`Choice question ${question.id} received an open submission`);
+    if (submission.type !== 'single' && submission.type !== 'multiple') {
+      throw new Error(`Choice question ${question.id} received a ${submission.type} submission`);
     }
     const { score, verdict } = scoreChoice(question, submission);
     return {
       kind: 'outcome',
       outcome: buildOutcome(question, score, verdict, 'local-choice', undefined, now, {
         selectedOptionIds: submission.selectedOptionIds,
+      }),
+    };
+  }
+
+  if (isFillBlankQuestion(question)) {
+    if (submission.type !== 'fill-blank') {
+      throw new Error(`Fill-blank question ${question.id} received a non-fill submission`);
+    }
+    const { score, verdict } = scoreFillBlank(question, submission);
+    const answerText = question.blanks
+      .map((b) => submission.answers[b.id]?.trim() || '∅')
+      .join(' · ');
+    return {
+      kind: 'outcome',
+      outcome: buildOutcome(question, score, verdict, 'local-fill', undefined, now, {
+        answer: answerText,
+        blankAnswers: submission.answers,
       }),
     };
   }

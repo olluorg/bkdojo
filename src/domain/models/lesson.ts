@@ -1,10 +1,44 @@
 import type { Domain } from './common';
 
+/** An infographic attached to a lesson section. */
+export interface LessonImage {
+  /**
+   * File name within `src/data/lessons/assets`, e.g. `"gc-generations.png"`.
+   * Resolved to a bundled URL at runtime (see `lessonAssets.ts`).
+   */
+  src: string;
+  /** Accessible description of the diagram. */
+  alt: string;
+  /** Optional caption shown under the image. */
+  caption?: string;
+}
+
+/**
+ * An interactive widget embedded in a lesson section. The JSON only references a
+ * widget by `kind` + `id`; the actual renderer (and any pure compute logic) lives
+ * in code, keyed by `id` in the widget registry (`components/lessonWidgets`). This
+ * keeps content declarative while letting each demo be as rich as it needs to be.
+ */
+export interface LessonInteractive {
+  /** Selects the group of renderers. */
+  kind: 'param-demo' | 'stepper';
+  /** Identifies the concrete widget within the registry, e.g. `"integer-cache"`. */
+  id: string;
+  /** Optional heading shown above the widget. */
+  title?: string;
+  /** Optional caption shown under the widget. */
+  caption?: string;
+}
+
 export interface LessonSection {
   heading: string;
   paragraphs: string[];
   /** Optional code example shown as a <pre> block. */
   code?: string;
+  /** Optional infographic illustrating the section. */
+  image?: LessonImage;
+  /** Optional interactive widget (sandbox / stepper) shown after the code. */
+  interactive?: LessonInteractive;
 }
 
 /**
