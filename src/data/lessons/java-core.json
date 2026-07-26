@@ -189,7 +189,7 @@
     "title": "Методы: pass-by-value, перегрузка, varargs",
     "summary": "Почему Java всегда pass-by-value, разрешение перегрузки на этапе компиляции и устройство varargs.",
     "relatedTags": ["methods", "overloading"],
-    "questionIds": ["jc-028"],
+    "questionIds": ["jc-028", "jc-170", "jc-171", "jc-172"],
     "related": ["jc-lesson-oop", "jc-lesson-primitives"],
     "sections": [
       {
@@ -372,7 +372,7 @@
     "title": "Равенство: ==, equals и hashCode",
     "summary": "Идентичность против логического равенства, контракт equals и hashCode, проблема equals с наследованием и корректная реализация.",
     "relatedTags": ["equals", "hashcode", "identity"],
-    "questionIds": ["jc-002", "jc-006"],
+    "questionIds": ["jc-002", "jc-006", "jc-168", "jc-169"],
     "related": ["jc-lesson-hashmap", "jc-lesson-immutability"],
     "sections": [
       {
@@ -497,7 +497,7 @@
     "title": "Collections Framework: карта и выбор структуры",
     "summary": "Иерархия интерфейсов, сложности операций основных структур, неизменяемые коллекции и принцип выбора по паттерну доступа.",
     "relatedTags": ["collections", "performance"],
-    "questionIds": ["jc-003"],
+    "questionIds": ["jc-003", "jc-148", "jc-149", "jc-150"],
     "related": ["jc-lesson-arraylist", "jc-lesson-hashmap", "jc-lesson-equality"],
     "sections": [
       {
@@ -582,7 +582,7 @@
     "title": "ArrayList: динамический массив изнутри",
     "summary": "Бэкенд-массив, рост в 1.5×, амортизированная O(1), стоимость вставки/удаления и когда массив лучше.",
     "relatedTags": ["list", "collections", "performance"],
-    "questionIds": ["jc-003"],
+    "questionIds": ["jc-003", "jc-151", "jc-152", "jc-153"],
     "related": ["jc-lesson-collections-overview", "jc-lesson-linkedlist"],
     "sections": [
       {
@@ -642,7 +642,7 @@
     "title": "LinkedList и миф о дешёвой вставке",
     "summary": "Двусвязные узлы, реальная стоимость операций, cache locality и почему ArrayList/ArrayDeque почти всегда лучше.",
     "relatedTags": ["list", "collections", "performance"],
-    "questionIds": ["jc-003"],
+    "questionIds": ["jc-003", "jc-154", "jc-155", "jc-156"],
     "related": ["jc-lesson-arraylist", "jc-lesson-deques"],
     "sections": [
       {
@@ -755,7 +755,7 @@
     "title": "LinkedHashMap и LRU-кэш",
     "summary": "Порядок вставки против порядка доступа, связанный список поверх HashMap и реализация LRU через removeEldestEntry.",
     "relatedTags": ["linkedhashmap", "map", "collections"],
-    "questionIds": ["jc-033"],
+    "questionIds": ["jc-033", "jc-157", "jc-158", "jc-159"],
     "related": ["jc-lesson-hashmap", "jc-lesson-collections-overview"],
     "sections": [
       {
@@ -796,7 +796,7 @@
     "title": "TreeMap, TreeSet и сортировка",
     "summary": "Красно-чёрное дерево, NavigableMap, Comparable против Comparator, согласованность с equals и TimSort.",
     "relatedTags": ["treeset", "map", "sorting", "comparator", "comparable"],
-    "questionIds": ["jc-031", "jc-032"],
+    "questionIds": ["jc-031", "jc-032", "jc-166", "jc-167"],
     "related": ["jc-lesson-hashmap", "jc-lesson-sets"],
     "sections": [
       {
@@ -844,7 +844,7 @@
     "title": "Set: HashSet, LinkedHashSet, TreeSet",
     "summary": "Почему Set построен поверх Map, три реализации и их гарантии порядка, роль equals/hashCode.",
     "relatedTags": ["set", "hashset", "treeset", "collections"],
-    "questionIds": ["jc-032"],
+    "questionIds": ["jc-032", "jc-160", "jc-161", "jc-162"],
     "related": ["jc-lesson-hashmap", "jc-lesson-treemap"],
     "sections": [
       {
@@ -933,7 +933,7 @@
     "title": "Итераторы: fail-fast и ConcurrentModificationException",
     "summary": "Iterator и ListIterator, механизм modCount, причины CME даже в одном потоке и безопасное удаление.",
     "relatedTags": ["iterator", "collections"],
-    "questionIds": ["jc-034"],
+    "questionIds": ["jc-034", "jc-163", "jc-164", "jc-165"],
     "related": ["jc-lesson-arraylist", "jc-lesson-concurrent-collections"],
     "sections": [
       {
@@ -1100,7 +1100,7 @@
     "title": "Управление ресурсами: try-with-resources",
     "summary": "Беды ручного finally, автозакрытие AutoCloseable, suppressed-исключения и разница Closeable/AutoCloseable.",
     "relatedTags": ["autocloseable", "resources", "exceptions"],
-    "questionIds": ["jc-023"],
+    "questionIds": ["jc-023", "jc-173", "jc-174", "jc-175"],
     "related": ["jc-lesson-exceptions", "jc-lesson-io"],
     "sections": [
       {
@@ -1156,7 +1156,7 @@
     "title": "Потоки: создание, состояния и отмена",
     "summary": "Thread и Runnable, стоимость платформенных потоков, состояния жизненного цикла, кооперативное прерывание и daemon-потоки.",
     "relatedTags": ["thread", "concurrency"],
-    "questionIds": ["jc-026"],
+    "questionIds": ["jc-026", "jc-127", "jc-128", "jc-129"],
     "related": ["jc-lesson-synchronized", "jc-lesson-jmm"],
     "sections": [
       {
@@ -1370,7 +1370,7 @@
     "title": "Пулы потоков и ExecutorService",
     "summary": "Зачем пул, параметры ThreadPoolExecutor, ловушки фабрик Executors, выбор размера и корректное завершение.",
     "relatedTags": ["executorservice", "thread-pool", "concurrency"],
-    "questionIds": ["jc-045"],
+    "questionIds": ["jc-045", "jc-130", "jc-131", "jc-132"],
     "related": ["jc-lesson-completablefuture", "jc-lesson-threads"],
     "sections": [
       {
@@ -1484,7 +1484,7 @@
     "title": "Координация: семафоры, защёлки и барьеры",
     "summary": "Semaphore, CountDownLatch, CyclicBarrier, Phaser и Exchanger — что каждый делает и когда выбирать.",
     "relatedTags": ["countdownlatch", "cyclicbarrier", "concurrency"],
-    "questionIds": ["jc-044"],
+    "questionIds": ["jc-044", "jc-136", "jc-137", "jc-138"],
     "related": ["jc-lesson-locks", "jc-lesson-completablefuture"],
     "sections": [
       {
@@ -1594,7 +1594,7 @@
     "title": "Виртуальные потоки (Project Loom)",
     "summary": "Лёгкие потоки JVM, монтирование на carrier, когда их применять, почему не пулят и проблема pinning.",
     "relatedTags": ["virtual-threads", "concurrency"],
-    "questionIds": ["jc-053"],
+    "questionIds": ["jc-053", "jc-139", "jc-140", "jc-141"],
     "related": ["jc-lesson-threads", "jc-lesson-executors"],
     "sections": [
       {
@@ -1767,7 +1767,7 @@
     "title": "GC: поколения и продвижение объектов",
     "summary": "Гипотеза о поколениях, Eden и Survivor, minor GC через копирование, tenuring и преждевременное продвижение.",
     "relatedTags": ["gc", "memory"],
-    "questionIds": ["jc-017"],
+    "questionIds": ["jc-017", "jc-142", "jc-143", "jc-144"],
     "related": ["jc-lesson-gc-algorithms", "jc-lesson-jvm-memory"],
     "sections": [
       {
@@ -1885,7 +1885,7 @@
     "title": "GC: корни, достижимость и типы ссылок",
     "summary": "GC roots и reachability, strong/soft/weak/phantom-ссылки, Cleaner вместо finalize и утечки через сильные ссылки.",
     "relatedTags": ["gc", "memory", "internals"],
-    "questionIds": ["jc-017"],
+    "questionIds": ["jc-017", "jc-145", "jc-146", "jc-147"],
     "related": ["jc-lesson-gc-generations", "jc-lesson-gc-tuning"],
     "sections": [
       {
@@ -1985,7 +1985,7 @@
     "title": "Java Memory Model: happens-before и volatile",
     "summary": "Зачем нужна модель памяти, видимость и переупорядочивание, отношение happens-before, семантика volatile и final, гонки данных.",
     "relatedTags": ["jmm", "volatile", "concurrency"],
-    "questionIds": ["jc-008"],
+    "questionIds": ["jc-008", "jc-133", "jc-134", "jc-135"],
     "related": ["jc-lesson-jvm-memory", "jc-lesson-threads"],
     "sections": [
       {
@@ -2102,7 +2102,7 @@
     "title": "Wildcards и правило PECS",
     "summary": "Инвариантность дженериков против ковариантных массивов, ? extends/super, и когда что выбирать по PECS.",
     "relatedTags": ["generics"],
-    "questionIds": ["jc-024"],
+    "questionIds": ["jc-024", "jc-176", "jc-177", "jc-178"],
     "related": ["jc-lesson-generics", "jc-lesson-generics-pitfalls"],
     "sections": [
       {
@@ -2504,7 +2504,7 @@
     "title": "NIO: каналы, буферы и неблокирующий ввод-вывод",
     "summary": "io против nio, Channel и ByteBuffer с его flip/clear, Selector и event loop, влияние виртуальных потоков и NIO.2.",
     "relatedTags": ["nio", "channels"],
-    "questionIds": ["jc-035"],
+    "questionIds": ["jc-035", "jc-188", "jc-189", "jc-190"],
     "related": ["jc-lesson-io", "jc-lesson-virtual-threads"],
     "sections": [
       {
@@ -2559,7 +2559,7 @@
     "title": "Сериализация и форматы данных",
     "summary": "Java serialization и её механика, serialVersionUID, почему её опасно использовать и какие форматы выбирают вместо неё.",
     "relatedTags": ["serialization", "serialversionuid"],
-    "questionIds": ["jc-037"],
+    "questionIds": ["jc-037", "jc-185", "jc-186", "jc-187"],
     "related": ["jc-lesson-io", "jc-lesson-immutability"],
     "sections": [
       {
@@ -2659,7 +2659,7 @@
     "title": "Records: компактные носители данных",
     "summary": "Что генерирует record, канонический и компактный конструкторы, ограничения и когда применять.",
     "relatedTags": ["records", "modern-java"],
-    "questionIds": ["jc-051"],
+    "questionIds": ["jc-051", "jc-179", "jc-180", "jc-181"],
     "related": ["jc-lesson-immutability", "jc-lesson-sealed-pattern"],
     "sections": [
       {
@@ -2708,7 +2708,7 @@
     "title": "Sealed-типы и pattern matching",
     "summary": "Закрытые иерархии через sealed, pattern matching в instanceof и switch, деконструкция записей и проверка исчерпываемости.",
     "relatedTags": ["sealed", "modern-java"],
-    "questionIds": ["jc-052"],
+    "questionIds": ["jc-052", "jc-182", "jc-183", "jc-184"],
     "related": ["jc-lesson-records", "jc-lesson-oop"],
     "sections": [
       {
@@ -2808,7 +2808,7 @@
     "title": "JIT, оптимизации и бенчмаркинг",
     "summary": "Tiered compilation C1/C2, ключевые оптимизации JIT (inlining, escape analysis), деоптимизация и прогрев, корректные микробенчмарки на JMH.",
     "relatedTags": ["performance", "jmh", "benchmark"],
-    "questionIds": ["jc-054"],
+    "questionIds": ["jc-054", "jc-191", "jc-192", "jc-193"],
     "related": ["jc-lesson-jvm-memory", "jc-lesson-gc-tuning"],
     "sections": [
       {
