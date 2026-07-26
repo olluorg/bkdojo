@@ -73,7 +73,7 @@
     "title": "Kafka: topic, partition, offset",
     "summary": "Распределённый append-only лог, партиция как единица масштаба и упорядоченности, ключ и порядок, retention и log compaction, replay.",
     "relatedTags": ["kafka", "topic", "partition", "offset"],
-    "questionIds": ["mb-009", "mb-012", "mb-013", "mb-010"],
+    "questionIds": ["mb-009", "mb-012", "mb-013", "mb-010", "mb-048"],
     "related": ["mb-lesson-kafka-producer", "mb-lesson-kafka-consumer"],
     "sections": [
       {
@@ -139,7 +139,7 @@
     "title": "Kafka Producer",
     "summary": "Запись и сериализация, выбор партиции, батчинг и сжатие, acks и долговечность, идемпотентный producer и транзакции.",
     "relatedTags": ["kafka", "producer", "acks", "idempotence"],
-    "questionIds": ["mb-014", "mb-015", "mb-016", "mb-036"],
+    "questionIds": ["mb-014", "mb-015", "mb-016", "mb-036", "mb-049"],
     "related": ["mb-lesson-kafka-core", "mb-lesson-kafka-replication"],
     "sections": [
       {
@@ -201,7 +201,7 @@
     "title": "Kafka Consumer и consumer group",
     "summary": "Группа и распределение партиций, poll-цикл, heartbeat и таймауты, модели commit offset, ребаланс и роль идемпотентности.",
     "relatedTags": ["kafka", "consumer", "consumer-group", "offset"],
-    "questionIds": ["mb-005", "mb-011", "mb-017", "mb-018"],
+    "questionIds": ["mb-005", "mb-011", "mb-017", "mb-018", "mb-050"],
     "related": ["mb-lesson-kafka-core", "mb-lesson-dlq-retries"],
     "sections": [
       {
@@ -267,7 +267,7 @@
     "title": "Kafka replication и отказоустойчивость",
     "summary": "Leader/followers, ISR и lag, связка acks/min.insync, high watermark и видимость для consumer, выборы лидера и unclean election, rack awareness.",
     "relatedTags": ["kafka", "replication", "isr", "acks"],
-    "questionIds": ["mb-027", "mb-028", "mb-029", "mb-030"],
+    "questionIds": ["mb-027", "mb-028", "mb-029", "mb-030", "mb-051"],
     "related": ["mb-lesson-kafka-producer", "mb-lesson-kafka-ecosystem"],
     "sections": [
       {
@@ -333,7 +333,7 @@
     "title": "Retries, DLQ и идемпотентность",
     "summary": "Что повторять и почему не всё, backoff/jitter, non-blocking retry, дизайн DLQ и redrive, идемпотентность как фундамент.",
     "relatedTags": ["dlq", "retries", "idempotence", "error-handling"],
-    "questionIds": ["mb-008", "mb-037", "mb-038", "mb-039"],
+    "questionIds": ["mb-008", "mb-037", "mb-038", "mb-039", "mb-052"],
     "related": ["mb-lesson-messaging-basics", "mb-lesson-kafka-consumer"],
     "sections": [
       {
@@ -400,7 +400,7 @@
     "title": "Kafka API и экосистема",
     "summary": "Клиентские API, Kafka Connect и Debezium, Streams и stream-processing, ksqlDB, Schema Registry и MirrorMaker для multi-DC.",
     "relatedTags": ["kafka", "streams", "schema-registry"],
-    "questionIds": ["mb-020", "mb-021", "mb-040", "mb-041"],
+    "questionIds": ["mb-020", "mb-021", "mb-040", "mb-041", "mb-053"],
     "related": ["mb-lesson-kafka-core", "mb-lesson-kafka-replication"],
     "sections": [
       {
@@ -461,7 +461,7 @@
     "title": "Kafka в эксплуатации",
     "summary": "Consumer lag и его причины, ребаланс и безопасный commit, poison-сообщения, ZooKeeper → KRaft, schema evolution, изменения partitions и ключевые метрики.",
     "relatedTags": ["kafka", "rebalance", "consumer", "schema-registry", "reliability"],
-    "questionIds": ["mb-019", "mb-031", "mb-042", "mb-043"],
+    "questionIds": ["mb-019", "mb-031", "mb-042", "mb-043", "mb-054"],
     "related": ["mb-lesson-kafka-consumer", "mb-lesson-kafka-ecosystem"],
     "sections": [
       {
@@ -530,7 +530,7 @@
     "title": "Проектирование событий и команд",
     "summary": "Event vs command, обязательные поля envelope, idempotency key, schema evolution, thick vs thin payload и transactional outbox.",
     "relatedTags": ["messaging", "idempotence", "delivery-semantics", "error-handling"],
-    "questionIds": ["mb-004", "mb-035", "mb-044", "mb-045"],
+    "questionIds": ["mb-004", "mb-035", "mb-044", "mb-045", "mb-055"],
     "related": ["mb-lesson-messaging-basics", "mb-lesson-dlq-retries"],
     "sections": [
       {
@@ -592,7 +592,7 @@
     "title": "RabbitMQ, SQS и классические очереди",
     "summary": "Модель exchange/binding/queue, ack/nack и publisher confirms, prefetch, DLQ через DLX, отложенные сообщения, SQS Standard vs FIFO и visibility timeout.",
     "relatedTags": ["rabbitmq", "sqs", "exchange", "visibility-timeout", "prefetch"],
-    "questionIds": ["mb-023", "mb-024", "mb-022", "mb-002", "mb-032", "mb-033", "mb-034"],
+    "questionIds": ["mb-023", "mb-024", "mb-022", "mb-002", "mb-032", "mb-033", "mb-034", "mb-056"],
     "related": ["mb-lesson-messaging-basics", "mb-lesson-dlq-retries"],
     "sections": [
       {
@@ -658,7 +658,7 @@
     "title": "Saga, CDC и event-driven consistency",
     "summary": "Почему 2PC не подходит, сага и компенсации, хореография vs оркестрация, CDC и outbox-relay, eventual consistency и границы.",
     "relatedTags": ["saga", "cdc", "outbox", "eventual-consistency", "microservices"],
-    "questionIds": ["mb-025", "mb-026", "mb-046", "mb-047"],
+    "questionIds": ["mb-025", "mb-026", "mb-046", "mb-047", "mb-057"],
     "related": ["mb-lesson-message-design", "mb-lesson-kafka-operations"],
     "sections": [
       {

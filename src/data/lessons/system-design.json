@@ -73,7 +73,7 @@
     "title": "CAP и согласованность",
     "summary": "Точная формулировка CAP, неизбежность P и выбор C/A при разделении, спектр согласованности, кворумы N/R/W, PACELC и разрешение конфликтов.",
     "relatedTags": ["cap", "consistency"],
-    "questionIds": ["sd-002", "sd-003", "sd-050", "sd-051"],
+    "questionIds": ["sd-002", "sd-003", "sd-050", "sd-051", "sd-057"],
     "related": ["sd-lesson-scaling", "sd-lesson-reliability", "sd-lesson-cqrs-event-sourcing"],
     "sections": [
       {
@@ -206,7 +206,7 @@
     "title": "Надёжность и идемпотентность",
     "summary": "Сбои как данность, таймауты как основа, безопасные ретраи, идемпотентность, circuit breaker и bulkhead, transactional outbox вместо 2PC.",
     "relatedTags": ["reliability", "idempotency"],
-    "questionIds": ["sd-006", "sd-054", "sd-055", "sd-056"],
+    "questionIds": ["sd-006", "sd-054", "sd-055", "sd-056", "sd-058"],
     "related": ["sd-lesson-cap", "sd-lesson-scaling", "sd-lesson-observability", "sd-lesson-delivery"],
     "sections": [
       {
@@ -272,14 +272,7 @@
       "ddd",
       "boundaries"
     ],
-    "questionIds": [
-      "sd-008",
-      "sd-009",
-      "sd-010",
-      "sd-011",
-      "sd-012",
-      "sd-013"
-    ],
+    "questionIds": ["sd-008", "sd-009", "sd-010", "sd-011", "sd-012", "sd-013", "sd-059"],
     "related": [
       "sd-lesson-api-design",
       "sd-lesson-cqrs-event-sourcing",
@@ -364,14 +357,7 @@
       "rest",
       "grpc"
     ],
-    "questionIds": [
-      "sd-014",
-      "sd-015",
-      "sd-016",
-      "sd-017",
-      "sd-018",
-      "sd-019"
-    ],
+    "questionIds": ["sd-014", "sd-015", "sd-016", "sd-017", "sd-018", "sd-019", "sd-060"],
     "related": [
       "sd-lesson-microservices",
       "sd-lesson-reliability",
@@ -452,14 +438,7 @@
       "cqrs",
       "event-sourcing"
     ],
-    "questionIds": [
-      "sd-020",
-      "sd-021",
-      "sd-022",
-      "sd-023",
-      "sd-024",
-      "sd-025"
-    ],
+    "questionIds": ["sd-020", "sd-021", "sd-022", "sd-023", "sd-024", "sd-025", "sd-061"],
     "related": [
       "sd-lesson-microservices",
       "sd-lesson-api-design",
@@ -527,14 +506,7 @@
       "observability",
       "slo"
     ],
-    "questionIds": [
-      "sd-026",
-      "sd-027",
-      "sd-028",
-      "sd-029",
-      "sd-030",
-      "sd-031"
-    ],
+    "questionIds": ["sd-026", "sd-027", "sd-028", "sd-029", "sd-030", "sd-031", "sd-062"],
     "related": [
       "sd-lesson-microservices",
       "sd-lesson-reliability",
@@ -619,13 +591,7 @@
       "delivery",
       "deployment"
     ],
-    "questionIds": [
-      "sd-032",
-      "sd-033",
-      "sd-034",
-      "sd-035",
-      "sd-036"
-    ],
+    "questionIds": ["sd-032", "sd-033", "sd-034", "sd-035", "sd-036", "sd-063"],
     "related": [
       "sd-lesson-observability",
       "sd-lesson-api-design",
@@ -703,14 +669,7 @@
       "security",
       "owasp"
     ],
-    "questionIds": [
-      "sd-037",
-      "sd-038",
-      "sd-039",
-      "sd-040",
-      "sd-041",
-      "sd-042"
-    ],
+    "questionIds": ["sd-037", "sd-038", "sd-039", "sd-040", "sd-041", "sd-042", "sd-064"],
     "related": [
       "sd-lesson-api-design",
       "sd-lesson-microservices",
@@ -787,13 +746,7 @@
       "estimation",
       "capacity"
     ],
-    "questionIds": [
-      "sd-043",
-      "sd-044",
-      "sd-045",
-      "sd-046",
-      "sd-047"
-    ],
+    "questionIds": ["sd-043", "sd-044", "sd-045", "sd-046", "sd-047", "sd-065"],
     "related": [
       "sd-lesson-scaling",
       "sd-lesson-caching",

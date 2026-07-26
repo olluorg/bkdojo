@@ -122,7 +122,7 @@
     "title": "ApplicationContext и конфигурация",
     "summary": "BeanFactory против ApplicationContext, способы конфигурации, @Configuration full/lite, профили и Environment, @Conditional.",
     "relatedTags": ["applicationcontext", "configuration", "profiles"],
-    "questionIds": ["sb-016", "sb-017", "sb-012", "sb-030"],
+    "questionIds": ["sb-016", "sb-017", "sb-012", "sb-030", "sb-101"],
     "related": ["sb-lesson-bean", "sb-lesson-boot"],
     "sections": [
       {
@@ -177,7 +177,7 @@
     "title": "Стереотипы, @Bean и автосвязывание",
     "summary": "Стереотипные аннотации и их семантика, @Bean против @Component, component-scan, @Autowired и разрешение неоднозначности.",
     "relatedTags": ["beans", "di", "qualifier"],
-    "questionIds": ["sb-007", "sb-062", "sb-063", "sb-064"],
+    "questionIds": ["sb-007", "sb-062", "sb-063", "sb-064", "sb-102"],
     "related": ["sb-lesson-ioc", "sb-lesson-context-config"],
     "sections": [
       {
@@ -293,7 +293,7 @@
     "title": "REST API: статусы, согласование и семантика",
     "summary": "Ресурсы и HTTP-глаголы, статус-коды как контракт, content negotiation и message converters, идемпотентность и версионирование.",
     "relatedTags": ["rest", "http", "api"],
-    "questionIds": ["sb-041", "sb-013", "sb-056", "sb-067"],
+    "questionIds": ["sb-041", "sb-013", "sb-056", "sb-067", "sb-104"],
     "related": ["sb-lesson-web", "sb-lesson-mvc-advanced"],
     "sections": [
       {
@@ -348,7 +348,7 @@
     "title": "@Transactional: propagation, isolation, rollback",
     "summary": "Декларативные транзакции через прокси, ловушка self-invocation, уровни распространения, правила отката и readOnly/isolation.",
     "relatedTags": ["transactions", "aop", "rollback"],
-    "questionIds": ["sb-005", "sb-008", "sb-058", "sb-078"],
+    "questionIds": ["sb-005", "sb-008", "sb-058", "sb-078", "sb-109"],
     "related": ["sb-lesson-aop", "sb-lesson-data"],
     "sections": [
       {
@@ -404,7 +404,7 @@
     "title": "AOP: прокси и аспекты",
     "summary": "Сквозная функциональность, понятия aspect/advice/pointcut/join point, JDK против CGLIB прокси, self-invocation и что на AOP построено.",
     "relatedTags": ["aop", "proxy"],
-    "questionIds": ["sb-011", "sb-075", "sb-076", "sb-077"],
+    "questionIds": ["sb-011", "sb-075", "sb-076", "sb-077", "sb-108"],
     "related": ["sb-lesson-bean", "sb-lesson-transactions"],
     "sections": [
       {
@@ -464,7 +464,7 @@
     "title": "Spring Data JPA: репозитории и Hibernate",
     "summary": "Абстракция репозитория, derived queries и @Query, persistence context и dirty checking, lazy/N+1 и почему DTO, а не entity.",
     "relatedTags": ["spring-data", "jpa", "databases"],
-    "questionIds": ["sb-014", "sb-057", "sb-073", "sb-074"],
+    "questionIds": ["sb-014", "sb-057", "sb-073", "sb-074", "sb-107"],
     "related": ["sb-lesson-transactions", "sb-lesson-aop"],
     "sections": [
       {
@@ -520,7 +520,7 @@
     "title": "Spring Boot: автоконфигурация и starters",
     "summary": "@SpringBootApplication и starters, механизм автоконфигурации по условиям, переопределение через @ConditionalOnMissingBean, внешняя конфигурация и её приоритеты.",
     "relatedTags": ["spring-boot", "autoconfiguration", "configuration"],
-    "questionIds": ["sb-010", "sb-015", "sb-033", "sb-079"],
+    "questionIds": ["sb-010", "sb-015", "sb-033", "sb-079", "sb-110"],
     "related": ["sb-lesson-actuator", "sb-lesson-context-config"],
     "sections": [
       {
@@ -582,7 +582,7 @@
     "title": "Actuator и наблюдаемость",
     "summary": "Production-эндпоинты, health-проверки и probes, метрики через Micrometer, трассировка и безопасность эндпоинтов.",
     "relatedTags": ["actuator", "observability", "metrics"],
-    "questionIds": ["sb-027", "sb-029", "sb-080", "sb-081"],
+    "questionIds": ["sb-027", "sb-029", "sb-080", "sb-081", "sb-111"],
     "related": ["sb-lesson-boot", "sb-lesson-resilience-observability"],
     "sections": [
       {
@@ -637,7 +637,7 @@
     "title": "HTTP, cookies и сессии",
     "summary": "Семантика HTTP-методов и кэширование, cookies и их флаги безопасности, stateful против stateless сессий, HTTPS и граница authn/authz.",
     "relatedTags": ["http", "cookies", "session"],
-    "questionIds": ["sb-020", "sb-019", "sb-082", "sb-083"],
+    "questionIds": ["sb-020", "sb-019", "sb-082", "sb-083", "sb-112"],
     "related": ["sb-lesson-rest-api", "sb-lesson-spring-security-deep"],
     "sections": [
       {
@@ -692,7 +692,7 @@
     "title": "Сервлеты, фильтры и встроенный контейнер",
     "summary": "Сервлет и встроенный Tomcat, модель thread-per-request, потокобезопасность контроллеров, Filter против Interceptor и forward/redirect.",
     "relatedTags": ["servlet", "web", "filter"],
-    "questionIds": ["sb-022", "sb-034", "sb-071", "sb-072"],
+    "questionIds": ["sb-022", "sb-034", "sb-071", "sb-072", "sb-106"],
     "related": ["sb-lesson-web", "sb-lesson-mvc-advanced"],
     "sections": [
       {
@@ -746,7 +746,7 @@
     "title": "Reactive и Spring WebFlux",
     "summary": "Неблокирующая модель и event loop, Reactive Streams и Reactor (Mono/Flux), backpressure, реактивный стек целиком, выбор MVC/WebFlux и цена сложности.",
     "relatedTags": ["reactive", "webflux", "backpressure"],
-    "questionIds": ["sb-024", "sb-025", "sb-088", "sb-089"],
+    "questionIds": ["sb-024", "sb-025", "sb-088", "sb-089", "sb-115"],
     "related": ["sb-lesson-servlet-runtime", "sb-lesson-web"],
     "sections": [
       {
@@ -815,7 +815,7 @@
     "title": "Resilience: таймауты, ретраи и circuit breaker",
     "summary": "Защита от каскадных отказов: таймауты, безопасные ретраи, состояния circuit breaker, bulkhead и rate limiter, fallback и порядок паттернов.",
     "relatedTags": ["resilience", "circuit-breaker", "retries"],
-    "questionIds": ["sb-026", "sb-090", "sb-091", "sb-092"],
+    "questionIds": ["sb-026", "sb-090", "sb-091", "sb-092", "sb-116"],
     "related": ["sb-lesson-actuator", "sb-lesson-data"],
     "sections": [
       {
@@ -882,7 +882,7 @@
     "title": "Тестирование Spring Boot",
     "summary": "Пирамида тестов, unit без Spring, slice-тесты, @SpringBootTest и @MockBean, MockMvc/WebTestClient, Testcontainers и контрактные тесты.",
     "relatedTags": ["testing", "testcontainers", "integration-test"],
-    "questionIds": ["sb-028", "sb-093", "sb-094", "sb-095"],
+    "questionIds": ["sb-028", "sb-093", "sb-094", "sb-095", "sb-117"],
     "related": ["sb-lesson-data", "sb-lesson-ioc"],
     "sections": [
       {
@@ -945,7 +945,7 @@
     "title": "Контейнер: события, FactoryBean и тонкое связывание",
     "summary": "События приложения и @EventListener, FactoryBean, Aware-интерфейсы, порядок бинов (@Order/@DependsOn) и отложенное получение (ObjectProvider/@Lazy/@Lookup).",
     "relatedTags": ["applicationcontext", "lifecycle"],
-    "questionIds": ["sb-031", "sb-059", "sb-065", "sb-066"],
+    "questionIds": ["sb-031", "sb-059", "sb-065", "sb-066", "sb-103"],
     "related": ["sb-lesson-bean", "sb-lesson-context-config"],
     "sections": [
       {
@@ -1000,7 +1000,7 @@
     "title": "Валидация и обработка ошибок",
     "summary": "Bean Validation и @Valid/@Validated, превращение ошибок в ответ, @ControllerAdvice и единый контракт, ProblemDetail (RFC 7807), multipart и interceptors.",
     "relatedTags": ["validation", "exception-handler", "mvc"],
-    "questionIds": ["sb-035", "sb-068", "sb-069", "sb-070"],
+    "questionIds": ["sb-035", "sb-068", "sb-069", "sb-070", "sb-105"],
     "related": ["sb-lesson-web", "sb-lesson-rest-api"],
     "sections": [
       {
@@ -1056,7 +1056,7 @@
     "title": "Spring Cloud: config, discovery, gateway, tracing",
     "summary": "Config Server, Eureka/DiscoveryClient, Spring Cloud Gateway и распределённая трассировка.",
     "relatedTags": ["spring-cloud", "config-server", "gateway", "eureka", "service-discovery", "distributed-tracing"],
-    "questionIds": ["sb-036", "sb-037", "sb-038", "sb-096"],
+    "questionIds": ["sb-036", "sb-037", "sb-038", "sb-096", "sb-118"],
     "related": ["sb-lesson-resilience-observability", "sb-lesson-http-security"],
     "sections": [
       {
@@ -1105,7 +1105,7 @@
     "title": "Spring Batch, Integration и API styles",
     "summary": "Batch jobs, enterprise integration patterns, Spring Data REST, HATEOAS и GraphQL.",
     "relatedTags": ["spring-batch", "spring-integration", "spring-data-rest", "hateoas", "graphql"],
-    "questionIds": ["sb-039", "sb-040", "sb-042", "sb-097"],
+    "questionIds": ["sb-039", "sb-040", "sb-042", "sb-097", "sb-119"],
     "related": ["sb-lesson-data", "sb-lesson-cloud-platform"],
     "sections": [
       {
@@ -1156,7 +1156,7 @@
     "title": "Spring Kafka",
     "summary": "KafkaTemplate, @KafkaListener, listener containers, offset ack, error handling, retries и DLT.",
     "relatedTags": ["spring-kafka", "kafkatemplate", "kafkalistener", "dlt", "offset"],
-    "questionIds": ["sb-043", "sb-044", "sb-045", "sb-098"],
+    "questionIds": ["sb-043", "sb-044", "sb-045", "sb-098", "sb-120"],
     "related": ["sb-lesson-integration-batch-api", "mb-lesson-kafka-consumer"],
     "sections": [
       {
@@ -1220,7 +1220,7 @@
     "title": "Spring AMQP и RabbitMQ",
     "summary": "RabbitTemplate, @RabbitListener, exchanges, bindings, manual ack, retries, DLQ и prefetch.",
     "relatedTags": ["spring-amqp", "rabbittemplate", "rabbitlistener", "rabbitmq", "prefetch", "dlq"],
-    "questionIds": ["sb-046", "sb-047", "sb-048", "sb-099"],
+    "questionIds": ["sb-046", "sb-047", "sb-048", "sb-099", "sb-121"],
     "related": ["sb-lesson-spring-kafka", "mb-lesson-rabbitmq-sqs"],
     "sections": [
       {
@@ -1277,7 +1277,7 @@
     "title": "Spring Cloud Stream",
     "summary": "Binder abstraction, functional model, bindings, consumer groups, partitioning и trade-offs поверх Kafka/RabbitMQ.",
     "relatedTags": ["spring-cloud-stream", "binder", "bindings", "functional-bean", "partitioning"],
-    "questionIds": ["sb-049", "sb-050", "sb-051", "sb-100"],
+    "questionIds": ["sb-049", "sb-050", "sb-051", "sb-100", "sb-122"],
     "related": ["sb-lesson-spring-kafka", "sb-lesson-spring-amqp"],
     "sections": [
       {
@@ -1332,7 +1332,7 @@
     "title": "Spring Security: фильтр-цепочка и авторизация",
     "summary": "SecurityFilterChain, аутентификация (UserDetailsService/PasswordEncoder), SecurityContext, авторизация запросов и CSRF/CORS/сессии.",
     "relatedTags": ["spring-security", "security-filter-chain", "csrf"],
-    "questionIds": ["sb-052", "sb-054", "sb-084", "sb-085"],
+    "questionIds": ["sb-052", "sb-054", "sb-084", "sb-085", "sb-113"],
     "related": ["sb-lesson-http-security", "sb-lesson-security-auth"],
     "sections": [
       {
@@ -1392,7 +1392,7 @@
     "title": "Аутентификация: JWT, OAuth2/OIDC и method security",
     "summary": "Структура и валидация JWT, проблема отзыва, роли OAuth2 и authorization code flow, OIDC, и авторизация на уровне методов.",
     "relatedTags": ["jwt", "oauth2", "method-security"],
-    "questionIds": ["sb-053", "sb-055", "sb-086", "sb-087"],
+    "questionIds": ["sb-053", "sb-055", "sb-086", "sb-087", "sb-114"],
     "related": ["sb-lesson-spring-security-deep", "sb-lesson-http-security"],
     "sections": [
       {

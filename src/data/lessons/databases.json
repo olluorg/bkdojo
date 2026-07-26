@@ -73,7 +73,7 @@
     "title": "JOIN, ключи и ограничения",
     "summary": "INNER/OUTER/CROSS JOIN, ловушка ON vs WHERE, первичные/внешние/уникальные ключи и ссылочная целостность.",
     "relatedTags": ["sql", "join", "constraints", "keys"],
-    "questionIds": ["db-008", "db-010", "db-011", "db-020"],
+    "questionIds": ["db-008", "db-010", "db-011", "db-020", "db-066"],
     "related": ["db-lesson-sql-basics", "db-lesson-indexes"],
     "sections": [
       {
@@ -274,7 +274,7 @@
     "title": "JDBC и безопасные запросы",
     "summary": "Connection/Statement/ResultSet, PreparedStatement против инъекций, ручные транзакции, ресурсы и пул соединений.",
     "relatedTags": ["jdbc", "preparedstatement", "sql-injection"],
-    "questionIds": ["db-017", "db-018", "db-039", "db-040"],
+    "questionIds": ["db-017", "db-018", "db-039", "db-040", "db-067"],
     "related": ["db-lesson-transactions", "db-lesson-orm"],
     "sections": [
       {
@@ -332,7 +332,7 @@
     "title": "ORM, persistence context и N+1",
     "summary": "Что делает ORM, lazy/eager и proxy, механизм N+1, способы лечения и типичные грабли.",
     "relatedTags": ["orm", "hibernate", "jpa", "n+1"],
-    "questionIds": ["db-003", "db-037", "db-041", "db-042"],
+    "questionIds": ["db-003", "db-037", "db-041", "db-042", "db-068"],
     "related": ["db-lesson-indexes", "db-lesson-jdbc"],
     "sections": [
       {
@@ -389,7 +389,7 @@
     "title": "Практика оптимизации запросов",
     "summary": "EXPLAIN и чтение плана, порядок колонок индекса, keyset-пагинация и ловушки, мешающие индексу.",
     "relatedTags": ["sql", "explain", "performance", "composite-index"],
-    "questionIds": ["db-016", "db-036", "db-043", "db-044"],
+    "questionIds": ["db-016", "db-036", "db-043", "db-044", "db-069"],
     "related": ["db-lesson-indexes", "db-lesson-orm"],
     "sections": [
       {
@@ -439,7 +439,7 @@
     "title": "Моделирование данных и целостность",
     "summary": "Ключи и constraints, нормальные формы простыми словами, осознанная денормализация и каскадные действия.",
     "relatedTags": ["normalization", "schema-design", "constraints", "foreign-key"],
-    "questionIds": ["db-006", "db-045", "db-046", "db-047"],
+    "questionIds": ["db-006", "db-045", "db-046", "db-047", "db-070"],
     "related": ["db-lesson-joins-keys", "db-lesson-transactions"],
     "sections": [
       {
@@ -487,7 +487,7 @@
     "title": "Redis и кэширование",
     "summary": "Cache-aside и стратегии записи, TTL и eviction, защита от stampede и аккуратные распределённые блокировки.",
     "relatedTags": ["redis", "cache", "ttl", "distributed-lock"],
-    "questionIds": ["db-021", "db-022", "db-048", "db-049"],
+    "questionIds": ["db-021", "db-022", "db-048", "db-049", "db-071"],
     "related": ["db-lesson-query-performance", "db-lesson-data-modeling"],
     "sections": [
       {
@@ -541,7 +541,7 @@
     "title": "NoSQL: семейства и когда их выбирать",
     "summary": "Почему появился NoSQL, моделирование от access patterns, четыре семейства хранилищ, BASE против ACID и горизонтальное масштабирование.",
     "relatedTags": ["nosql", "schema-design", "scalability"],
-    "questionIds": ["db-023", "db-050", "db-051", "db-052"],
+    "questionIds": ["db-023", "db-050", "db-051", "db-052", "db-072"],
     "related": ["db-lesson-data-modeling", "db-lesson-cap-consistency"],
     "sections": [
       {
@@ -603,7 +603,7 @@
     "title": "CAP, PACELC и модели согласованности",
     "summary": "Точная формулировка CAP, выбор CP/AP, расширение PACELC, спектр consistency и кворумы N/W/R.",
     "relatedTags": ["cap", "consistency", "eventual-consistency", "distributed"],
-    "questionIds": ["db-026", "db-027", "db-028", "db-053"],
+    "questionIds": ["db-026", "db-027", "db-028", "db-053", "db-073"],
     "related": ["db-lesson-nosql-overview", "db-lesson-transactions"],
     "sections": [
       {
@@ -670,7 +670,7 @@
     "title": "Документоориентированные БД (MongoDB)",
     "summary": "Модель документа, embedding против referencing, индексы, aggregation pipeline, атомарность документа и шардирование.",
     "relatedTags": ["nosql", "mongodb", "document", "schema-design"],
-    "questionIds": ["db-032", "db-033", "db-054", "db-055"],
+    "questionIds": ["db-032", "db-033", "db-054", "db-055", "db-074"],
     "related": ["db-lesson-nosql-overview", "db-lesson-data-modeling"],
     "sections": [
       {
@@ -734,7 +734,7 @@
     "title": "Key-value хранилища",
     "summary": "Простейшая модель доступа по ключу, типичные применения, Redis против DynamoDB, партиционирование и ограничения.",
     "relatedTags": ["nosql", "key-value", "redis", "dynamodb"],
-    "questionIds": ["db-034", "db-035", "db-056", "db-057"],
+    "questionIds": ["db-034", "db-035", "db-056", "db-057", "db-075"],
     "related": ["db-lesson-nosql-overview", "db-lesson-redis-cache"],
     "sections": [
       {
@@ -788,7 +788,7 @@
     "title": "Колоночные БД: wide-column и аналитические",
     "summary": "Разница между wide-column (Cassandra) и column-oriented OLAP (ClickHouse), partition/clustering keys, LSM-дерево и зачем хранить по колонкам.",
     "relatedTags": ["nosql", "cassandra", "clickhouse", "columnar", "olap"],
-    "questionIds": ["db-031", "db-058", "db-059", "db-060"],
+    "questionIds": ["db-031", "db-058", "db-059", "db-060", "db-076"],
     "related": ["db-lesson-nosql-overview", "db-lesson-indexes"],
     "sections": [
       {
@@ -843,7 +843,7 @@
     "title": "Базы данных временных рядов",
     "summary": "Чем особенны time-series, модель measurement/tags/fields, сжатие и chunking, downsampling/retention и когда хватит обычной БД.",
     "relatedTags": ["timeseries", "influxdb", "timescaledb", "metrics"],
-    "questionIds": ["db-029", "db-030", "db-061", "db-062"],
+    "questionIds": ["db-029", "db-030", "db-061", "db-062", "db-077"],
     "related": ["db-lesson-nosql-overview", "db-lesson-wide-column-db"],
     "sections": [
       {
@@ -897,7 +897,7 @@
     "title": "Полнотекстовый поиск (Elasticsearch)",
     "summary": "Почему LIKE не поиск, инвертированный индекс, анализаторы, релевантность BM25, query vs filter context и поиск как read model.",
     "relatedTags": ["elasticsearch", "search", "inverted-index", "read-model"],
-    "questionIds": ["db-024", "db-063", "db-064", "db-065"],
+    "questionIds": ["db-024", "db-063", "db-064", "db-065", "db-078"],
     "related": ["db-lesson-nosql-overview", "db-lesson-document-db"],
     "sections": [
       {
