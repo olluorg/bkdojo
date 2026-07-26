@@ -2063,57 +2063,6 @@ body {
   color: var(--muted);
 }
 
-.pet-hero {
-  display: flex;
-  align-items: center;
-  gap: 16px;
-  margin: 8px 0 20px;
-}
-
-.pet-hero__stage {
-  font-size: 18px;
-  font-weight: 700;
-}
-
-.pet-actions {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 10px;
-  margin: 18px 0 12px;
-}
-
-/* --- Ki Breathing minigame --- */
-.ki-stage {
-  display: grid;
-  place-items: center;
-  height: 300px;
-  margin: 16px 0;
-  touch-action: none;
-  cursor: pointer;
-  user-select: none;
-}
-
-.ki-ring {
-  display: grid;
-  place-items: center;
-  border-radius: 999px;
-  border: 2px solid var(--border);
-  background: var(--surface);
-  transition: border-color 0.2s ease;
-}
-
-.ki-ring--sync {
-  border-color: #3fb950;
-  box-shadow: 0 0 24px rgba(63, 185, 80, 0.25);
-}
-
-.ki-phase {
-  text-align: center;
-  font-size: 18px;
-  font-weight: 600;
-  margin: 4px 0;
-}
-
 /* --- Header aside (menu dropdown) --- */
 .app__aside {
   display: flex;
@@ -2968,4 +2917,248 @@ body {
   color: inherit;
   font-weight: 600;
   text-decoration: underline;
+}
+
+/* ---- Dictation (spoken open answers) ---- */
+.dictation {
+  margin: 4px 0 12px;
+}
+
+.dictation__controls {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.btn--rec {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.dictation__dot {
+  width: 9px;
+  height: 9px;
+  border-radius: var(--radius-pill);
+  background: currentColor;
+  opacity: 0.65;
+}
+
+.btn--rec-on {
+  background: var(--danger);
+}
+
+.btn--rec-on:hover {
+  background: var(--danger);
+  filter: brightness(1.08);
+}
+
+.btn--rec-on .dictation__dot {
+  opacity: 1;
+  animation: dictation-pulse 1.2s var(--ease) infinite;
+}
+
+@keyframes dictation-pulse {
+  0%,
+  100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 0.35;
+    transform: scale(0.78);
+  }
+}
+
+.dictation__timer {
+  font-variant-numeric: tabular-nums;
+  font-size: 18px;
+  font-weight: 650;
+  letter-spacing: 0.02em;
+}
+
+/* The timer doubles as pacing feedback: an interview answer wants ~30–90s. */
+.dictation__timer--warmup {
+  color: var(--muted);
+}
+
+.dictation__timer--good {
+  color: var(--success);
+}
+
+.dictation__timer--over {
+  color: var(--warn);
+}
+
+.dictation__hint {
+  margin: 8px 0 0;
+  font-size: 13px;
+  line-height: 1.5;
+  color: var(--muted);
+}
+
+.dictation__interim {
+  margin: 8px 0 0;
+  padding: 8px 12px;
+  border-left: 3px solid var(--border);
+  border-radius: 0 8px 8px 0;
+  background: var(--surface-2);
+  font-size: 14px;
+  line-height: 1.5;
+  color: var(--muted);
+  font-style: italic;
+}
+
+.dictation__error {
+  margin: 8px 0 0;
+  font-size: 13px;
+  line-height: 1.5;
+  color: var(--danger);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .btn--rec-on .dictation__dot {
+    animation: none;
+  }
+}
+
+/* ---- Interviewer dialogue (follow-up probing) ---- */
+.probe {
+  border-left: 3px solid var(--accent);
+}
+
+.probe__transcript {
+  list-style: none;
+  margin: 0 0 16px;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.probe__turn {
+  padding-left: 12px;
+  border-left: 2px solid var(--border);
+}
+
+.probe__turn-q {
+  margin: 0 0 4px;
+  font-size: 14px;
+  font-weight: 600;
+  line-height: 1.5;
+  color: var(--muted);
+}
+
+.probe__turn-a {
+  margin: 0;
+  font-size: 14px;
+  line-height: 1.55;
+  color: var(--text);
+}
+
+.probe__prompt {
+  font-weight: 600;
+}
+
+/* ---- My answers (the learner's own successful performances) ---- */
+.my-answers {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.my-answer {
+  padding: 14px 16px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  background: var(--surface);
+}
+
+.my-answer__q {
+  margin: 0 0 8px;
+  font-size: 13px;
+  font-weight: 600;
+  line-height: 1.5;
+  color: var(--muted);
+}
+
+.my-answer__text {
+  margin: 0;
+  font-size: 15px;
+  line-height: 1.6;
+  color: var(--text);
+  white-space: pre-wrap;
+}
+
+/* ---- Goal: the destination and the distance left ---- */
+.goal-strip {
+  margin: 0 0 18px;
+  padding: 14px 16px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  background: var(--surface);
+}
+
+.goal-strip__countdown {
+  margin: 0;
+  font-size: 15px;
+  font-weight: 650;
+  color: var(--text);
+}
+
+.goal-strip__gaps {
+  list-style: none;
+  margin: 10px 0 0;
+  padding: 0;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.goal-strip__gap {
+  display: inline-flex;
+  align-items: baseline;
+  gap: 6px;
+  padding: 5px 10px;
+  border-radius: var(--radius-pill);
+  background: var(--surface-2);
+  font-size: 13px;
+}
+
+.goal-strip__gap-domain {
+  color: var(--muted);
+}
+
+.goal-strip__gap-work {
+  font-weight: 650;
+  color: var(--text);
+}
+
+.goal-strip__edit {
+  display: inline-block;
+  margin-top: 10px;
+  font-size: 13px;
+  color: var(--muted);
+}
+
+.goal-fields {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin: 12px 0 4px;
+}
+
+.goal-field {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  flex: 1 1 200px;
+}
+
+.goal-field__label {
+  font-size: 13px;
+  color: var(--muted);
 }

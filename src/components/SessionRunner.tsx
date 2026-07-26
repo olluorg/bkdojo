@@ -5,15 +5,16 @@ import {
   skipAnswer,
   submitManualAssessment,
 } from '../domain/evaluation/evaluationService';
-import { visibleBalance } from '../domain/progress/overrideCredits';
 import { isQuestionBookmarked } from '../domain/progress/questionBookmarks';
 import { applyHintPenalty, hintsFor } from '../domain/hints/hints';
 import {
-  combineAnswers,
+  MAX_PROBES,
+  combineTranscript,
+  nextProbeConcept,
   pickBetterOutcome,
-  requestClarifyingQuestion,
-  shouldClarify,
-} from '../domain/lesson/clarify';
+  requestProbe,
+  type InterviewTurn,
+} from '../domain/interview/probing';
 import type { AnswerOutcome, ChoiceSubmission } from '../domain/models/answer';
 import type { SessionKind } from '../domain/models/event';
 import type { EvaluationResult, SelfAssessment } from '../domain/models/evaluation';
@@ -28,8 +29,8 @@ import {
 import { useProgress } from '../state/ProgressContext';
 import { Celebration } from './Celebration';
 import { ChoiceQuestionCard } from './ChoiceQuestionCard';
-import { ClarifyCard } from './ClarifyCard';
 import { CodeQuestionCard } from './CodeQuestionCard';
+import { InterviewProbeCard } from './InterviewProbeCard';
 import { EvaluationResultView } from './EvaluationResultView';
 import { ManualAssessmentCard } from './ManualAssessmentCard';
 import { OpenQuestionCard } from './OpenQuestionCard';
@@ -38,7 +39,16 @@ import { QuestionChatPanel } from './QuestionChatPanel';
 
 type Phase =
   | { kind: 'answering' }
-  | { kind: 'clarify'; originalAnswer: string; baseOutcome: AnswerOutcome; clarifyQuestion: string }
+  | {
+      /** The interviewer dialogue: follow-ups asked so far plus the pending one. */
+      kind: 'interview';
+      originalAnswer: string;
+      /** Best outcome seen so far — the floor the dialogue can only improve on. */
+      baseOutcome: AnswerOutcome;
+      turns: InterviewTurn[];
+      probedConceptIds: string[];
+      pending: string;
+    }
   | { kind: 'manual'; answer: string; evaluation: EvaluationResult }
   | { kind: 'result'; outcome: AnswerOutcome };
 
@@ -50,8 +60,13 @@ interface Props {
   emptyMessage: string;
   onRestart: () => void;
   restartLabel?: string;
-  /** Fired once when the last question is recorded (the session is completed). */
-  onComplete?: () => void;
+  /** Fired once when the last question is recorded, with the main pass's outcomes. */
+  onComplete?: (outcomes: AnswerOutcome[]) => void;
+  /**
+   * Interview conditions: no hints and no "я не знаю". Used by topic defenses,
+   * where the whole point is that closing a topic costs something.
+   */
+  strict?: boolean;
   /**
    * When set, a `session_started` event is logged once on a fresh start (skipped
    * on resume after a refresh). Lesson tests pass nothing — they aren't one of
@@ -98,6 +113,7 @@ export function SessionRunner({
   buildCorrectiveRound,
   nextAction,
   activityKind,
+  strict = false,
 }: Props) {
   const { progress, dispatch } = useProgress();
   const method = progress.settings?.evalMethod ?? 'auto';
@@ -252,7 +268,7 @@ export function SessionRunner({
   function finish() {
     setDone(true);
     endSession();
-    onComplete?.();
+    onComplete?.(outcomes.current);
   }
 
   // All evaluated answers reach the result screen through here so the mild hint
@@ -261,7 +277,7 @@ export function SessionRunner({
     setPhase({ kind: 'result', outcome: applyHintPenalty(outcome, hintsUsed) });
   }
 
-  const hints = hintsFor(question);
+  const hints = strict ? [] : hintsFor(question);
   const revealed = hints.slice(0, hintsUsed);
 
   async function handleChoice(submission: ChoiceSubmission) {
@@ -287,14 +303,68 @@ export function SessionRunner({
         return;
       }
       const outcome = result.outcome;
-      const ev = outcome.evaluation;
-      // Directive 3: a brief but on-track verbal answer earns one clarifying
-      // question to probe depth instead of an immediate verdict. Code tasks are
-      // excluded — a worded follow-up doesn't fit a coding exercise.
-      if (isOpenQuestion(question) && !question.language && ev && shouldClarify(text, ev)) {
-        const clarifyQuestion = await requestClarifyingQuestion(question, ev, { method });
-        if (clarifyQuestion) {
-          setPhase({ kind: 'clarify', originalAnswer: text, baseOutcome: outcome, clarifyQuestion });
+      // An open answer opens a dialogue instead of settling a verdict: the
+      // interviewer presses on whatever the rubric says is still uncovered. Code
+      // tasks are excluded — a worded follow-up doesn't fit a coding exercise.
+      if (isOpenQuestion(question) && !question.language) {
+        const concept = nextProbeConcept(question, outcome.evaluation, [], 0);
+        if (concept) {
+          const probe = await requestProbe(question, concept, [], { method });
+          if (probe) {
+            setPhase({
+              kind: 'interview',
+              originalAnswer: text,
+              baseOutcome: outcome,
+              turns: [],
+              probedConceptIds: [concept.id],
+              pending: probe,
+            });
+            return;
+          }
+        }
+      }
+      showResult(outcome);
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  /**
+   * One turn of the dialogue: fold the answer into the transcript, re-evaluate
+   * the whole thing, then either press on the next gap or settle. The verdict
+   * only ever moves up (`pickBetterOutcome`), so answering is always safe.
+   */
+  async function handleProbeAnswer(text: string) {
+    if (phase.kind !== 'interview' || !isOpenQuestion(question)) return;
+    setBusy(true);
+    try {
+      const turns = [...phase.turns, { question: phase.pending, answer: text }];
+      const result = await evaluateAnswer(
+        question,
+        { questionId: question.id, type: 'open', text: combineTranscript(phase.originalAnswer, turns) },
+        { resolver: { method } },
+      );
+      const outcome =
+        result.kind === 'outcome'
+          ? pickBetterOutcome(phase.baseOutcome, result.outcome)
+          : phase.baseOutcome;
+
+      const concept = nextProbeConcept(
+        question,
+        result.kind === 'outcome' ? result.outcome.evaluation : undefined,
+        phase.probedConceptIds,
+        turns.length,
+      );
+      if (concept) {
+        const probe = await requestProbe(question, concept, turns, { method });
+        if (probe) {
+          setPhase({
+            ...phase,
+            baseOutcome: outcome,
+            turns,
+            probedConceptIds: [...phase.probedConceptIds, concept.id],
+            pending: probe,
+          });
           return;
         }
       }
@@ -304,28 +374,8 @@ export function SessionRunner({
     }
   }
 
-  async function handleClarify(text: string) {
-    if (phase.kind !== 'clarify') return;
-    setBusy(true);
-    try {
-      const combined = combineAnswers(phase.originalAnswer, text);
-      const result = await evaluateAnswer(
-        question,
-        { questionId: question.id, type: 'open', text: combined },
-        { resolver: { method } },
-      );
-      const outcome =
-        result.kind === 'outcome'
-          ? pickBetterOutcome(phase.baseOutcome, result.outcome)
-          : phase.baseOutcome;
-      showResult(outcome);
-    } finally {
-      setBusy(false);
-    }
-  }
-
-  function handleSkipClarify() {
-    if (phase.kind !== 'clarify') return;
+  function handleEndProbing() {
+    if (phase.kind !== 'interview') return;
     showResult(phase.baseOutcome);
   }
 
@@ -467,17 +517,19 @@ export function SessionRunner({
         </div>
       )}
 
-      {phase.kind === 'answering' && (
+      {phase.kind === 'answering' && !strict && (
         <button className="btn btn--ghost" onClick={handleDontKnow} disabled={busy}>
           Я не знаю
         </button>
       )}
 
-      {phase.kind === 'clarify' && (
-        <ClarifyCard
-          question={phase.clarifyQuestion}
-          onSubmit={handleClarify}
-          onSkip={handleSkipClarify}
+      {phase.kind === 'interview' && (
+        <InterviewProbeCard
+          question={phase.pending}
+          turns={phase.turns}
+          remaining={MAX_PROBES - phase.turns.length}
+          onSubmit={handleProbeAnswer}
+          onSkip={handleEndProbing}
           busy={busy}
         />
       )}
@@ -496,9 +548,8 @@ export function SessionRunner({
           <EvaluationResultView
             question={question}
             outcome={phase.outcome}
-            selfOverrideCredits={visibleBalance(progress.overrideCredits)}
             onSelfOverride={() => {
-              dispatch({ type: 'useOverrideCredit' });
+              dispatch({ type: 'selfOverride' });
               setPhase({ kind: 'result', outcome: applySelfOverride(phase.outcome) });
             }}
           />

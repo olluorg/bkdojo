@@ -104,12 +104,9 @@ describe('decompose / recompose', () => {
       events: [],
       singletons: [],
     });
-    // Don't deep-compare to createDefaultProgress(): the default pet carries a
-    // `new Date()` timestamp, so two independent defaults differ by ~1ms.
     expect(restored.version).toBe(createDefaultProgress().version);
     expect(restored.placementDone).toBe(false);
     expect(restored.history).toEqual([]);
     expect(Object.keys(restored.skills).sort()).toEqual([...DOMAINS].sort());
-    expect(restored.pet?.stage).toBe('egg');
   });
 });

@@ -4,6 +4,8 @@ import { loadContent } from '../content/contentLoader';
 import { loadLessons } from '../content/lessonLoader';
 import { createDefaultProgress } from '../../storage/progressStorage';
 import type { AnswerRecord } from '../models/progress';
+import { markLessonDefended } from '../progress/lessonDefense';
+import { setLessonRead } from '../progress/lessonProgress';
 import { lessonQuestionIds } from '../progress/lessonStatus';
 import { buildCourses, courseProgress, nextStep, stepProgress } from './courses';
 
@@ -41,18 +43,31 @@ describe('course progress', () => {
     expect(nextStep(p, index, jc)?.id).toBe(jc.steps[0]!.lesson.id);
   });
 
-  test('a single correct pass over the lesson questions completes the step and advances', () => {
+  test('answering every lesson question fills the bar but does not complete the step', () => {
     const first = jc.steps[0]!.lesson;
     const ids = lessonQuestionIds(index, first);
     expect(ids.length).toBeGreaterThan(0);
 
     const p = createDefaultProgress();
-    // One correct answer per lesson question is enough — completion, not the
-    // two-in-a-row mastery used for course level.
     p.history = ids.map((id) => correct(id));
 
+    // The bar tracks questions cleared…
     expect(stepProgress(p, index, first)).toBe(1);
     expect(courseProgress(p, index, jc)).toBeGreaterThan(0);
+    // …but closing the step now needs the topic defended, so the course still
+    // points at this lesson.
+    expect(nextStep(p, index, jc)?.id).toBe(first.id);
+  });
+
+  test('defending the topic completes the step and advances the course', () => {
+    const first = jc.steps[0]!.lesson;
+    const ids = lessonQuestionIds(index, first);
+
+    let p = createDefaultProgress();
+    p.history = ids.map((id) => correct(id));
+    p = setLessonRead(p, first.id, true);
+    p = markLessonDefended(p, first.id);
+
     expect(nextStep(p, index, jc)?.id).not.toBe(first.id);
   });
 

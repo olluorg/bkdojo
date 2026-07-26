@@ -5,6 +5,7 @@ import type { Lesson } from '../models/lesson';
 import type { AnswerRecord, UserProgress } from '../models/progress';
 import type { ChoiceQuestion } from '../models/question';
 import { createDefaultProgress } from '../../storage/progressStorage';
+import { markLessonDefended } from './lessonDefense';
 import { setLessonRead } from './lessonProgress';
 import {
   correctlyAnsweredIds,
@@ -122,13 +123,32 @@ describe('lessonStatus', () => {
     expect(lessonStatus(p, index, lesson)).toBe('needs-work');
   });
 
-  test('read and every pool question correct → passed', () => {
+  test('read and every pool question correct → practiced, not yet passed', () => {
     const p = setLessonRead(
       withHistory([record('q1', 'correct'), record('q2', 'correct')]),
       lesson.id,
       true,
     );
-    expect(lessonStatus(p, index, lesson)).toBe('passed');
+    // Clearing the questions across sittings, with hints, is no longer enough to
+    // close the topic — it only makes it ready to defend.
+    expect(lessonStatus(p, index, lesson)).toBe('practiced');
+  });
+
+  test('a defended lesson is passed', () => {
+    const practiced = setLessonRead(
+      withHistory([record('q1', 'correct'), record('q2', 'correct')]),
+      lesson.id,
+      true,
+    );
+    expect(lessonStatus(markLessonDefended(practiced, lesson.id), index, lesson)).toBe('passed');
+  });
+
+  test('a defense does not rescue a lesson with unanswered questions', () => {
+    const p = markLessonDefended(
+      setLessonRead(withHistory([record('q1', 'correct')]), lesson.id, true),
+      lesson.id,
+    );
+    expect(lessonStatus(p, index, lesson)).toBe('needs-work');
   });
 
   test('a read lesson with no questions is passed (nothing to fail)', () => {

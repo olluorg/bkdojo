@@ -2,8 +2,6 @@ import type { OutcomeSource } from './answer';
 import type { Domain } from './common';
 import type { AppEvent } from './event';
 import type { AiAvailability, ConceptResult, Verdict } from './evaluation';
-import type { PetState } from './pet';
-import type { OverrideCredits } from '../progress/overrideCredits';
 import type { Settings } from './settings';
 
 export interface DomainSkill {
@@ -25,7 +23,7 @@ export interface AnswerRecord {
   answer?: string;
   /** The learner's selected option ids (choice questions) — persisted for analysis. */
   selectedOptionIds?: string[];
-  /** True when the learner overrode the AI verdict via a self-override credit. */
+  /** True when the learner overrode the AI verdict themselves. */
   selfOverride?: boolean;
   answeredAt: string; // ISO
   nextReviewAt?: string; // ISO, for spaced repetition
@@ -63,13 +61,12 @@ export interface UserProgress {
   lastAiAvailability?: AiAvailability; // UX hint for next visit
   terms?: Record<string, TermProgress>; // optional for backward-compatible load
   lessonsRead?: Record<string, string>; // lessonId → ISO read-at; optional for backward-compatible load
+  /** lessonId → ISO defended-at (a passed defense); optional for backward-compatible load. */
+  defendedLessons?: Record<string, string>;
   lessonBookmarks?: Record<string, string>; // lessonId → ISO bookmarked-at; optional for backward-compatible load
   questionBookmarks?: Record<string, string>; // questionId → ISO bookmarked-at; optional for backward-compatible load
   lessonComments?: Record<string, CachedLessonComment>; // lessonId → cached AI comment; optional for backward-compatible load
   activity?: Record<string, string>; // activity kind → last-done ISO; distinguishes practice/review/interview
   events?: AppEvent[]; // append-only learning-event log (lessons/terms/sessions); optional for backward-compatible load
-  pet?: PetState; // optional for backward-compatible load
   settings?: Settings; // optional for backward-compatible load
-  /** Self-override credits ("я считаю, что ответил верно"); optional for backward-compatible load. */
-  overrideCredits?: OverrideCredits;
 }

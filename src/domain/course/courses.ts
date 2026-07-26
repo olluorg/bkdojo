@@ -2,7 +2,7 @@ import type { ContentIndex } from '../content/contentIndex';
 import { DOMAIN_LABELS, DOMAINS, type Difficulty, type Domain } from '../models/common';
 import type { Lesson } from '../models/lesson';
 import type { UserProgress } from '../models/progress';
-import { lessonProgress } from '../progress/lessonStatus';
+import { lessonProgress, lessonStatus } from '../progress/lessonStatus';
 import { domainMastery } from '../progress/mastery';
 
 export interface CourseStep {
@@ -15,7 +15,7 @@ export interface Course {
   steps: CourseStep[];
 }
 
-/** A step is cleared once every question of its lesson is answered correctly. */
+/** Full question completion for the step's progress bar (the defense is separate). */
 export const STEP_DONE_THRESHOLD = 0.999;
 
 /** Derives sequential courses from the ordered lessons of each domain. */
@@ -87,7 +87,8 @@ export function courseLevelOf(
 }
 
 export function isStepDone(progress: UserProgress, index: ContentIndex, lesson: Lesson): boolean {
-  return stepProgress(progress, index, lesson) >= STEP_DONE_THRESHOLD;
+  // Answering every question is no longer enough — the topic must be defended.
+  return lessonStatus(progress, index, lesson) === 'passed';
 }
 
 export function courseProgress(

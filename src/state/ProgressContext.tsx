@@ -60,13 +60,6 @@ export function ProgressProvider({
     return () => window.removeEventListener(INCOMING_EVENT, onIncoming);
   }, []);
 
-  // Override credits fold lazily across calendar days; tick once on mount so
-  // the visible balance is fresh whenever the app opens (or browser is reopened
-  // after midnight). Inside-session day changes are rare; we don't poll.
-  useEffect(() => {
-    dispatch({ type: 'tickOverrideCredits' });
-  }, []);
-
   return (
     <ProgressContext.Provider value={{ progress, dispatch }}>{children}</ProgressContext.Provider>
   );

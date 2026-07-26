@@ -1,18 +1,22 @@
 import { getByDomain, type ContentIndex } from '../content/contentIndex';
 import type { Lesson } from '../models/lesson';
 import type { UserProgress } from '../models/progress';
+import { isLessonDefended } from './lessonDefense';
 import { isLessonRead } from './lessonProgress';
 
 /**
- * Lightweight per-lesson completion state used by the Lessons UI.
+ * Per-lesson completion state used by the Lessons UI.
  *
- * "passed" here means *every practice question of the lesson has been answered
- * correctly at least once* — deliberately lighter than the streak-based
- * `topicMastery`/`isStepDone` used by courses, and aligned with the practice
- * filter that hides already-correct questions on a retake. A lesson the learner
- * has read but not yet fully answered correctly is flagged "needs-work".
+ * - `needs-work` — read, but some questions are still not correct.
+ * - `practiced`  — every question answered correctly at least once, accumulated
+ *   across sittings and with hints allowed. Enough to be ready for a defense,
+ *   not enough to call the topic closed.
+ * - `passed`     — defended: one pass, no hints, everything correct.
+ *
+ * The split exists because the old cheap rule (`practiced`) was what made
+ * "пройдено" feel unearned. See `domain/lesson/defense`.
  */
-export type LessonStatus = 'unread' | 'needs-work' | 'passed';
+export type LessonStatus = 'unread' | 'needs-work' | 'practiced' | 'passed';
 
 /** Ids of every question answered correctly at least once. */
 export function correctlyAnsweredIds(progress: UserProgress): Set<string> {
@@ -69,19 +73,19 @@ export function lessonProgress(
   return done / ids.length;
 }
 
-/**
- * - unread:    not marked read yet.
- * - passed:    read AND every practice question answered correctly (or none exist).
- * - needs-work: read but some practice questions are still not correct.
- */
 export function lessonStatus(
   progress: UserProgress,
   index: ContentIndex,
   lesson: Lesson,
 ): LessonStatus {
   if (!isLessonRead(progress, lesson.id)) return 'unread';
+
   const poolIds = lessonQuestionIds(index, lesson);
+  // Nothing to answer means nothing to defend — reading closes it.
   if (poolIds.length === 0) return 'passed';
+
   const correct = correctlyAnsweredIds(progress);
-  return poolIds.every((id) => correct.has(id)) ? 'passed' : 'needs-work';
+  if (!poolIds.every((id) => correct.has(id))) return 'needs-work';
+
+  return isLessonDefended(progress, lesson.id) ? 'passed' : 'practiced';
 }

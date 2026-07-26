@@ -14,6 +14,7 @@ import { THEMES, THEME_LABELS, getTheme, setTheme, type Theme } from '../../app/
 import { parseProgress, serializeProgress } from '../../storage/progressStorage';
 import { useAiCapability, type AiStatus } from '../../hooks/useAiCapability';
 import { useProgress } from '../../state/ProgressContext';
+import { GoalEditor } from './GoalEditor';
 
 // Sync UI (and the SDK it pulls in) is loaded only when the build flag is set.
 // Gating the dynamic import on the static flag lets Vite drop the SyncSection
@@ -90,6 +91,8 @@ export function SettingsScreen() {
   return (
     <section>
       <h1 className="screen__title">Настройки</h1>
+
+      <GoalEditor />
 
       <div className="stat-block">
         <div className="stat-block__head">Тема оформления</div>

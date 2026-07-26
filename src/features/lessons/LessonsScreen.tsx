@@ -9,10 +9,15 @@ import { useContentIndex } from '../../hooks/useContentIndex';
 import { useLessons } from '../../hooks/useLessons';
 import { useProgress } from '../../state/ProgressContext';
 import { hrefFor, navigate, segments, useHashPath } from '../../app/router';
+import { LessonDefense } from './LessonDefense';
 import { LessonPractice } from './LessonPractice';
 
 const LIST_BADGE: Partial<Record<LessonStatus, { label: string; className: string }>> = {
-  passed: { label: '✓ Пройдено', className: 'lesson-item__badge lesson-item__badge--passed' },
+  passed: { label: '✓ Защищено', className: 'lesson-item__badge lesson-item__badge--passed' },
+  practiced: {
+    label: 'Готово к защите',
+    className: 'lesson-item__badge lesson-item__badge--todo',
+  },
   'needs-work': {
     label: 'Нужно доработать',
     className: 'lesson-item__badge lesson-item__badge--todo',
@@ -24,10 +29,11 @@ export function LessonsScreen() {
   const index = useContentIndex();
   const { progress, dispatch } = useProgress();
 
-  // Route shape: /lessons | /lessons/:id | /lessons/:id/practice[/q<n>]
+  // Route shape: /lessons | /lessons/:id | /lessons/:id/(practice|defense)[/q<n>]
   const parts = segments(useHashPath());
   const lessonId = parts[1];
   const practicing = parts[2] === 'practice';
+  const defending = parts[2] === 'defense';
   const selected = lessonId ? byId.get(lessonId) ?? null : null;
 
   // Log opening a lesson's reader once per lesson navigation (not when entering
@@ -46,6 +52,16 @@ export function LessonsScreen() {
   if (selected && practicing) {
     return (
       <LessonPractice
+        index={index}
+        lesson={selected}
+        onBack={() => navigate(`/lessons/${selected.id}`)}
+      />
+    );
+  }
+
+  if (selected && defending) {
+    return (
+      <LessonDefense
         index={index}
         lesson={selected}
         onBack={() => navigate(`/lessons/${selected.id}`)}
@@ -92,6 +108,7 @@ export function LessonsScreen() {
           navigate(nextLesson ? `/lessons/${nextLesson.id}` : `/courses/${selected.domain}`)
         }
         onPractice={() => navigate(`/lessons/${selected.id}/practice`)}
+        onDefend={() => navigate(`/lessons/${selected.id}/defense`)}
         onOpenRelated={(id) => navigate(`/lessons/${id}`)}
       />
     );

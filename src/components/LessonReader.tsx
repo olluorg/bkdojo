@@ -16,7 +16,8 @@ interface RelatedLink {
 }
 
 const STATUS_BADGE: Partial<Record<LessonStatus, { label: string; className: string }>> = {
-  passed: { label: '✓ Пройдено', className: 'lesson-badge lesson-badge--passed' },
+  passed: { label: '✓ Защищено', className: 'lesson-badge lesson-badge--passed' },
+  practiced: { label: 'Готово к защите', className: 'lesson-badge lesson-badge--todo' },
   'needs-work': { label: 'Нужно доработать', className: 'lesson-badge lesson-badge--todo' },
 };
 
@@ -41,6 +42,8 @@ interface Props {
   /** Toggles whether the lesson is bookmarked. */
   onToggleBookmark: () => void;
   onPractice: () => void;
+  /** Starts the topic defense; omitted where defending isn't offered. */
+  onDefend?: () => void;
   onOpenRelated: (id: string) => void;
   /** Extra content rendered below the lesson actions (e.g. the comment panel). */
   extra?: ReactNode;
@@ -117,6 +120,7 @@ export function LessonReader({
   onSetRead,
   onToggleBookmark,
   onPractice,
+  onDefend,
   onOpenRelated,
   extra,
 }: Props) {
@@ -197,7 +201,17 @@ export function LessonReader({
       <div ref={endRef} aria-hidden className="lesson-end" />
 
       <div className="lesson-actions">
-        <button className="btn" onClick={() => onPractice()}>
+        {/* Once every question has been cleared, the meaningful next move is the
+            defense — that is what actually closes the topic. */}
+        {status === 'practiced' && onDefend && (
+          <button className="btn" onClick={() => onDefend()}>
+            Защитить тему
+          </button>
+        )}
+        <button
+          className={status === 'practiced' ? 'btn btn--ghost' : 'btn'}
+          onClick={() => onPractice()}
+        >
           Пройти тест по теме
         </button>
         <button

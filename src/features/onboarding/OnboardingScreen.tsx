@@ -3,6 +3,7 @@ import { DOMAIN_LABELS, DOMAINS } from '../../domain/models/common';
 import { useContentIndex } from '../../hooks/useContentIndex';
 import { useProgress } from '../../state/ProgressContext';
 import { hrefFor } from '../../app/router';
+import { GoalEditor } from '../settings/GoalEditor';
 import { PlacementFlow } from './PlacementFlow';
 
 export function OnboardingScreen() {
@@ -37,6 +38,10 @@ export function OnboardingScreen() {
           );
         })}
       </ul>
+      {/* Right after the level is measured is the moment a destination makes
+          sense: now the gap between "here" and "there" is a real number. */}
+      <GoalEditor />
+
       <p className="screen__note">Готово — можно начинать ежедневную практику.</p>
       <a className="btn" href={hrefFor('/practice')}>
         Перейти к практике

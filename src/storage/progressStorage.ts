@@ -6,7 +6,6 @@ import type {
   UserProgress,
 } from '../domain/models/progress';
 import { DEFAULT_SETTINGS } from '../domain/models/settings';
-import { createDefaultPet } from '../domain/pet/pet';
 
 export const PROGRESS_VERSION = 1;
 const STORAGE_KEY = 'bkdojo.progress';
@@ -43,12 +42,12 @@ export function createDefaultProgress(): UserProgress {
     streakDays: 0,
     terms: {},
     lessonsRead: {},
+    defendedLessons: {},
     lessonBookmarks: {},
     questionBookmarks: {},
     lessonComments: {},
     activity: {},
     events: [],
-    pet: createDefaultPet(),
     settings: { ...DEFAULT_SETTINGS },
   };
 }
@@ -64,9 +63,10 @@ function isValidProgress(value: unknown): value is UserProgress {
 }
 
 /**
- * Forward-compatible migration: keeps existing progress (history, streak, pet,
- * terms) and backfills any newly added domain skills (e.g. when a course is
- * introduced) so the save isn't wiped.
+ * Forward-compatible migration: keeps existing progress (history, streak, terms)
+ * and backfills any newly added domain skills (e.g. when a course is introduced)
+ * so the save isn't wiped. Fields that no longer exist (the pet, override
+ * credits) are simply dropped — they were optional, so old saves still load.
  */
 export function normalizeProgress(parsed: UserProgress): UserProgress {
   const defaults = createDefaultProgress();
@@ -82,14 +82,13 @@ export function normalizeProgress(parsed: UserProgress): UserProgress {
     skills,
     terms: parsed.terms ?? {},
     lessonsRead: parsed.lessonsRead ?? {},
+    defendedLessons: parsed.defendedLessons ?? {},
     lessonBookmarks: parsed.lessonBookmarks ?? {},
     questionBookmarks: parsed.questionBookmarks ?? {},
     lessonComments: parsed.lessonComments ?? {},
     activity: parsed.activity ?? {},
     events: parsed.events ?? [],
-    pet: parsed.pet ?? defaults.pet,
     settings: { ...DEFAULT_SETTINGS, ...parsed.settings },
-    overrideCredits: parsed.overrideCredits,
   };
 }
 

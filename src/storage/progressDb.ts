@@ -64,9 +64,10 @@ const SINGLETON_KEYS = [
   'streakDays',
   'lastPracticeDate',
   'lastAiAvailability',
-  'pet',
   'settings',
-  'overrideCredits',
+  // Stored whole rather than per-record: the map is small and adding a store
+  // would need a db version bump for no practical gain.
+  'defendedLessons',
 ] as const;
 type SingletonKey = (typeof SINGLETON_KEYS)[number];
 

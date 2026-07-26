@@ -1,7 +1,9 @@
 import { useMemo } from 'react';
 import { ProgressBar } from '../../components/ProgressBar';
+import { goalGaps, pluralTopics } from '../../domain/goal/gaps';
+import { countdownLabel } from '../../domain/goal/goal';
 import { DOMAIN_LABELS, DOMAINS } from '../../domain/models/common';
-import { buildDailyMission } from '../../domain/today/dailyMission';
+import { buildDailyMission, goalOf } from '../../domain/today/dailyMission';
 import { useContentIndex } from '../../hooks/useContentIndex';
 import { useGlossary } from '../../hooks/useGlossary';
 import { useLessons } from '../../hooks/useLessons';
@@ -19,6 +21,21 @@ export function TodayScreen() {
   const mission = useMemo(
     () => buildDailyMission({ progress, index, lessons, terms }),
     [progress, index, lessons, terms],
+  );
+
+  const goal = goalOf(progress);
+  const countdown = countdownLabel(goal, new Date());
+
+  // The concrete distance to the goal, named as work rather than as a percentage.
+  const gaps = useMemo(
+    () =>
+      goalGaps({
+        progress,
+        index,
+        lessons,
+        readinessByDomain: mission.readiness.byDomain,
+      }).slice(0, 3),
+    [progress, index, lessons, mission.readiness.byDomain],
   );
 
   const overallPct = Math.round(mission.readiness.overall * 100);
@@ -79,6 +96,29 @@ export function TodayScreen() {
     <section className="today">
       <h1 className="screen__title">Сегодня</h1>
       <p className="screen__note">Цель — {mission.goalLabel}. Один фокус на сегодня.</p>
+
+      {/* The destination, stated as a deadline and remaining work — the two
+          things that actually pull an adult back to a trainer daily. */}
+      {(countdown || gaps.length > 0) && (
+        <div className="goal-strip">
+          {countdown && <p className="goal-strip__countdown">{countdown}</p>}
+          {gaps.length > 0 && (
+            <ul className="goal-strip__gaps">
+              {gaps.map((gap) => (
+                <li key={gap.domain} className="goal-strip__gap">
+                  <span className="goal-strip__gap-domain">{DOMAIN_LABELS[gap.domain]}</span>
+                  <span className="goal-strip__gap-work">
+                    {gap.remainingLessons} {pluralTopics(gap.remainingLessons)}
+                  </span>
+                </li>
+              ))}
+            </ul>
+          )}
+          <a className="goal-strip__edit" href={hrefFor('/settings')}>
+            Изменить цель
+          </a>
+        </div>
+      )}
 
       {streak.state === 'at-risk' && (
         <div className="today__nudge">

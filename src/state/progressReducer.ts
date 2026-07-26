@@ -1,16 +1,16 @@
 import type { AnswerOutcome } from '../domain/models/answer';
 import type { AppEventInput } from '../domain/models/event';
 import type { AiAvailability } from '../domain/models/evaluation';
+import type { InterviewGoal } from '../domain/goal/goal';
 import type { CachedLessonComment, UserProgress } from '../domain/models/progress';
 import { DEFAULT_SETTINGS, type EvalMethod } from '../domain/models/settings';
-import { createDefaultPet, feedPet, playPet, type FeedEvent } from '../domain/pet/pet';
 import { recordActivity, type ActivityKind } from '../domain/progress/activity';
 import { appendEvent } from '../domain/progress/eventLog';
+import { isLessonDefended, markLessonDefended } from '../domain/progress/lessonDefense';
 import { isLessonRead, setLessonRead } from '../domain/progress/lessonProgress';
 import { setLessonBookmark } from '../domain/progress/lessonBookmarks';
 import { setQuestionBookmark } from '../domain/progress/questionBookmarks';
 import { applyOutcome } from '../domain/progress/applyOutcome';
-import { earnFromLesson, touchCredits, useCredit } from '../domain/progress/overrideCredits';
 import { touchStreak } from '../domain/progress/streak';
 import { applyTermResult } from '../domain/progress/termProgress';
 import { createDefaultProgress, mergeProgress } from '../storage/progressStorage';
@@ -19,6 +19,7 @@ export type ProgressAction =
   | { type: 'record'; outcome: AnswerOutcome; mode?: 'placement' | 'daily' }
   | { type: 'recordTerm'; termId: string; correct: boolean }
   | { type: 'setLessonRead'; lessonId: string; read: boolean }
+  | { type: 'markLessonDefended'; lessonId: string }
   | { type: 'setLessonBookmark'; lessonId: string; bookmarked: boolean }
   | { type: 'setQuestionBookmark'; questionId: string; bookmarked: boolean }
   | { type: 'saveLessonComment'; lessonId: string; comment: CachedLessonComment }
@@ -27,34 +28,16 @@ export type ProgressAction =
   | { type: 'completePlacement' }
   | { type: 'setAiAvailability'; availability: AiAvailability }
   | { type: 'setEvalMethod'; method: EvalMethod }
-  | { type: 'playPet' }
-  | { type: 'tickOverrideCredits' }
-  | { type: 'useOverrideCredit' }
+  | { type: 'setGoal'; goal: InterviewGoal }
+  | { type: 'selfOverride' }
   | { type: 'replace'; progress: UserProgress }
   | { type: 'merge'; progress: UserProgress }
   | { type: 'reset' };
 
-function fed(state: UserProgress, event: FeedEvent): PetCarrier {
-  const now = new Date();
-  return { pet: feedPet(state.pet ?? createDefaultPet(now), event, now) };
-}
-interface PetCarrier {
-  pet: UserProgress['pet'];
-}
-
 export function progressReducer(state: UserProgress, action: ProgressAction): UserProgress {
   switch (action.type) {
-    case 'record': {
-      const next = applyOutcome(state, action.outcome, { mode: action.mode });
-      return {
-        ...next,
-        ...fed(next, {
-          domain: action.outcome.domain,
-          verdict: action.outcome.verdict,
-          difficulty: action.outcome.difficulty,
-        }),
-      };
-    }
+    case 'record':
+      return applyOutcome(state, action.outcome, { mode: action.mode });
     case 'recordTerm': {
       const next = applyTermResult(state, action.termId, action.correct);
       const streak = touchStreak(next, new Date()); // glossary practice also counts
@@ -67,23 +50,24 @@ export function progressReducer(state: UserProgress, action: ProgressAction): Us
         ...logged,
         streakDays: streak.streakDays,
         lastPracticeDate: streak.lastPracticeDate,
-        ...fed(next, { verdict: action.correct ? 'correct' : 'incorrect', difficulty: 1 }),
       };
     }
     case 'setLessonRead': {
       const wasRead = isLessonRead(state, action.lessonId);
-      let next = setLessonRead(state, action.lessonId, action.read);
-      // Completing a lesson (unread → read) may earn one override credit per
-      // day and is logged as a milestone. Toggling read off, or re-marking an
-      // already-read lesson, doesn't.
+      const next = setLessonRead(state, action.lessonId, action.read);
+      // Completing a lesson (unread → read) is logged as a milestone. Toggling
+      // read off, or re-marking an already-read lesson, isn't.
       if (action.read && !wasRead) {
-        const earned = earnFromLesson(next.overrideCredits, new Date());
-        next = appendEvent(
-          { ...next, overrideCredits: earned.state },
-          { type: 'lesson_completed', refId: action.lessonId },
-        );
+        return appendEvent(next, { type: 'lesson_completed', refId: action.lessonId });
       }
       return next;
+    }
+    case 'markLessonDefended': {
+      if (isLessonDefended(state, action.lessonId)) return state;
+      return appendEvent(markLessonDefended(state, action.lessonId), {
+        type: 'lesson_completed',
+        refId: action.lessonId,
+      });
     }
     case 'setLessonBookmark':
       return setLessonBookmark(state, action.lessonId, action.bookmarked);
@@ -114,20 +98,17 @@ export function progressReducer(state: UserProgress, action: ProgressAction): Us
         ...state,
         settings: { ...(state.settings ?? DEFAULT_SETTINGS), evalMethod: action.method },
       };
-    case 'playPet': {
-      const now = new Date();
-      return { ...state, pet: playPet(state.pet ?? createDefaultPet(now), now) };
-    }
-    case 'tickOverrideCredits': {
-      const next = touchCredits(state.overrideCredits, new Date());
-      if (next === state.overrideCredits) return state;
-      return { ...state, overrideCredits: next };
-    }
-    case 'useOverrideCredit': {
-      const { state: nextCredits, used } = useCredit(state.overrideCredits, new Date());
-      const next = { ...state, overrideCredits: nextCredits };
-      return used ? appendEvent(next, { type: 'override_used' }) : next;
-    }
+    case 'setGoal':
+      return {
+        ...state,
+        settings: { ...(state.settings ?? DEFAULT_SETTINGS), goal: action.goal },
+      };
+    // Disagreeing with the evaluator is unrationed: a budget on saying "I was
+    // actually right" only signalled that the app knew its grades weren't
+    // trusted. It stays logged, so a learner who overrides constantly is still
+    // visible in the event log.
+    case 'selfOverride':
+      return appendEvent(state, { type: 'override_used' });
     case 'replace':
       return action.progress;
     case 'merge':

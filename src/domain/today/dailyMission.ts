@@ -1,6 +1,12 @@
 import type { ContentIndex } from '../content/contentIndex';
 import { getByDomain } from '../content/contentIndex';
 import { buildConceptLessonMap } from '../lesson/conceptLessons';
+import {
+  DEFAULT_GOAL,
+  GRADE_TARGET_ABILITY,
+  goalLabel,
+  type InterviewGoal,
+} from '../goal/goal';
 import { DOMAIN_LABELS, DOMAINS, type Domain } from '../models/common';
 import type { GlossaryTerm } from '../models/glossary';
 import type { Lesson } from '../models/lesson';
@@ -20,11 +26,14 @@ import { clamp01 } from '../util/math';
  * and the expected effect on interview readiness. Pure — the screen only renders.
  */
 
-/** The interview the trainer is preparing the user for. */
-export const GOAL_LABEL = 'Middle Java Backend Interview';
-
-/** Ability (1..5) we treat as "comfortably at the goal level" (Middle band). */
-const GOAL_TARGET_ABILITY = 3.5;
+/**
+ * The interview the trainer is preparing the user for. Read from settings so the
+ * goal is the learner's own (grade, company, date) rather than a constant — see
+ * `domain/goal/goal`.
+ */
+export function goalOf(progress: UserProgress): InterviewGoal {
+  return progress.settings?.goal ?? DEFAULT_GOAL;
+}
 
 /** Readiness toward the goal, per domain and overall (0..1). */
 export interface ReadinessSnapshot {
@@ -82,10 +91,14 @@ export interface DailyMission {
 /** Alias requested by the spec — the mission is the next best action. */
 export type NextBestAction = DailyMission;
 
-/** Blends placement ability and practised coverage into a 0..1 readiness. */
+/**
+ * Blends placement ability and practised coverage into a 0..1 readiness, scored
+ * against the ability the learner's own target grade demands — so aiming at
+ * Senior honestly shows less readiness than aiming at Middle.
+ */
 export function domainReadiness(progress: UserProgress, index: ContentIndex, domain: Domain): number {
   const ability = progress.skills[domain].ability;
-  const abilityProgress = clamp01(ability / GOAL_TARGET_ABILITY);
+  const abilityProgress = clamp01(ability / GRADE_TARGET_ABILITY[goalOf(progress).grade]);
   const coverage = domainMastery(progress, index, domain);
   return clamp01(0.55 * abilityProgress + 0.45 * coverage);
 }
@@ -116,7 +129,7 @@ export function buildDailyMission(input: MissionInput): DailyMission {
   const { progress, index, lessons, terms, now = new Date() } = input;
   const readiness = readinessSnapshot(progress, index);
 
-  if (!progress.placementDone) return freshStartMission(readiness, lessons);
+  if (!progress.placementDone) return freshStartMission(progress, readiness, lessons);
 
   const conceptLessons = buildConceptLessonMap(index, lessons);
   const lessonById = new Map(lessons.map((l) => [l.id, l]));
@@ -171,7 +184,7 @@ export function buildDailyMission(input: MissionInput): DailyMission {
   const nextStep = steps.find((s) => !s.done);
 
   return {
-    goalLabel: GOAL_LABEL,
+    goalLabel: goalLabel(goalOf(progress)),
     readiness,
     focusDomain,
     focusTitle,
@@ -296,7 +309,11 @@ function expectedGain(readinessVal: number): [number, number] {
   return [lo, lo + 2];
 }
 
-function freshStartMission(readiness: ReadinessSnapshot, lessons: Lesson[]): DailyMission {
+function freshStartMission(
+  progress: UserProgress,
+  readiness: ReadinessSnapshot,
+  lessons: Lesson[],
+): DailyMission {
   const focusDomain: Domain = 'java-core';
   const lesson = lessons
     .filter((l) => l.domain === focusDomain)
@@ -324,7 +341,7 @@ function freshStartMission(readiness: ReadinessSnapshot, lessons: Lesson[]): Dai
   ];
 
   return {
-    goalLabel: GOAL_LABEL,
+    goalLabel: goalLabel(goalOf(progress)),
     readiness,
     focusDomain,
     focusTitle: 'Начни с диагностики уровня',

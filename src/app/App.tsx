@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { AiStatusBanner } from '../components/AiStatusBanner';
 import { useAiCapability } from '../hooks/useAiCapability';
+import { MyAnswersScreen } from '../features/answers/MyAnswersScreen';
 import { BookmarksScreen } from '../features/bookmarks/BookmarksScreen';
 import { CoursesScreen } from '../features/courses/CoursesScreen';
 import { GlossaryScreen } from '../features/glossary/GlossaryScreen';
@@ -8,15 +9,11 @@ import { HistoryScreen } from '../features/history/HistoryScreen';
 import { InterviewScreen } from '../features/interview/InterviewScreen';
 import { LessonsScreen } from '../features/lessons/LessonsScreen';
 import { OnboardingScreen } from '../features/onboarding/OnboardingScreen';
-import { PetScreen } from '../features/pet/PetScreen';
 import { PracticeScreen } from '../features/practice/PracticeScreen';
 import { ReviewScreen } from '../features/review/ReviewScreen';
 import { SettingsScreen } from '../features/settings/SettingsScreen';
 import { StatsScreen } from '../features/stats/StatsScreen';
 import { TodayScreen } from '../features/today/TodayScreen';
-import { PetAvatar } from '../components/PetAvatar';
-import { petMood } from '../domain/pet/pet';
-import { usePet } from '../hooks/usePet';
 import { useStreak } from '../hooks/useStreak';
 import { hrefFor, navigate, segments, useHashPath } from './router';
 
@@ -24,6 +21,7 @@ type Route =
   | 'today'
   | 'courses'
   | 'lessons'
+  | 'answers'
   | 'bookmarks'
   | 'glossary'
   | 'level'
@@ -32,7 +30,6 @@ type Route =
   | 'review'
   | 'stats'
   | 'history'
-  | 'pet'
   | 'settings';
 
 interface NavItem {
@@ -54,6 +51,7 @@ const PRIMARY: NavItem[] = [
 // Secondary destinations: reachable from "Сегодня" and the "Ещё" menu, not from
 // the always-visible bar.
 const MORE: NavItem[] = [
+  { route: 'answers', label: 'Мои ответы', icon: '🗣️' },
   { route: 'bookmarks', label: 'Закладки', icon: '🔖' },
   { route: 'glossary', label: 'Словарь', icon: '📖' },
   { route: 'history', label: 'История', icon: '📜' },
@@ -66,6 +64,7 @@ const RENDERABLE = new Set<Route>([
   'today',
   'courses',
   'lessons',
+  'answers',
   'bookmarks',
   'glossary',
   'level',
@@ -74,7 +73,6 @@ const RENDERABLE = new Set<Route>([
   'review',
   'stats',
   'history',
-  'pet',
   'settings',
 ]);
 
@@ -84,7 +82,6 @@ export function App() {
   const aiStatus = useAiCapability();
   const path = useHashPath();
   const streak = useStreak();
-  const pet = usePet();
   const [moreOpen, setMoreOpen] = useState(false);
   const [aiBannerDismissed, setAiBannerDismissed] = useState(
     () => localStorage.getItem(AI_BANNER_DISMISSED_KEY) === '1',
@@ -112,7 +109,7 @@ export function App() {
 
   const isActive = (r: Route) => r === route || (r === 'courses' && route === 'lessons');
   const menuActive =
-    MORE.some((item) => isActive(item.route)) || route === 'pet' || route === 'settings';
+    MORE.some((item) => isActive(item.route)) || route === 'settings';
 
   return (
     <div className="app">
@@ -157,15 +154,6 @@ export function App() {
                   <span aria-hidden>🔥</span>
                   Серия: {streak.days} дн.
                 </a>
-                <a
-                  className={route === 'pet' ? 'app__more-item app__more-item--active' : 'app__more-item'}
-                  href={hrefFor('/pet')}
-                  role="menuitem"
-                  aria-current={route === 'pet' ? 'page' : undefined}
-                >
-                  <PetAvatar stage={pet.stage} mood={petMood(pet)} size={22} />
-                  Питомец
-                </a>
                 {MORE.map((item) => (
                   <a
                     key={item.route}
@@ -209,6 +197,7 @@ export function App() {
         {route === 'today' && <TodayScreen />}
         {route === 'courses' && <CoursesScreen />}
         {route === 'lessons' && <LessonsScreen />}
+        {route === 'answers' && <MyAnswersScreen />}
         {route === 'bookmarks' && <BookmarksScreen />}
         {route === 'glossary' && <GlossaryScreen />}
         {route === 'level' && <OnboardingScreen />}
@@ -217,7 +206,6 @@ export function App() {
         {route === 'review' && <ReviewScreen />}
         {route === 'stats' && <StatsScreen />}
         {route === 'history' && <HistoryScreen />}
-        {route === 'pet' && <PetScreen />}
         {route === 'settings' && <SettingsScreen />}
       </main>
 

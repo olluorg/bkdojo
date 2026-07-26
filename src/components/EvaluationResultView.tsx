@@ -5,10 +5,22 @@ import { isChoiceQuestion, isOpenQuestion, type Question } from '../domain/model
 import { orderedOptions } from '../domain/util/shuffle';
 import { AnswerGuidePanel } from './AnswerGuidePanel';
 
+/** Choice questions really are a quiz — grade language fits them. */
 const VERDICT_LABELS: Record<Verdict, string> = {
   correct: 'Зачёт',
   partial: 'Частично',
   incorrect: 'Не зачёт',
+};
+
+/**
+ * Open answers close a dialogue, not an exam, so they get the summary a real
+ * interviewer would give. Saying what would have happened in the room is also the
+ * only feedback that converts into confidence — a grade never does.
+ */
+const INTERVIEW_VERDICT_LABELS: Record<Verdict, string> = {
+  correct: 'На интервью такой ответ проходит',
+  partial: 'На интервью тебя бы дожимали',
+  incorrect: 'На интервью такой ответ не прошёл бы',
 };
 
 const COVERAGE_LABELS: Record<ConceptCoverage, string> = {
@@ -20,26 +32,18 @@ const COVERAGE_LABELS: Record<ConceptCoverage, string> = {
 interface Props {
   question: Question;
   outcome: AnswerOutcome;
-  /** Remaining self-override credits; when > 0 and verdict ≠ correct, a button is shown. */
-  selfOverrideCredits?: number;
-  /** Fired when the learner spends a credit to mark their answer correct. */
+  /** Fired when the learner marks their own answer correct. */
   onSelfOverride?: () => void;
 }
 
-export function EvaluationResultView({
-  question,
-  outcome,
-  selfOverrideCredits,
-  onSelfOverride,
-}: Props) {
+export function EvaluationResultView({ question, outcome, onSelfOverride }: Props) {
   const evaluation = outcome.evaluation;
   const canSelfOverride =
     !!onSelfOverride &&
     isOpenQuestion(question) &&
     outcome.verdict !== 'correct' &&
     !outcome.selfOverride &&
-    outcome.evaluatedBy !== 'skipped' &&
-    (selfOverrideCredits ?? 0) > 0;
+    outcome.evaluatedBy !== 'skipped';
 
   return (
     <div className="card">
@@ -54,7 +58,9 @@ export function EvaluationResultView({
         role="status"
         aria-live="polite"
       >
-        {VERDICT_LABELS[outcome.verdict]}
+        {isOpenQuestion(question) && outcome.evaluatedBy !== 'skipped'
+          ? INTERVIEW_VERDICT_LABELS[outcome.verdict]
+          : VERDICT_LABELS[outcome.verdict]}
       </span>
 
       {outcome.evaluatedBy === 'skipped' && (
@@ -114,9 +120,9 @@ export function EvaluationResultView({
           type="button"
           className="btn btn--ghost"
           onClick={onSelfOverride}
-          title="Зачесть ответ самостоятельно. Тратится один кредит самооценки."
+          title="Зачесть ответ самостоятельно"
         >
-          Я считаю, что ответил верно ({selfOverrideCredits} осталось)
+          Я считаю, что ответил верно
         </button>
       )}
     </div>
