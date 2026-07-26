@@ -7,7 +7,7 @@
     "title": "Масштабирование",
     "summary": "Vertical vs horizontal, stateless и балансировка, шардинг и consistent hashing, реплики на чтение, автоскейл и поиск настоящего узкого места.",
     "relatedTags": ["scaling", "performance"],
-    "questionIds": ["sd-001", "sd-007"],
+    "questionIds": ["sd-001", "sd-007", "sd-048", "sd-049"],
     "related": ["sd-lesson-cap", "sd-lesson-caching", "sd-lesson-estimation", "sd-lesson-microservices"],
     "sections": [
       {
@@ -73,7 +73,7 @@
     "title": "CAP и согласованность",
     "summary": "Точная формулировка CAP, неизбежность P и выбор C/A при разделении, спектр согласованности, кворумы N/R/W, PACELC и разрешение конфликтов.",
     "relatedTags": ["cap", "consistency"],
-    "questionIds": ["sd-002", "sd-003"],
+    "questionIds": ["sd-002", "sd-003", "sd-050", "sd-051"],
     "related": ["sd-lesson-scaling", "sd-lesson-reliability", "sd-lesson-cqrs-event-sourcing"],
     "sections": [
       {
@@ -139,7 +139,7 @@
     "title": "Кэширование и CDN",
     "summary": "Зачем кэш и многоуровневость, стратегии записи, инвалидизация, защита от stampede, eviction и hot key, специфика CDN.",
     "relatedTags": ["caching", "cdn"],
-    "questionIds": ["sd-004", "sd-005"],
+    "questionIds": ["sd-004", "sd-005", "sd-052", "sd-053"],
     "related": ["sd-lesson-scaling", "sd-lesson-cap", "sd-lesson-estimation"],
     "sections": [
       {
@@ -206,7 +206,7 @@
     "title": "Надёжность и идемпотентность",
     "summary": "Сбои как данность, таймауты как основа, безопасные ретраи, идемпотентность, circuit breaker и bulkhead, transactional outbox вместо 2PC.",
     "relatedTags": ["reliability", "idempotency"],
-    "questionIds": ["sd-006"],
+    "questionIds": ["sd-006", "sd-054", "sd-055", "sd-056"],
     "related": ["sd-lesson-cap", "sd-lesson-scaling", "sd-lesson-observability", "sd-lesson-delivery"],
     "sections": [
       {
