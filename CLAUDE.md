@@ -12,8 +12,7 @@ The app is inspired by Duolingo, but it is not childish. It should feel like a s
 - Spring Boot
 - Databases
 - Message Brokers
-
-(System Design Basics is post-MVP, not implemented yet.)
+- System Design
 
 ## MVP constraints
 

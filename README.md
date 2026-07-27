@@ -19,7 +19,7 @@
 | | |
 |---|---|
 | Доменов | 5 — Java Core, Spring Boot, Databases, Message Brokers, System Design |
-| Вопросов | 602 (java-core 280, spring-boot 122, databases 78, system-design 65, brokers 57) |
+| Вопросов | 612 (java-core 280, spring-boot 122, databases 78, system-design 75, brokers 57) |
 | Уроков | 120 |
 | Терминов в словаре | 132 |
 | Тестов | 400 в 71 файле (`bun test`) |
