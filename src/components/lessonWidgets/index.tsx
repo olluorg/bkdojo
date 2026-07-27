@@ -1,5 +1,7 @@
 import type { ComponentType } from 'react';
 import type { LessonInteractive } from '../../domain/models/lesson';
+import { ArrayListGrowthDemo } from './ArrayListGrowthDemo';
+import { GenerationsStepper } from './GenerationsStepper';
 import { IntegerCacheDemo } from './IntegerCacheDemo';
 import { HashMapStepper } from './HashMapStepper';
 
@@ -11,6 +13,8 @@ import { HashMapStepper } from './HashMapStepper';
 const REGISTRY: Record<string, ComponentType> = {
   'integer-cache': IntegerCacheDemo,
   'hashmap-put': HashMapStepper,
+  'arraylist-growth': ArrayListGrowthDemo,
+  'gc-generations': GenerationsStepper,
 };
 
 /**
